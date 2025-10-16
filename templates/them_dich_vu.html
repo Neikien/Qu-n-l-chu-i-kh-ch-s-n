@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Thêm Dịch vụ Mới</h1>
+    <a href="/dich_vu_{{msv}}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Quay lại
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <form method="POST">
+            <div class="mb-3">
+                <label for="TenDV" class="form-label">Tên dịch vụ *</label>
+                <input type="text" class="form-control" id="TenDV" name="TenDV" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="GiaDV" class="form-label">Giá dịch vụ *</label>
+                <input type="number" class="form-control" id="GiaDV" name="GiaDV" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="MoTa" class="form-label">Mô tả</label>
+                <textarea class="form-control" id="MoTa" name="MoTa" rows="3"></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-success">
+                <i class="fas fa-save"></i> Thêm dịch vụ
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

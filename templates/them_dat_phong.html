@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Đặt Phòng Mới</h1>
+    <a href="/dat_phong_{{msv}}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Quay lại
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <form method="POST">
+            <div class="mb-3">
+                <label for="MaKH" class="form-label">Khách hàng *</label>
+                <select class="form-control" id="MaKH" name="MaKH" required>
+                    {% for kh in khach_hang %}
+                    <option value="{{ kh.MaKH }}">{{ kh.HoTen }} - {{ kh.SoDienThoai }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label for="MaPhong" class="form-label">Phòng *</label>
+                <select class="form-control" id="MaPhong" name="MaPhong" required>
+                    {% for p in phong_trong %}
+                    <option value="{{ p.MaPhong }}">
+                        {{ p.TenKS }} - {{ p.LoaiPhong }} - {{ "{:,.0f}".format(p.GiaPhong) }} VND/đêm
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="NgayNhanPhong" class="form-label">Ngày nhận phòng *</label>
+                        <input type="date" class="form-control" id="NgayNhanPhong" name="NgayNhanPhong" required>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="NgayTraPhong" class="form-label">Ngày trả phòng *</label>
+                        <input type="date" class="form-control" id="NgayTraPhong" name="NgayTraPhong" required>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-success">
+                <i class="fas fa-save"></i> Đặt phòng
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

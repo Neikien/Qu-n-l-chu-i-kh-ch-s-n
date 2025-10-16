@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Dashboard</h1>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stat-card border-left-primary shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                            Tổng Khách sạn</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_hotels }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-hotel fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stat-card border-left-success shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                            Tổng Phòng</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_rooms }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-bed fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stat-card border-left-info shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                            Phòng Trống</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ available_rooms }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-door-open fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stat-card border-left-warning shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                            Khách hàng</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_customers }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-users fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Featured Hotels -->
+<div class="row mt-4">
+    <div class="col-12">
+        <h3>Khách sạn nổi bật</h3>
+        <div class="row">
+            {% for hotel in featured_hotels %}
+            <div class="col-md-4 mb-4">
+                <div class="card hotel-card">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ hotel.TenKS }}</h5>
+                        <h6 class="card-subtitle mb-2 text-muted">
+                            {% for i in range(hotel.SoSao) %}⭐{% endfor %}
+                        </h6>
+                        <p class="card-text">
+                            <small class="text-muted">
+                                <i class="fas fa-map-marker-alt"></i> {{ hotel.TenKhuVuc }}
+                            </small>
+                        </p>
+                        <p class="card-text">{{ hotel.MoTa[:100] }}...</p>
+                        <a href="/khach_san_{{msv}}" class="btn btn-primary btn-sm">Xem chi tiết</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row mt-4">
+    <div class="col-12">
+        <h3>Thao tác nhanh</h3>
+        <div class="d-grid gap-2 d-md-flex">
+            <a href="/them_dat_phong_{{msv}}" class="btn btn-success me-2">
+                <i class="fas fa-plus"></i> Đặt phòng mới
+            </a>
+            <a href="/them_khach_hang_{{msv}}" class="btn btn-info me-2">
+                <i class="fas fa-user-plus"></i> Thêm khách hàng
+            </a>
+            <a href="/them_khach_san_{{msv}}" class="btn btn-warning">
+                <i class="fas fa-hotel"></i> Thêm khách sạn
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
