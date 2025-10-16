@@ -1,0 +1,14 @@
+Hướng dẫn chạy ứng dụng:
+
+Import database:
+mysql -u root -p < hotel_management_23001529.sql
+
+Cài đặt dependencies:
+pip install -r requirements_23001529.txt
+
+Chạy ứng dụng:
+export FLASK_APP=app_hotel_23001529.py
+flask run --port=5001
+
+Truy cập:
+http://127.0.0.1:5001
