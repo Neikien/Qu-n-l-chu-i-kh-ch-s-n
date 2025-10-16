@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Thêm Khách sạn Mới</h1>
+    <a href="/khach_san_{{msv}}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Quay lại
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <form method="POST">
+            <div class="mb-3">
+                <label for="TenKS" class="form-label">Tên khách sạn *</label>
+                <input type="text" class="form-control" id="TenKS" name="TenKS" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="DiaChi" class="form-label">Địa chỉ *</label>
+                <input type="text" class="form-control" id="DiaChi" name="DiaChi" required>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="SoSao" class="form-label">Số sao *</label>
+                        <select class="form-control" id="SoSao" name="SoSao" required>
+                            <option value="1">1 sao</option>
+                            <option value="2">2 sao</option>
+                            <option value="3">3 sao</option>
+                            <option value="4">4 sao</option>
+                            <option value="5">5 sao</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="MaKhuVuc" class="form-label">Khu vực *</label>
+                        <select class="form-control" id="MaKhuVuc" name="MaKhuVuc" required>
+                            {% for kv in khu_vuc %}
+                            <option value="{{ kv.MaKhuVuc }}">{{ kv.TenKhuVuc }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="MoTa" class="form-label">Mô tả</label>
+                <textarea class="form-control" id="MoTa" name="MoTa" rows="3"></textarea>
+            </div>
+
+            <div class="mb-3">
+                <label for="AnhDaiDien" class="form-label">Ảnh đại diện</label>
+                <input type="text" class="form-control" id="AnhDaiDien" name="AnhDaiDien" placeholder="Tên file ảnh">
+            </div>
+
+            <button type="submit" class="btn btn-success">
+                <i class="fas fa-save"></i> Thêm khách sạn
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

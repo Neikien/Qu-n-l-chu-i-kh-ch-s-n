@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Thêm Phòng Mới</h1>
+    <a href="/phong_{{msv}}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Quay lại
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <form method="POST">
+            <div class="mb-3">
+                <label for="MaKS" class="form-label">Khách sạn *</label>
+                <select class="form-control" id="MaKS" name="MaKS" required>
+                    {% for ks in khach_san %}
+                    <option value="{{ ks.MaKS }}">{{ ks.TenKS }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label for="LoaiPhong" class="form-label">Loại phòng *</label>
+                <input type="text" class="form-control" id="LoaiPhong" name="LoaiPhong" required>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="GiaPhong" class="form-label">Giá phòng *</label>
+                        <input type="number" class="form-control" id="GiaPhong" name="GiaPhong" required>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="SucChua" class="form-label">Sức chứa *</label>
+                        <input type="number" class="form-control" id="SucChua" name="SucChua" required>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="TinhTrang" class="form-label">Tình trạng *</label>
+                <select class="form-control" id="TinhTrang" name="TinhTrang" required>
+                    <option value="Trống">Trống</option>
+                    <option value="Đã đặt">Đã đặt</option>
+                    <option value="Bảo trì">Bảo trì</option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label for="AnhPhong" class="form-label">Ảnh phòng</label>
+                <input type="text" class="form-control" id="AnhPhong" name="AnhPhong" placeholder="Tên file ảnh">
+            </div>
+
+            <button type="submit" class="btn btn-success">
+                <i class="fas fa-save"></i> Thêm phòng
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

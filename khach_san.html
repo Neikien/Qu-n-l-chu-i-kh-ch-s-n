@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Quản lý Khách sạn</h1>
+    <a href="/them_khach_san_{{msv}}" class="btn btn-primary">
+        <i class="fas fa-plus"></i> Thêm khách sạn
+    </a>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-striped table-hover">
+        <thead class="table-dark">
+            <tr>
+                <th>Mã KS</th>
+                <th>Tên khách sạn</th>
+                <th>Địa chỉ</th>
+                <th>Số sao</th>
+                <th>Khu vực</th>
+                <th>Mô tả</th>
+                <th>Thao tác</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for ks in khach_san %}
+            <tr>
+                <td>{{ ks.MaKS }}</td>
+                <td><strong>{{ ks.TenKS }}</strong></td>
+                <td>{{ ks.DiaChi }}</td>
+                <td>
+                    {% for i in range(ks.SoSao) %}⭐{% endfor %}
+                </td>
+                <td>{{ ks.TenKhuVuc }}</td>
+                <td>{{ ks.MoTa[:50] }}{% if ks.MoTa|length > 50 %}...{% endif %}</td>
+                <td>
+                    <a href="#" class="btn btn-sm btn-info">Sửa</a>
+                    <a href="#" class="btn btn-sm btn-danger">Xóa</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

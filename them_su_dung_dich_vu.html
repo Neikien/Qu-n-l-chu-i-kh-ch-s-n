@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Thêm Sử dụng Dịch vụ</h1>
+    <a href="/su_dung_dv_{{msv}}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Quay lại
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <form method="POST">
+            <div class="mb-3">
+                <label for="MaDatPhong" class="form-label">Đặt phòng *</label>
+                <select class="form-control" id="MaDatPhong" name="MaDatPhong" required>
+                    {% for dp in dat_phong %}
+                    <option value="{{ dp.MaDatPhong }}">
+                        {{ dp.MaDatPhong }} - {{ dp.HoTen }} - {{ dp.TenKS }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label for="MaDV" class="form-label">Dịch vụ *</label>
+                <select class="form-control" id="MaDV" name="MaDV" required>
+                    {% for dv in dich_vu %}
+                    <option value="{{ dv.MaDV }}">
+                        {{ dv.TenDV }} - {{ "{:,.0f}".format(dv.GiaDV) }} VND
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label for="SoLuong" class="form-label">Số lượng *</label>
+                <input type="number" class="form-control" id="SoLuong" name="SoLuong" value="1" min="1" required>
+            </div>
+
+            <button type="submit" class="btn btn-success">
+                <i class="fas fa-save"></i> Thêm sử dụng DV
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

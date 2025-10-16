@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Quản lý Phòng</h1>
+    <a href="/them_phong_{{msv}}" class="btn btn-primary">
+        <i class="fas fa-plus"></i> Thêm phòng
+    </a>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-striped table-hover">
+        <thead class="table-dark">
+            <tr>
+                <th>Mã phòng</th>
+                <th>Khách sạn</th>
+                <th>Khu vực</th>
+                <th>Loại phòng</th>
+                <th>Giá phòng</th>
+                <th>Tình trạng</th>
+                <th>Sức chứa</th>
+                <th>Thao tác</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for p in phong %}
+            <tr>
+                <td>{{ p.MaPhong }}</td>
+                <td>{{ p.TenKS }}</td>
+                <td>{{ p.TenKhuVuc }}</td>
+                <td>{{ p.LoaiPhong }}</td>
+                <td>{{ "{:,.0f}".format(p.GiaPhong) }} VND</td>
+                <td>
+                    {% if p.TinhTrang == 'Trống' %}
+                        <span class="badge bg-success">{{ p.TinhTrang }}</span>
+                    {% elif p.TinhTrang == 'Đã đặt' %}
+                        <span class="badge bg-warning">{{ p.TinhTrang }}</span>
+                    {% else %}
+                        <span class="badge bg-danger">{{ p.TinhTrang }}</span>
+                    {% endif %}
+                </td>
+                <td>{{ p.SucChua }} người</td>
+                <td>
+                    <a href="#" class="btn btn-sm btn-info">Sửa</a>
+                    <a href="#" class="btn btn-sm btn-danger">Xóa</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Thêm Khách hàng Mới</h1>
+    <a href="/khach_hang_{{msv}}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Quay lại
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <form method="POST">
+            <div class="mb-3">
+                <label for="HoTen" class="form-label">Họ tên *</label>
+                <input type="text" class="form-control" id="HoTen" name="HoTen" required>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="SoDienThoai" class="form-label">Số điện thoại</label>
+                        <input type="text" class="form-control" id="SoDienThoai" name="SoDienThoai">
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="Email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="Email" name="Email">
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="CCCD" class="form-label">CCCD</label>
+                        <input type="text" class="form-control" id="CCCD" name="CCCD">
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="LoaiKH" class="form-label">Loại khách hàng</label>
+                        <select class="form-control" id="LoaiKH" name="LoaiKH">
+                            <option value="Cá nhân">Cá nhân</option>
+                            <option value="Doanh nghiệp">Doanh nghiệp</option>
+                            <option value="VIP">VIP</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="DiaChi" class="form-label">Địa chỉ</label>
+                <textarea class="form-control" id="DiaChi" name="DiaChi" rows="2"></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-success">
+                <i class="fas fa-save"></i> Thêm khách hàng
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}
