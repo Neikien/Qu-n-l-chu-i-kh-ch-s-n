@@ -22,6 +22,139 @@ CREATE TABLE KHACH_SAN (
     FOREIGN KEY (MaKhuVuc) REFERENCES KHU_VUC(MaKhuVuc)
 );
 
+-- BỔ SUNG 4 BẢNG MỚI VÀO HỆ THỐNG
+
+-- 8. Bảng LIEN_HE_KHACH_SAN
+CREATE TABLE LIEN_HE_KHACH_SAN (
+    MaLienHe INT AUTO_INCREMENT PRIMARY KEY,
+    MaKS INT,
+    HoTenNguoiLienHe VARCHAR(100) NOT NULL,
+    ChucVu VARCHAR(50),
+    SoDienThoai VARCHAR(15),
+    Email VARCHAR(100),
+    GhiChu TEXT,
+    FOREIGN KEY (MaKS) REFERENCES KHACH_SAN(MaKS) ON DELETE CASCADE
+);
+
+-- 9. Bảng DANH_GIA
+CREATE TABLE DANH_GIA (
+    MaDanhGia INT AUTO_INCREMENT PRIMARY KEY,
+    MaDatPhong INT,
+    Diem INT CHECK (Diem BETWEEN 1 AND 5),
+    NoiDung TEXT,
+    NgayDanhGia DATE DEFAULT CURDATE(),
+    TrangThai ENUM('Hiển thị', 'Ẩn') DEFAULT 'Hiển thị',
+    FOREIGN KEY (MaDatPhong) REFERENCES DAT_PHONG(MaDatPhong) ON DELETE CASCADE
+);
+
+-- 10. Bảng TAI_KHOAN
+CREATE TABLE TAI_KHOAN (
+    MaTaiKhoan INT AUTO_INCREMENT PRIMARY KEY,
+    TenDangNhap VARCHAR(50) UNIQUE NOT NULL,
+    MatKhau VARCHAR(255) NOT NULL,
+    LoaiTaiKhoan ENUM('admin', 'khach_hang', 'nhan_vien') DEFAULT 'khach_hang',
+    MaKH INT,
+    TrangThai ENUM('active', 'inactive') DEFAULT 'active',
+    NgayTao DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (MaKH) REFERENCES KHACH_HANG(MaKH) ON DELETE CASCADE
+);
+
+-- 11. Bảng LICH_SU_HOAT_DONG
+CREATE TABLE LICH_SU_HOAT_DONG (
+    MaHoatDong INT AUTO_INCREMENT PRIMARY KEY,
+    MaTaiKhoan INT,
+    HanhDong VARCHAR(100) NOT NULL,
+    MoTa TEXT,
+    ThoiGian DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (MaTaiKhoan) REFERENCES TAI_KHOAN(MaTaiKhoan) ON DELETE CASCADE
+);
+
+-- CHÈN DỮ LIỆU MẪU CHO CÁC BẢNG MỚI
+
+-- Chèn dữ liệu LIEN_HE_KHACH_SAN
+INSERT INTO LIEN_HE_KHACH_SAN (MaKS, HoTenNguoiLienHe, ChucVu, SoDienThoai, Email, GhiChu) VALUES
+(1, 'Nguyễn Thị Hồng', 'Quản lý lễ tân', '0912345001', 'manager.topas@sapa.com', 'Hỗ trợ 24/7'),
+(2, 'Trần Văn Nam', 'Giám đốc khách sạn', '0912345002', 'director.vinpearl@halong.com', 'Liên hệ giờ hành chính'),
+(3, 'Lê Thị Mai', 'Trưởng bộ phận đặt phòng', '0912345003', 'reservation@intercontinental.com', 'Hỗ trợ đặt phòng và dịch vụ'),
+(4, 'Phạm Văn Đức', 'Quản lý khách sạn', '0912345004', 'manager.anantara@hoian.com', 'Hỗ trợ đa ngôn ngữ'),
+(5, 'Hoàng Thị Lan', 'Giám đốc điều hành', '0912345005', 'director.amanoi@nhatrang.com', 'Liên hệ qua email là tốt nhất');
+
+-- Chèn dữ liệu DANH_GIA
+INSERT INTO DANH_GIA (MaDatPhong, Diem, NoiDung, NgayDanhGia) VALUES
+(1, 5, 'Khách sạn tuyệt vời, view đẹp, nhân viên thân thiện. Sẽ quay lại!', '2024-01-19'),
+(1, 4, 'Phòng sạch sẽ, dịch vụ tốt nhưng giá hơi cao. Buffet sáng ngon.', '2024-01-20'),
+(3, 5, 'Trải nghiệm tuyệt vời! View biển đẹp, phòng rộng rãi và sạch sẽ.', '2024-01-28'),
+(2, 3, 'Khách sạn đẹp nhưng dịch vụ hơi chậm. Cần cải thiện hơn.', '2024-01-23');
+
+-- Chèn dữ liệu TAI_KHOAN (mật khẩu mẫu: 123456 - đã được mã hóa bcrypt)
+INSERT INTO TAI_KHOAN (TenDangNhap, MatKhau, LoaiTaiKhoan, MaKH, TrangThai) VALUES
+('admin', '$2a$10$8K1p/a0dRTnL5y2ZQY.7Oe3hZkX6VqB9nQY6wXrZcNtHjJvMlKpYi', 'admin', NULL, 'active'),
+('nguyenvanan', '$2a$10$8K1p/a0dRTnL5y2ZQY.7Oe3hZkX6VqB9nQY6wXrZcNtHjJvMlKpYi', 'khach_hang', 1, 'active'),
+('tranthibinh', '$2a$10$8K1p/a0dRTnL5y2ZQY.7Oe3hZkX6VqB9nQY6wXrZcNtHjJvMlKpYi', 'khach_hang', 2, 'active'),
+('levancuong', '$2a$10$8K1p/a0dRTnL5y2ZQY.7Oe3hZkX6VqB9nQY6wXrZcNtHjJvMlKpYi', 'khach_hang', 3, 'active'),
+('phamthidung', '$2a$10$8K1p/a0dRTnL5y2ZQY.7Oe3hZkX6VqB9nQY6wXrZcNtHjJvMlKpYi', 'khach_hang', 4, 'active');
+
+-- Chèn dữ liệu LICH_SU_HOAT_DONG
+INSERT INTO LICH_SU_HOAT_DONG (MaTaiKhoan, HanhDong, MoTa) VALUES
+(2, 'Đặt phòng', 'Đặt phòng Deluxe Mountain View tại Topas Sapa từ 15-18/01/2024'),
+(2, 'Thanh toán', 'Thanh toán thành công 7,500,000 VND cho đặt phòng #1'),
+(3, 'Đặt phòng', 'Đặt phòng Ocean View Suite tại Vinpearl Hạ Long từ 20-22/01/2024'),
+(4, 'Đặt phòng', 'Đặt phòng River View Suite tại Anantara Hội An từ 25-27/01/2024'),
+(1, 'Quản lý', 'Admin đăng nhập vào hệ thống quản lý'),
+(2, 'Hủy dịch vụ', 'Hủy dịch vụ tour tham quan cho đặt phòng #1');
+
+-- TẠO THÊM INDEX CHO CÁC BẢNG MỚI
+CREATE INDEX idx_lienhe_maks ON LIEN_HE_KHACH_SAN(MaKS);
+CREATE INDEX idx_danhgia_madatphong ON DANH_GIA(MaDatPhong);
+CREATE INDEX idx_taikhoan_makh ON TAI_KHOAN(MaKH);
+CREATE INDEX idx_taikhoan_tendangnhap ON TAI_KHOAN(TenDangNhap);
+CREATE INDEX idx_lichsu_mataikhoan ON LICH_SU_HOAT_DONG(MaTaiKhoan);
+CREATE INDEX idx_lichsu_thoigian ON LICH_SU_HOAT_DONG(ThoiGian);
+
+-- TẠO VIEW MỚI
+
+-- View xem thông tin đánh giá chi tiết
+CREATE VIEW view_danh_gia_chi_tiet AS
+SELECT 
+    dg.MaDanhGia,
+    dg.Diem,
+    dg.NoiDung,
+    dg.NgayDanhGia,
+    dg.TrangThai,
+    kh.HoTen,
+    ks.TenKS,
+    p.LoaiPhong,
+    dp.MaDatPhong
+FROM DANH_GIA dg
+JOIN DAT_PHONG dp ON dg.MaDatPhong = dp.MaDatPhong
+JOIN KHACH_HANG kh ON dp.MaKH = kh.MaKH
+JOIN PHONG p ON dp.MaPhong = p.MaPhong
+JOIN KHACH_SAN ks ON p.MaKS = ks.MaKS;
+
+-- View xem thông tin tài khoản khách hàng
+CREATE VIEW view_tai_khoan_khach_hang AS
+SELECT 
+    tk.MaTaiKhoan,
+    tk.TenDangNhap,
+    tk.LoaiTaiKhoan,
+    tk.TrangThai,
+    tk.NgayTao,
+    kh.MaKH,
+    kh.HoTen,
+    kh.Email,
+    kh.SoDienThoai
+FROM TAI_KHOAN tk
+LEFT JOIN KHACH_HANG kh ON tk.MaKH = kh.MaKH;
+
+-- CẬP NHẬT THÔNG BÁO THÀNH CÔNG
+SELECT '4 bảng mới đã được bổ sung thành công!' as ThongBao;
+SELECT 'Bảng LIEN_HE_KHACH_SAN đã được tạo' as ThongBao;
+SELECT 'Bảng DANH_GIA đã được tạo' as ThongBao;
+SELECT 'Bảng TAI_KHOAN đã được tạo' as ThongBao;
+SELECT 'Bảng LICH_SU_HOAT_DONG đã được tạo' as ThongBao;
+SELECT COUNT(*) as 'Tổng số bảng trong hệ thống' FROM information_schema.tables 
+WHERE table_schema = 'hotel_management';
+
 -- Bảng PHONG
 CREATE TABLE PHONG (
     MaPhong INT AUTO_INCREMENT PRIMARY KEY,
