@@ -1,10 +1,16 @@
 from fastapi import Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.config import config
-from app.core.security import oauth2_scheme
-from app.utils.token import verify_token
+from app.core.security import oauth2_scheme, verify_token
 from app.models.user import User
 from sqlalchemy import select
+
+async def get_db():
+    async with config.AsyncSessionLocal() as session:
+        try:
+            yield session
+        finally:
+            await session.close()
 
 async def get_current_user(access_token: str = Depends(oauth2_scheme)):
     payload = verify_token(access_token)
@@ -14,13 +20,6 @@ async def get_current_user(access_token: str = Depends(oauth2_scheme)):
             detail="Invalid token"
         )
     return payload.get('sub')
-
-async def get_db():
-    async with config.AsyncSessionLocal() as session:
-        try:
-            yield session
-        finally:
-            await session.close()
 
 async def get_current_active_user(
     user_id: str = Depends(get_current_user),
