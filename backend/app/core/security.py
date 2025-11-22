@@ -1,13 +1,15 @@
 from fastapi.security import OAuth2PasswordBearer
 from passlib.context import CryptContext
-from datetime import datetime, timedelta
-from jose import JWTError, jwt
+from datetime import datetime, timedelta, timezone  # ← THÊM timezone
+from jose import JWTError, ExpiredSignatureError   # ← THÊM ExpiredSignatureError
+import jwt  # ← ĐỔI từ 'from jose import jwt' thành 'import jwt'
+from fastapi import HTTPException, status
 from app.core.config import config
 
-# OAuth2 scheme (giữ nguyên của họ)
+# OAuth2 scheme
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl='/auth/login')
 
-# Password hashing
+# Password hasching - Giữ bcrypt (ổn định) hoặc dùng argon2 (bảo mật hơn)
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
@@ -16,14 +18,14 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 def hash_password(password: str) -> str:
     return pwd_context.hash(password)
 
-# JWT token functions (có thể giữ từ utils/token.py hoặc viết mới)
 def create_token(data: dict, typ: str = 'access'):
     to_encode = data.copy()
     
+    # Dùng timezone-aware datetime
     if typ == 'access':
-        expire = datetime.utcnow() + timedelta(minutes=config.ACCESS_TOKEN_EXPIRE_MINUTES)
+        expire = datetime.now(timezone.utc) + timedelta(minutes=config.ACCESS_TOKEN_EXPIRE_MINUTES)
     else:  # refresh token
-        expire = datetime.utcnow() + timedelta(days=config.REFRESH_TOKEN_EXPIRE_DAYS)
+        expire = datetime.now(timezone.utc) + timedelta(days=config.REFRESH_TOKEN_EXPIRE_DAYS)
     
     to_encode.update({"exp": expire, "type": typ})
     encoded_jwt = jwt.encode(to_encode, config.JWT_SECRET_KEY, algorithm=config.JWT_ALGORITHM)
@@ -33,5 +35,13 @@ def verify_token(token: str):
     try:
         payload = jwt.decode(token, config.JWT_SECRET_KEY, algorithms=[config.JWT_ALGORITHM])
         return payload
+    except ExpiredSignatureError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token has expired",
+        )
     except JWTError:
-        return None
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token",
+        )
