@@ -15,4 +15,4 @@ class Customer(Base):
     
     # Relationships
     bookings = relationship("Booking", back_populates="customer")
-    account = relationship("Account", back_populates="customer", uselist=False)
+    user = relationship("User", back_populates="customer", uselist=False)
