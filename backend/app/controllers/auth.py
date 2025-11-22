@@ -2,18 +2,15 @@ from fastapi import APIRouter, HTTPException, Response, Request, Depends
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update
+from botocore.client import BaseClient
 from app.schemas.auth import SignupRequest, UserResponse, UserUpdate
 from app.core.config import config
 from app.core.dependencies import get_db, get_current_user, get_s3_client
-from app.utils.hashing import verify_password, hash_password
-from app.utils.token import create_token, verify_token
+from app.core.security import verify_password, hash_password, create_token, verify_token
 from app.models.user import User
-from app.models.hotel import Hotel, Room, Booking  # Thêm các model khách sạn
 from datetime import datetime, timedelta, timezone
 
-
 router = APIRouter()
-
 
 @router.post('/login')
 async def login(
@@ -21,7 +18,6 @@ async def login(
     form_data: OAuth2PasswordRequestForm = Depends(), 
     db: AsyncSession = Depends(get_db)
 ):
-    # Tìm user bằng SQL
     result = await db.execute(
         select(User).where(User.username == form_data.username)
     )
@@ -33,7 +29,6 @@ async def login(
     if not verify_password(form_data.password, user.password):
         raise HTTPException(status_code=400, detail="Invalid username or password")
     
-    # Dùng user.id thay vì user_id UUID
     access_token = create_token({'sub': user.id})
     refresh_token = create_token({'sub': user.id}, typ='refresh')
     
@@ -46,10 +41,8 @@ async def login(
     )
     return {"access_token": access_token, "token_type": "bearer"}
 
-
 @router.post('/signup')
 async def signup(form_data: SignupRequest, db: AsyncSession = Depends(get_db)):
-    # Kiểm tra username tồn tại
     result = await db.execute(
         select(User).where(User.username == form_data.username)
     )
@@ -58,7 +51,6 @@ async def signup(form_data: SignupRequest, db: AsyncSession = Depends(get_db)):
     if existing:
         raise HTTPException(status_code=400, detail="Username already exists")
     
-    # Kiểm tra email tồn tại
     result_email = await db.execute(
         select(User).where(User.email == form_data.email)
     )
@@ -69,13 +61,12 @@ async def signup(form_data: SignupRequest, db: AsyncSession = Depends(get_db)):
     
     hashed_pwd = hash_password(form_data.password)
     
-    # Tạo user mới - không cần UUID, SQL tự gen ID
     user = User(
         username=form_data.username,
         password=hashed_pwd,
         email=form_data.email,
         fullname=form_data.fullname,
-        role="user",  # hoặc "customer" cho khách sạn
+        role="user",
     )
     
     db.add(user)
@@ -84,10 +75,9 @@ async def signup(form_data: SignupRequest, db: AsyncSession = Depends(get_db)):
 
     return {'message': 'User created successfully'}
 
-
 @router.get('/info', response_model=UserResponse)
 async def get_user(
-    user_id: int = Depends(get_current_user),  # Đổi thành int
+    user_id: int = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     result = await db.execute(
@@ -100,26 +90,18 @@ async def get_user(
     
     return user
 
-
 @router.post('/logout')
 async def logout(response: Response):
     response.delete_cookie('rt')
     return {'message': 'Logout successfully'}
 
-
 @router.post('/refresh')
 async def refresh(request: Request, response: Response, db: AsyncSession = Depends(get_db)):
     old_rt = request.cookies.get('rt')
-    if not old_rt:
-        raise HTTPException(status_code=401, detail="Refresh token missing")
     
-    try:
-        payload = verify_token(old_rt)
-        user_id = payload.get('sub')
-    except Exception:
-        raise HTTPException(status_code=401, detail="Invalid refresh token")
+    payload = verify_token(old_rt)
+    user_id = payload.get('sub')
     
-    # Verify user still exists
     result = await db.execute(select(User).where(User.id == user_id))
     user = result.scalar_one_or_none()
     if not user:
@@ -136,14 +118,12 @@ async def refresh(request: Request, response: Response, db: AsyncSession = Depen
     new_at = create_token({'sub': user_id})
     return {"access_token": new_at, "token_type": "bearer"}
 
-
 @router.patch('/update')
 async def update_user(
     request: UserUpdate,
-    user_id: int = Depends(get_current_user),  # Đổi thành int
+    user_id: int = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    # Lấy user hiện tại
     result = await db.execute(select(User).where(User.id == user_id))
     cur_user = result.scalar_one_or_none()
     
@@ -152,11 +132,9 @@ async def update_user(
 
     errors = {}
 
-    # Verify current password
     if not verify_password(request.current_password, cur_user.password):
         errors['password'] = "Current password is incorrect"
 
-    # Check email uniqueness if changing email
     if request.email and request.email != cur_user.email:
         email_result = await db.execute(select(User).where(User.email == request.email))
         existing_email = email_result.scalar_one_or_none()
@@ -166,7 +144,6 @@ async def update_user(
     if errors:
         raise HTTPException(status_code=400, detail=errors)
 
-    # Prepare update data
     update_data = {}
     if request.email:
         update_data['email'] = request.email
@@ -175,7 +152,6 @@ async def update_user(
     if request.new_password:
         update_data['password'] = hash_password(request.new_password)
 
-    # Execute update
     if update_data:
         await db.execute(
             update(User)
@@ -186,14 +162,12 @@ async def update_user(
 
     return {"message": "User updated successfully"}
 
-
 @router.delete('/delete')
 async def delete_account(
-    user_id: int = Depends(get_current_user),  # Đổi thành int
+    user_id: int = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
     s3_client: BaseClient = Depends(get_s3_client)
 ):
-    # Lấy user trước khi xóa
     result = await db.execute(select(User).where(User.id == user_id))
     user = result.scalar_one_or_none()
     
@@ -201,14 +175,8 @@ async def delete_account(
         raise HTTPException(status_code=404, detail="User not found")
 
     # TODO: Xóa các dữ liệu liên quan đến khách sạn
-    # - Hủy các booking của user
-    # - Xóa các hotel của user (nếu là chủ khách sạn)
-    # - etc.
+    # await db.execute(Booking.__table__.delete().where(Booking.user_id == user_id))
     
-    # Ví dụ: xóa các booking của user
-    await db.execute(Booking.__table__.delete().where(Booking.user_id == user_id))
-    
-    # Xóa user
     await db.execute(User.__table__.delete().where(User.id == user_id))
     await db.commit()
 
