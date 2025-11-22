@@ -8,7 +8,6 @@ from .service import Service
 from .service_usage import ServiceUsage
 from .hotel_contact import HotelContact
 from .review import Review
-from .account import Account
 from .activity_log import ActivityLog
 
 __all__ = [
@@ -22,6 +21,5 @@ __all__ = [
     'ServiceUsage',
     'HotelContact',
     'Review',
-    'Account',
     'ActivityLog'
 ]
