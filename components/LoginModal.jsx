@@ -36,7 +36,7 @@ export default function LoginModal({ isOpen, onClose }) {
         {/* CỘT TRÁI: ẢNH (Chỉ hiện trên máy tính) */}
         <div className="hidden lg:block w-1/2 relative h-full">
           <Image
-            src="https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=800&auto=format&fit=crop"
+            src="https://phuquoc.regenthotels.com/sites/rpq/files/styles/height_1400/public/homepage/shutterstock_1446827465_1%20%281%29_0.jpg?itok=ZSXjz5zI"
             alt="Login Background"
             fill
             className="object-cover"
