@@ -16,7 +16,7 @@ const treatments = [
     id: 2,
     name: "Hydrothermal Therapy",
     duration: "60 Minutes",
-    image: "https://images.unsplash.com/photo-1591343395082-9b1d8a918d65?q=80&w=800&auto=format&fit=crop",
+    image: "https://thegloss.ie/wp-content/uploads/2022/12/The-Spa-at-The-Johnstown-Estate.jpg",
     desc: "Immerse yourself in our vitality pools, herbal steam rooms, and ice fountains to boost circulation and immunity."
   },
   {

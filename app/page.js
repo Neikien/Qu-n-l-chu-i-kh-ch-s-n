@@ -202,12 +202,9 @@ export default function Home() {
               Rainmist Experience. Refresh the mind under the calming beat of
               cascading rain showers, and restore the soul.
             </p>
-            <a
-              href="#"
-              className="inline-block border border-primary px-10 py-4 text-sm font-bold tracking-[2px] uppercase hover:bg-primary hover:text-white transition-all w-fit"
-            >
+          <Link href="/journey" className="w-fit inline-block border border-primary px-10 py-4 text-sm font-bold tracking-[2px] uppercase hover:bg-primary hover:text-white transition-all">
               Find Out More
-            </a>
+          </Link>
           </div>
         </div>
       </section>
