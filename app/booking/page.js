@@ -2,9 +2,9 @@
 // --- page.tsx (Chỉ thay thế component Header) ---
 import React, { useState } from 'react';
 import { format } from 'date-fns';
-import HotelGallery from './components/HotelGallery';
-import CustomDatePicker from './components/CustomDatePicker';
-import RoomListing from './components/RoomListing';
+import HotelGallery from '@/components/HotelGallery';
+import CustomDatePicker from '@/components/CustomDatePicker';
+import RoomListing from '@/components/RoomListing';
 // Hàm xử lý logic tăng/giảm khách/phòng
 const handleGuestClick = (e, type, operation, rooms, guests, setRooms, setGuests) => {
     e.stopPropagation();

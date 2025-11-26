@@ -5,3 +5,649 @@
 html {
   scroll-behavior: smooth;
 }
+/*
+ * Tệp CSS NÀY đã được tối ưu hóa, loại bỏ trùng lặp và bổ sung Header/Search Bar.
+ */
+
+/* --- ĐỊNH NGHĨA BIẾN (Tất cả được gộp vào đây) --- */
+:root {
+  --primary-color: #b38b7a; /* Màu nâu đặc trưng (IHG Brown) */
+  --secondary-color: #54534A; /* Màu tối phụ (Giá tiền) */
+  --text-color-dark: #333;
+  --text-color-light: #666;
+  --light-gray: #f5f5f5; /* Nền cho phần giá và search */
+  --border-color: #ddd;
+  --discount-color: #dc3545; /* Màu đỏ cho giảm giá */
+  --header-dark: #000; /* Màu nền Top Bar */
+  --header-light: #fff; /* Màu nền Main Bar */
+  --link-color: #007bff;
+}
+
+body {
+  font-family: 'InterWeb', 'Graphik', Arial, sans-serif;
+  color: var(--text-color-dark);
+  background-color: var(--header-light);
+  margin: 0; /* Bỏ margin mặc định của body */
+}
+
+/* --- Vùng chứa chính --- */
+.hotel-page-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* ------------------------------------------- */
+/* --- CSS PHẦN HEADER (Theo yêu cầu mới) --- */
+/* ------------------------------------------- */
+
+/* --- 1. THANH TIỆN ÍCH TRÊN CÙNG (TOP BAR) --- */
+.top-utility-bar {
+  background-color: var(--header-dark);
+  color: var(--header-light);
+  padding: 10px 0;
+  font-size: 0.8em;
+}
+
+.top-utility-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.contact {
+  color: #ccc;
+}
+
+.auth-links {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.auth-links span {
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.btn-signin, .btn-join, .btn-book-now {
+  background: none;
+  color: var(--header-light);
+  border: 1px solid var(--header-light);
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 0.8em;
+  font-weight: 500;
+  text-transform: uppercase;
+  border-radius: 0;
+}
+
+.btn-book-now {
+    background-color: var(--header-light);
+    color: var(--header-dark);
+    font-weight: 600;
+    border: none;
+}
+
+/* --- 2. THANH CHÍNH (LOGO & SEARCH) --- */
+.main-nav-bar {
+  background-color: var(--header-light);
+  padding: 20px 0 10px 0;
+}
+
+.logo-container {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.logo {
+  max-width: 220px;
+  height: auto;
+}
+
+.search-widget-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* Breadcrumb Navigation */
+.breadcrumb-nav {
+  font-size: 0.9em;
+  color: #888;
+  margin-bottom: 15px;
+}
+.breadcrumb-nav a {
+  color: #888;
+  text-decoration: none;
+}
+
+/* Form Tìm kiếm */
+.search-form-bar {
+  display: flex;
+  align-items: flex-end;
+  border: 1px solid var(--border-color);
+  margin-bottom: 30px; /* Thêm margin để tách khỏi nội dung chính */
+}
+
+.search-field {
+  padding: 10px 15px;
+  border-right: 1px solid var(--border-color);
+  flex-basis: 20%;
+  display: flex;
+  flex-direction: column;
+}
+
+.field-location {
+    flex-basis: 35%; /* Cấp thêm không gian cho trường Location */
+}
+
+.field-label {
+  font-size: 0.7em;
+  font-weight: 600;
+  color: #888;
+  margin-bottom: 5px;
+  text-transform: uppercase;
+}
+
+.search-field input,
+.guest-select,
+.date-range,
+.price-select {
+  border: none;
+  background: none;
+  padding: 0;
+  font-size: 0.9em;
+  color: var(--text-color-dark);
+  cursor: pointer;
+  outline: none;
+}
+
+.btn-tim-kiem-v2 {
+  flex-basis: 10%;
+  background-color: var(--primary-color);
+  color: var(--header-light);
+  border: none;
+  padding: 15px 10px;
+  font-size: 1em;
+  font-weight: 600;
+  text-transform: uppercase;
+  cursor: pointer;
+  height: 100%;
+  border-radius: 0;
+  align-self: stretch; /* Đảm bảo nút kéo dài hết chiều cao */
+}
+
+/* ------------------------------------------- */
+/* --- CSS PHẦN NỘI DUNG CHÍNH (BODY) --- */
+/* ------------------------------------------- */
+
+.hotel-name {
+  font-size: 2em;
+  font-weight: 500;
+  margin-top: 20px;
+  margin-bottom: 5px;
+}
+
+.hotel-address {
+  color: var(--text-color-light);
+  margin-bottom: 20px;
+}
+
+/* --- Thông tin tóm tắt & Tiện nghi --- */
+.summary-info {
+  /* Bỏ border-top để sử dụng border-bottom từ main-nav-bar */
+  padding-top: 20px;
+  margin-bottom: 30px;
+}
+
+/* ... (Các style khác cho rating, amenities, và room-selection-heading) ... */
+
+/* --- Bộ lọc phòng --- */
+.room-selection-heading {
+  font-size: 1.5em;
+  font-weight: 500;
+  margin-bottom: 20px;
+}
+
+.ihg-rewards-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #00366c;
+  color: white;
+  padding: 15px;
+  margin-bottom: 20px;
+}
+
+/* ... (Các style cho filter buttons) ... */
+
+/* ------------------------------------------- */
+/* --- CSS PHẦN ROOM CARD (Phiên bản V2) --- */
+/* ------------------------------------------- */
+
+/* Ghi đè style cũ */
+.room-card {
+  display: flex;
+  border: 1px solid var(--border-color);
+  margin-bottom: 20px;
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  overflow: hidden;
+}
+
+.room-image-placeholder {
+  width: 300px;
+  height: 200px;
+  position: relative;
+  overflow: hidden;
+  /* Loại bỏ các style cũ của placeholder */
+  background-color: transparent;
+  display: block;
+  flex-shrink: 0;
+}
+
+.room-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Dots cho ảnh */
+.image-dots {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 5px;
+}
+.dot {
+    width: 6px;
+    height: 6px;
+    background-color: rgba(255, 255, 255, 0.5);
+    border-radius: 50%;
+}
+.dot.active {
+    background-color: var(--primary-color);
+}
+
+.room-details {
+  flex-grow: 1;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.room-title {
+  font-size: 1.1em;
+  font-weight: 600;
+  color: var(--text-color-dark);
+  margin-bottom: 5px;
+}
+
+.room-meta {
+  color: var(--text-color-light);
+  font-size: 0.85em;
+  margin-bottom: 15px;
+}
+
+.room-meta i {
+    margin-right: 5px;
+    color: var(--text-color-light);
+}
+
+.detail-button {
+  color: var(--link-color);
+  font-size: 0.85em;
+  /* ... */
+}
+
+.room-pricing {
+  width: 250px;
+  padding: 15px 20px;
+  border-left: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+  background-color: var(--light-gray);
+}
+
+.member-label, .remaining-alert {
+  color: var(--discount-color);
+  font-weight: 600;
+  font-size: 0.75em;
+  margin-bottom: 5px;
+}
+
+.original-price {
+    font-size: 0.9em;
+    color: #999;
+    text-decoration: line-through;
+    margin-bottom: 5px;
+}
+
+.price-value {
+  font-size: 1.8em;
+  font-weight: 700;
+  color: var(--secondary-color);
+}
+
+.btn-brown {
+  background-color: var(--primary-color);
+  /* ... */
+}
+/* --- BỔ SUNG CSS CHO POPUP KHÁCH (GLOBAL.CSS) --- */
+.field-guests {
+  position: relative; /* Quan trọng: Đặt base cho popup */
+}
+
+.guest-popup {
+  position: absolute;
+  top: 100%; /* Đặt ngay dưới field-guests */
+  right: 0;
+  z-index: 100;
+  width: 250px;
+  background-color: var(--header-light);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: 15px;
+  margin-top: 5px; /* Tạo khoảng cách nhỏ */
+  border-radius: 4px;
+}
+
+.guest-option {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  font-size: 0.9em;
+  font-weight: 500;
+}
+
+.guest-option span {
+  width: 50px; /* Căn chỉnh khoảng cách */
+  text-align: center;
+}
+
+.guest-option button {
+  background-color: var(--light-gray);
+  border: 1px solid var(--border-color);
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  line-height: 1;
+  font-size: 1.1em;
+  cursor: pointer;
+  color: var(--text-color-dark);
+  transition: background-color 0.2s;
+}
+
+.guest-option button:hover {
+  background-color: #e0e0e0;
+}
+/* --- BỔ SUNG CSS CHO DATE PICKER (GLOBAL.CSS) --- */
+
+.field-date {
+  position: relative; /* Quan trọng để lịch popup nằm đúng vị trí */
+  cursor: pointer;
+}
+
+.date-range-display {
+  font-size: 0.9em;
+  color: var(--text-color-dark);
+}
+
+.calendar-popup {
+  position: absolute;
+  top: 100%; /* Đặt ngay dưới field-date */
+  left: 0;
+  z-index: 200; /* Cao hơn popup khách */
+  width: 350px; /* Độ rộng tùy chỉnh */
+  background-color: var(--header-light);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: 15px;
+  margin-top: 5px;
+  border-radius: 4px;
+  text-align: left;
+}
+
+.calendar-header {
+  font-weight: 600;
+  font-size: 0.95em;
+  margin-bottom: 10px;
+  color: var(--text-color-dark);
+}
+
+.calendar-grid {
+  display: flex;
+  justify-content: space-around;
+  padding: 10px 0;
+  border-top: 1px solid var(--light-gray);
+  border-bottom: 1px solid var(--light-gray);
+}
+
+.calendar-grid button {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.calendar-grid button:hover {
+  background-color: #9e7565;
+}
+
+.btn-close-calendar {
+    margin-top: 15px;
+    background: none;
+    border: none;
+    color: var(--link-color);
+    cursor: pointer;
+    font-size: 0.9em;
+}
+/* --- CSS CHO REACT-DATE-RANGE TRONG globals.css --- */
+
+/* Đảm bảo khung popup lịch nằm đúng vị trí */
+.search-field.field-date {
+    position: relative; /* Đã có, nhưng cần đảm bảo */
+}
+
+/* Định vị khung chứa Date Range */
+.custom-date-range-container {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 200;
+    margin-top: 5px;
+    border-radius: 4px;
+    /* Xóa các thuộc tính background, border, shadow không cần thiết
+       vì DateRange đã tự có style riêng */
+}
+
+/* Điều chỉnh style DateRange (tùy chọn) */
+.custom-date-range {
+    /* Mặc định DateRange có width tự động, có thể chỉnh nếu muốn */
+}
+
+/* Điều chỉnh màu sắc cho phù hợp với tông màu InterContinental (cam/đỏ) */
+/* Thư viện react-date-range sử dụng các biến CSS global */
+:root {
+  /* Màu chủ đạo của theme (thường là màu cam hoặc đỏ IHG) */
+  --rdr-color: #8E5D4B; /* Màu Nâu/Đồng cho theme */
+  /* Màu nền của Header tháng */
+  --rdr-background-color: #f7f7f7;
+}
+/* --- HOTEL GALLERY (CẬP NHẬT) --- */
+
+.hotel-gallery-wrapper {
+    background-color: #fff;
+    padding-top: 20px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--light-gray);
+}
+
+.hotel-gallery-block {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    display: flex;
+    gap: 10px;
+    /* Đặt chiều cao tổng thể để các ảnh con có thể khớp */
+    height: 400px; /* 👈 ĐIỀU CHỈNH CHIỀU CAO TỔNG THỂ CỦA KHỐI GALLERY */
+}
+
+.gallery-main-image {
+    flex-basis: 60%; /* 👈 Ảnh chính chiếm nhiều không gian hơn */
+    overflow: hidden;
+    border-radius: 4px;
+}
+
+.main-image {
+    width: 100%;
+    height: 100%; /* 👈 Quan trọng: Ảnh chính chiếm toàn bộ chiều cao của container */
+    object-fit: cover;
+    display: block;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.gallery-secondary-grid {
+    flex-basis: 40%; /* 👈 Lưới ảnh phụ chiếm ít hơn */
+    display: grid;
+    /* 👈 Chia thành 2 hàng bằng nhau, mỗi hàng 2 ảnh */
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr; /* 👈 Chia 2 hàng, mỗi hàng có chiều cao bằng nhau */
+    gap: 10px;
+}
+
+.secondary-image-container {
+    position: relative;
+    overflow: hidden;
+    border-radius: 4px;
+}
+
+.secondary-image {
+    width: 100%;
+    height: 100%; /* 👈 Ảnh phụ chiếm toàn bộ chiều cao của container */
+    object-fit: cover;
+    display: block;
+}
+
+/* Nút Xem tất cả ảnh trên ảnh cuối cùng */
+.btn-view-all {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    background-color: rgba(0, 0, 0, 0.6);
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 0.9em;
+    font-weight: 500;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    backdrop-filter: blur(2px);
+    transition: background-color 0.2s;
+}
+
+.btn-view-all:hover {
+    background-color: rgba(0, 0, 0, 0.8);
+}
+/* --- CSS Modal Popup --- */
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 9999; /* Đảm bảo nổi lên trên cùng */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-container {
+    background: #fff;
+    width: 800px;
+    max-width: 90%;
+    max-height: 90vh;
+    border-radius: 8px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+
+.modal-header {
+    padding: 15px 20px;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-title { margin: 0; font-size: 1.25rem; }
+.btn-close-modal {
+    background: none; border: none;
+    font-size: 1.5rem; cursor: pointer;
+}
+
+.modal-body { padding: 20px; overflow-y: auto; }
+
+.modal-image-slider {
+    position: relative;
+    height: 350px;
+    background: #eee;
+    margin-bottom: 20px;
+}
+
+.modal-main-image {
+    width: 100%; height: 100%;
+    object-fit: cover;
+}
+
+.slider-btn {
+    position: absolute; top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255,255,255,0.7);
+    border: none; padding: 10px;
+    cursor: pointer; font-size: 1.2rem;
+}
+.prev { left: 10px; }
+.next { right: 10px; }
+
+.amenities-grid {
+    display: flex; gap: 20px;
+    margin-top: 15px;
+}
+/* --- CSS CHO LINK CHI TIẾT PHÒNG (Thay thế nút bấm) --- */
+.detail-link-text {
+    background: none;          /* Bỏ màu nền */
+    border: none;              /* Bỏ viền */
+    padding: 0;                /* Bỏ padding */
+    margin-top: 10px;
+
+    color: var(--primary-color); /* Dùng màu nâu chủ đạo hoặc màu xanh link */
+    /* Hoặc dùng màu này nếu muốn giống link thường: color: #007bff; */
+
+    font-size: 0.9em;          /* Cỡ chữ vừa phải */
+    font-weight: 500;
+    text-decoration: underline; /* Gạch chân */
+    cursor: pointer;           /* Con trỏ chuột hình bàn tay */
+    font-family: inherit;      /* Giữ font chữ của web */
+    display: inline-block;     /* Để dễ căn chỉnh margin */
+    transition: color 0.2s;
+}
+
+.detail-link-text:hover {
+    color: #8E5D4B;
+    text-decoration: none;
+}
