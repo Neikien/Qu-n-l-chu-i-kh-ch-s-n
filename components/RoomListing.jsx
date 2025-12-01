@@ -3,6 +3,8 @@
 import React, { useState } from 'react';
 import RoomCard from './RoomCard';
 import RoomDetailModal from './RoomDetailModal';
+
+// 1. Dữ liệu phòng (Đã bao gồm detailImages cho Modal)
 const mockRooms = [
   {
     name: 'Phòng Cổ Điển Giường King',
@@ -10,11 +12,11 @@ const mockRooms = [
     price: 143,
     tax: 7.13,
     remaining: 3,
-    imageSrc:'https://digital.ihg.com/is/image/ihg/intercontinental-hanoi-5386797077-4x3?wid=1280&fit=constrain&resmode=bisharp' ,
+    imageSrc:'https://digital.ihg.com/is/image/ihg/intercontinental-hanoi-5386797077-4x3?wid=1280&fit=constrain&resmode=bisharp',
     detailImages: [
-    'https://digital.ihg.com/is/image/ihg/intercontinental-hanoi-5386797077-4x3?wid=1280&fit=constrain&resmode=bisharp',
-    'https://digital.ihg.com/is/image/ihg/intercontinental-hanoi-8830980397-4x3?wid=800&fit=constrain&resmode=bisharp',
-    'https://digital.ihg.com/is/image/ihg/intercontinental-hanoi-8830980397-4x3?wid=800&fit=constrain&resmode=bisharp'
+      'https://digital.ihg.com/is/image/ihg/intercontinental-hanoi-5386797077-4x3?wid=1280&fit=constrain&resmode=bisharp',
+      'https://digital.ihg.com/is/image/ihg/intercontinental-hanoi-8830980397-4x3?wid=800&fit=constrain&resmode=bisharp',
+      'https://digital.ihg.com/is/image/ihg/intercontinental-hanoi-8830980397-4x3?wid=800&fit=constrain&resmode=bisharp'
     ]
   },
   {
@@ -25,9 +27,9 @@ const mockRooms = [
     remaining: 4,
     imageSrc:'https://digital.ihg.com/is/image/ihg/intercontinental-hanoi-5386797058-4x3?wid=1280&fit=constrain&resmode=bisharp',
     detailImages: [
-    'https://digital.ihg.com/is/image/ihg/intercontinental-hanoi-5386797058-4x3?wid=1280&fit=constrain&resmode=bisharp',
-    'https://digital.ihg.com/is/image/ihg/intercontinental-hanoi-8830980397-4x3?wid=800&fit=constrain&resmode=bisharp',
-    'https://digital.ihg.com/is/image/ihg/intercontinental-hanoi-5386797009-4x3?wid=1280&fit=constrain&resmode=bisharp'
+      'https://digital.ihg.com/is/image/ihg/intercontinental-hanoi-5386797058-4x3?wid=1280&fit=constrain&resmode=bisharp',
+      'https://digital.ihg.com/is/image/ihg/intercontinental-hanoi-8830980397-4x3?wid=800&fit=constrain&resmode=bisharp',
+      'https://digital.ihg.com/is/image/ihg/intercontinental-hanoi-5386797009-4x3?wid=1280&fit=constrain&resmode=bisharp'
     ]
   },
   {
@@ -38,10 +40,9 @@ const mockRooms = [
     remaining: 5,
     imageSrc:'https://digital.ihg.com/is/image/ihg/intercontinental-hanoi-5386797058-4x3?wid=1280&fit=constrain&resmode=bisharp',
     detailImages: [
-    'https://digital.ihg.com/is/image/ihg/intercontinental-hanoi-5386797058-4x3?wid=1280&fit=constrain&resmode=bisharp',
-    'https://digital.ihg.com/is/image/ihg/intercontinental-hanoi-5386797412-4x3?wid=1280&fit=constrain&resmode=bisharp',
-    'https://digital.ihg.com/is/image/ihg/intercontinental-hanoi-5386797009-4x3?wid=1280&fit=constrain&resmode=bisharp'
-
+      'https://digital.ihg.com/is/image/ihg/intercontinental-hanoi-5386797058-4x3?wid=1280&fit=constrain&resmode=bisharp',
+      'https://digital.ihg.com/is/image/ihg/intercontinental-hanoi-5386797412-4x3?wid=1280&fit=constrain&resmode=bisharp',
+      'https://digital.ihg.com/is/image/ihg/intercontinental-hanoi-5386797009-4x3?wid=1280&fit=constrain&resmode=bisharp'
     ]
   },
   {
@@ -52,9 +53,9 @@ const mockRooms = [
     remaining: 2,
     imageSrc:'https://digital.ihg.com/is/image/ihg/intercontinental-hanoi-8830776194-4x3?wid=1280&fit=constrain&resmode=bisharp',
     detailImages: [
-    'https://digital.ihg.com/is/image/ihg/intercontinental-hanoi-8830776194-4x3?wid=1280&fit=constrain&resmode=bisharp',
-    'https://digital.ihg.com/is/image/ihg/intercontinental-hanoi-5386797412-4x3?wid=1280&fit=constrain&resmode=bisharp',
-    'https://digital.ihg.com/is/image/ihg/intercontinental-hanoi-8830980397-4x3?wid=800&fit=constrain&resmode=bisharp'
+      'https://digital.ihg.com/is/image/ihg/intercontinental-hanoi-8830776194-4x3?wid=1280&fit=constrain&resmode=bisharp',
+      'https://digital.ihg.com/is/image/ihg/intercontinental-hanoi-5386797412-4x3?wid=1280&fit=constrain&resmode=bisharp',
+      'https://digital.ihg.com/is/image/ihg/intercontinental-hanoi-8830980397-4x3?wid=800&fit=constrain&resmode=bisharp'
     ]
   },
   {
@@ -65,9 +66,9 @@ const mockRooms = [
     remaining: 1,
     imageSrc:'https://digital.ihg.com/is/image/ihg/intercontinental-hanoi-8809984339-4x3?wid=1280&fit=constrain&resmode=bisharp',
     detailImages: [
-    'https://digital.ihg.com/is/image/ihg/intercontinental-hanoi-8809984339-4x3?wid=1280&fit=constrain&resmode=bisharp',
-    'https://digital.ihg.com/is/image/ihg/intercontinental-hanoi-5386797009-4x3?wid=800&fit=constrain&resmode=bisharp',
-    'https://digital.ihg.com/is/image/ihg/intercontinental-hanoi-5386797412-4x3?wid=1280&fit=constrain&resmode=bisharp'
+      'https://digital.ihg.com/is/image/ihg/intercontinental-hanoi-8809984339-4x3?wid=1280&fit=constrain&resmode=bisharp',
+      'https://digital.ihg.com/is/image/ihg/intercontinental-hanoi-5386797009-4x3?wid=800&fit=constrain&resmode=bisharp',
+      'https://digital.ihg.com/is/image/ihg/intercontinental-hanoi-5386797412-4x3?wid=1280&fit=constrain&resmode=bisharp'
     ]
   },
   {
@@ -78,15 +79,31 @@ const mockRooms = [
     remaining: 1,
     imageSrc:'https://digital.ihg.com/is/image/ihg/intercontinental-hanoi-8830959431-4x3?wid=1280&fit=constrain&resmode=bisharp',
     detailImages: [
-    'https://digital.ihg.com/is/image/ihg/intercontinental-hanoi-8830959431-4x3?wid=1280&fit=constrain&resmode=bisharp',
-    'https://digital.ihg.com/is/image/ihg/intercontinental-hanoi-5386797412-4x3?wid=1280&fit=constrain&resmode=bisharp',
-    'https://digital.ihg.com/is/image/ihg/intercontinental-hanoi-8830980397-4x3?wid=800&fit=constrain&resmode=bisharp'
+      'https://digital.ihg.com/is/image/ihg/intercontinental-hanoi-8830959431-4x3?wid=1280&fit=constrain&resmode=bisharp',
+      'https://digital.ihg.com/is/image/ihg/intercontinental-hanoi-5386797412-4x3?wid=1280&fit=constrain&resmode=bisharp',
+      'https://digital.ihg.com/is/image/ihg/intercontinental-hanoi-8830980397-4x3?wid=800&fit=constrain&resmode=bisharp'
     ]
   },
 ];
 
 const RoomListing = () => {
-  const [selectedRoom, setSelectedRoom] = useState(null);
+ const [selectedRoom, setSelectedRoom] = useState(null);
+ const [currency, setCurrency] = useState('USD');
+ const EXCHANGE_RATE = 26385;
+
+  // 2. Dữ liệu tiện nghi với class Icon (FontAwesome)
+  const amenitiesData = [
+    { icon: 'fa-swimmer', text: '1 Nhóm' },
+    { icon: 'fa-spa', text: 'Hoạt động chăm sóc sức khỏe' },
+    { icon: 'fa-rocket', text: 'Hoạt động cho trẻ em' },
+    { icon: 'fa-dumbbell', text: 'Trung tâm thể dục' },
+    { icon: 'fa-utensils', text: 'Nhà hàng của khách sạn' },
+    { icon: 'fa-parking', text: 'Bao gồm đậu xe' },
+    { icon: 'fa-desktop', text: 'Trung tâm dịch vụ doanh nhân' },
+    { icon: 'fa-wifi', text: 'Internet không dây' },
+    { icon: 'fa-paw', text: 'Không cho mang theo thú cưng' },
+  ];
+
   return (
     <div className="hotel-page-container">
       {/* --- Header Khách sạn Tĩnh --- */}
@@ -95,67 +112,84 @@ const RoomListing = () => {
         Keangnam Hanoi Landmark Tower, Cau Giay, Hanoi Vietnam
       </p>
 
-      {/* --- Thông tin Tóm tắt (Đánh giá & Tiện nghi) --- */}
+      {/* --- Thông tin Tóm tắt (Đánh giá & Tiện nghi - Đã sửa đẹp hơn) --- */}
       <div className="summary-info">
+
+        {/* Phần đánh giá */}
         <div className="rating-block">
           <span className="rating-score">4,7</span>
-          <span className="review-count">779 đánh giá</span>
+          <a href="#" className="review-count">781 đánh giá</a>
         </div>
-        <div className="amenities-list">
-          <span>🏨 1 Nhóm</span>
-          <span>💪 Hoạt động chăm sóc sức khỏe</span>
-          <span>👧 Hoạt động cho trẻ em</span>
-          <span>🏋️ Trung tâm thể dục</span>
-          <span>🍽️ Nhà hàng của khách sạn</span>
-          <span>🅿️ Bao gồm đậu xe</span>
-          <span>💼 Trung tâm dịch vụ doanh nhân</span>
-          <span>🌐 Internet không dây</span>
-          <span>🐾 Không cho mang theo thú cưng</span>
+
+        {/* Phần danh sách tiện nghi dạng lưới (Dùng map để render) */}
+        <div className="amenities-grid-container">
+            {amenitiesData.map((item, index) => (
+                <div key={index} className="amenity-item">
+                    <i className={`fa ${item.icon} amenity-icon`}></i>
+                    <span className="amenity-text">{item.text}</span>
+                </div>
+            ))}
         </div>
-        <p className="additional-info-link">Thông tin bổ sung</p>
+
+        {/* Link thông tin bổ sung */}
+        <div className="additional-info-container">
+            <a href="#" className="additional-info-link">Thông tin bổ sung</a>
+        </div>
       </div>
 
       {/* --- Phần Chọn Phòng --- */}
       <h2 className="room-selection-heading">Chọn phòng của bạn</h2>
-
-      <div className="ihg-rewards-banner">
-        <span className="ihg-logo">IHG ONE REWARDS</span>
-        <span className="ihg-points">Đặt tối 7.000 điểm</span>
-      </div>
-
       <div className="room-filters">
-        <button className="filter-btn active">Loại giường</button>
+        <button className="filter-btn">Loại giường</button>
         <button className="filter-btn">Tiện nghi</button>
-        <select className="currency-select">
-          <option>USD</option>
-          <option>VND</option>
+        <select className="currency-select"
+        onChange={(e) => setCurrency(e.target.value)}
+        value={currency}
+    >
+          <option value ="USD">USD</option>
+          <option value = "VND">VND</option>
         </select>
-        <button className="filter-btn">Gói</button>
-        <button className="action-btn">Tiền</button>
-        <button className="action-btn">Điểm + Tiền mặt</button>
-        <button className="action-btn">Điểm</button>
       </div>
 
       <p className="found-rooms">Đã tìm thấy {mockRooms.length} phòng</p>
 
-      {/* --- Danh Sách Phòng (Component Lặp lại) --- */}
       {/* --- Danh Sách Phòng --- */}
       <div className="rooms-container">
-        {mockRooms.map((room, index) => (
-          <RoomCard
-            key={index}
-            room={room}
-            // Truyền hàm mở modal xuống RoomCard
-            onOpenDetail={() => setSelectedRoom(room)}
-          />
-        ))}
-      </div>
+  {mockRooms.map((room, index) => {
+
+    // logic chuyển đổi
+    let displayedPrice = room.price; // Giá mặc định là USD
+    let displayedTax = room.tax;
+
+    if (currency === 'VND') {
+      displayedPrice = room.price * EXCHANGE_RATE;
+      displayedTax = room.tax * EXCHANGE_RATE;
+    }
+
+    return (
+      <RoomCard
+        key={index}
+        // Truyền dữ liệu giá đã được tính toán
+        room={{
+          ...room,
+          price: displayedPrice,
+          tax: displayedTax,
+        }}
+        // Truyền đơn vị tiền tệ hiện tại
+        currentCurrency={currency}
+        onOpenDetail={() => setSelectedRoom(room)}
+      />
+    );
+  })}
+</div>
 
       {/* --- Render Modal nếu có phòng được chọn --- */}
       {selectedRoom && (
         <RoomDetailModal
             room={selectedRoom}
             onClose={() => setSelectedRoom(null)}
+            currentCurrency={currency}
+            exchangeRate={EXCHANGE_RATE}
         />
       )}
 

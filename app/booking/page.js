@@ -35,7 +35,7 @@ const Header = () => {
         setCheckInDate(inDate);
         setCheckOutDate(outDate);
         // Lưu ý: KHÔNG đóng lịch ở đây. Để người dùng tự đóng bằng cách click ra ngoài
-        // hoặc để logic đóng trong một nút "Xác nhận" nếu có.
+
     };
   // NOTE: Việc chọn lịch sẽ cần một thư viện Date Picker chuyên dụng,
   // ở đây chúng ta chỉ mô phỏng trường nhập liệu ngày.
@@ -47,7 +47,7 @@ const Header = () => {
         <div className="top-utility-content">
           <span className="contact">📞 00 812 8317 6253 | Quý vị cần giúp đỡ?</span>
           <div className="auth-links">
-            <span>Tiếng Việt</span>
+
             <button className="btn-signin">Đăng nhập</button>
             <button className="btn-join">Tham gia miễn phí</button>
             <button className="btn-book-now">ĐẶT NGAY</button>
@@ -76,7 +76,7 @@ const Header = () => {
               <span className="field-label">NƠI GỌI ĐẾN</span>
               <input
                 type="text"
-                placeholder="Ví dụ: Hanoi Landmark72..."
+                placeholder="Hanoi Landmark72..."
                 value={destination}
                 onChange={(e) => setDestination(e.target.value)} // 👈 THAY ĐỔI TẠI ĐÂY
               />
@@ -135,7 +135,8 @@ const Header = () => {
               <span className="field-label">TÙY CHỌN MỨC GIÁ</span>
               <select className="price-select" defaultValue="Best Available">
                 <option>Best Available</option>
-                <option>Gói Bữa Sáng</option>
+                <option>Per</option>
+                <option>Best Available</option>
               </select>
             </div>
 
@@ -180,5 +181,3 @@ export default function HomePage() {
     </div>
   );
 }
-
-// Thêm CSS cơ bản cho Header/Footer vào file `styles/globals.css`

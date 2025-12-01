@@ -2,10 +2,24 @@
 "use client";
 import React, { useState } from 'react';
 
-const RoomDetailModal = ({ room, onClose }) => {
+
+const formatCurrency = (amount, currencyCode) => {
+    const locale = currencyCode === 'VND' ? 'vi-VN' : 'en-US';
+    return new Intl.NumberFormat(locale, {
+        style: 'currency',
+        currency: currencyCode,
+        minimumFractionDigits: 0,
+    }).format(amount);
+};
+
+const RoomDetailModal = ({ room, onClose, currentCurrency, exchangeRate }) => {
   if (!room) return null;
 
-  // --- SỬA ĐỔI TẠI ĐÂY ---
+  const displayedPrice = currentCurrency === 'VND' ? room.price * exchangeRate : room.price;
+  const displayedTax = currentCurrency === 'VND' ? room.tax * exchangeRate : room.tax;
+
+  const formattedPrice = formatCurrency(displayedPrice, currentCurrency);
+  const formattedTax = formatCurrency(displayedTax, currentCurrency);
   // Lấy danh sách ảnh từ dữ liệu phòng.
   // Nếu không có detailImages thì dùng tạm imageSrc làm mảng 1 phần tử để không bị lỗi.
   const images = room.detailImages && room.detailImages.length > 0
@@ -73,7 +87,21 @@ const RoomDetailModal = ({ room, onClose }) => {
           </div>
 
           <p className="modal-sub-text">Phòng rộng {room.area} mét vuông & có Phòng Tắm riêng biệt</p>
+          {/* 3.5. Thêm phần giá vào Modal (Ví dụ: Thêm ngay dưới ảnh hoặc cuối Modal) */}
+          <div className="modal-pricing-summary">
+              <h3 className="pricing-heading">Giá Phòng</h3>
+              <p className="pricing-line">
+                  Giá cơ bản: <strong>{formattedPrice}</strong>
+              </p>
+              <p className="pricing-line">
+                  Phí (một đêm): {formattedTax}
+              </p>
+              <p className="pricing-total">
+                  Tổng ước tính: <strong>{formatCurrency(displayedPrice + displayedTax, currentCurrency)}</strong>
+              </p>
+          </div>
 
+          <hr className="modal-divider"/>
           {/* 4. Danh sách tiện nghi chi tiết (2 Cột) */}
           <h3 className="amenities-heading">Tiện nghi phòng</h3>
 

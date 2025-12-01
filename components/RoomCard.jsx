@@ -2,7 +2,20 @@
 
 import React from 'react';
 
-const RoomCard = ({ room,onOpenDetail }) => {
+// Hàm định dạng tiền tệ (Sử dụng Intl.NumberFormat cho chuẩn quốc tế)
+const formatCurrency = (amount, currencyCode) => {
+    // Nếu là USD, dùng chuẩn USD. Nếu là VND, dùng chuẩn Việt Nam.
+    const locale = currencyCode === 'VND' ? 'vi-VN' : 'en-US';
+    return new Intl.NumberFormat(locale, {
+        style: 'currency',
+        currency: currencyCode,
+        minimumFractionDigits: 0, // Bỏ số thập phân (vì VND thường là số nguyên)
+    }).format(amount);
+};
+const RoomCard = ({ room,onOpenDetail, currentCurrency }) => {
+  // Định dạng lại các giá trị tiền tệ
+  const formattedPrice = formatCurrency(room.price, currentCurrency);
+  const formattedTax = formatCurrency(room.tax, currentCurrency);
   return (
     // Dùng class 'flex' để căn chỉnh nội dung
     <div className="room-card room-card-v2">
@@ -55,15 +68,17 @@ const RoomCard = ({ room,onOpenDetail }) => {
             ⚡ Chỉ còn lại {room.remaining} phòng
         </div>
 
-        <p className="original-price">Từ 159 USD</p>
+        {/* Giá gốc: Chỉ cần hiển thị thông báo, không cần tính toán */}
+        <p className="original-price">Từ {currentCurrency === 'USD' ? '159 USD' : '4.000.000 VND'}</p>
 
         <div className="current-price-block">
-          <span className="price-value">{room.price} USD</span>
-          <span className="price-per-night">mới đêm</span>
+          {/* SỬA: Hiển thị giá trị đã được định dạng */}
+          <span className="price-value">{formattedPrice}</span>
+          <span className="price-per-night">mỗi đêm</span>
         </div>
 
         <p className="tax-fee">
-          Không bao gồm phí {room.tax} USD một đêm
+          Không bao gồm phí {formattedTax} một đêm
         </p>
 
         <button className="select-room-btn btn-brown">Xem giá</button>
