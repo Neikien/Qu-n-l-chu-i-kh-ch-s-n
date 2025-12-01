@@ -45,13 +45,8 @@ const Header = () => {
       {/* --- TOP UTILITY BAR (Không thay đổi) --- */}
       <div className="top-utility-bar">
         <div className="top-utility-content">
-          <span className="contact">📞 00 812 8317 6253 | Quý vị cần giúp đỡ?</span>
-          <div className="auth-links">
+          <span className="contact">📞 000 111 222 333 444 | Hotline 24/7</span>
 
-            <button className="btn-signin">Đăng nhập</button>
-            <button className="btn-join">Tham gia miễn phí</button>
-            <button className="btn-book-now">ĐẶT NGAY</button>
-          </div>
         </div>
       </div>
 
@@ -72,20 +67,21 @@ const Header = () => {
           <div className="search-form-bar">
 
             {/* 1. NƠI GỌI ĐẾN (INPUT FIELD) */}
+
             <div className="search-field field-location">
               <span className="field-label">NƠI GỌI ĐẾN</span>
               <input
                 type="text"
                 placeholder="Hanoi Landmark72..."
                 value={destination}
-                onChange={(e) => setDestination(e.target.value)} // 👈 THAY ĐỔI TẠI ĐÂY
+                onChange={(e) => setDestination(e.target.value)}
               />
             </div>
 
             {/* 2. 1 ĐÊM (Mô phỏng Date Picker) */}
             <div
                             className="search-field field-date"
-                            onClick={() => setShowCalendar(!showCalendar)} // 👈 Bật/Tắt Lịch
+                            onClick={() => setShowCalendar(!showCalendar)} //Bật/Tắt Lịch
                         >
                             <span className="field-label">1 ĐÊM</span>
                             <div className="date-range-display">
@@ -108,7 +104,7 @@ const Header = () => {
             >
               <span className="field-label">PHÒNG & KHÁCH</span>
               <div className="guest-select">
-                {rooms} phòng, {guests} khách ▼
+                {rooms} phòng, {guests} khách   ▼
               </div>
 
               {/* Popup Tùy chỉnh số khách (JSX) */}
