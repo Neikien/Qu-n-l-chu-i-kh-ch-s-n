@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import RoomCard from './RoomCard';
 import RoomDetailModal from './RoomDetailModal';
+import { getRooms } from '@/lib/api'; // THÊM IMPORT NÀY
 
 const RoomListing = () => {
   const [selectedRoom, setSelectedRoom] = useState(null);
@@ -21,29 +22,15 @@ const RoomListing = () => {
     setLoading(true);
     setError('');
     try {
-      // TODO: Cần biết API endpoint lấy rooms
-      // Tạm thời dùng mock data, sau này thay bằng API call thật
-      const response = await fetch('http://localhost:8000/rooms', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('access_token') || ''}`
-        }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        // Giả sử API trả về array của rooms
-        // Nếu API chưa có, tạm dùng mock data
-        if (Array.isArray(data) && data.length > 0) {
-          setRooms(data);
-        } else {
-          // Fallback: dùng mock data nếu API chưa có
-          setRooms(getMockRooms());
-        }
+      // SỬA: Dùng getRooms từ lib/api.js
+      const roomsData = await getRooms();
+      
+      // Giả sử API trả về array của rooms
+      if (Array.isArray(roomsData) && roomsData.length > 0) {
+        setRooms(roomsData);
       } else {
-        // Fallback: dùng mock data nếu API lỗi
-        console.warn('API rooms chưa sẵn sàng, dùng mock data');
+        // Fallback: dùng mock data nếu API chưa có
+        console.warn('API rooms trả về mảng rỗng, dùng mock data');
         setRooms(getMockRooms());
       }
     } catch (err) {
@@ -73,7 +60,34 @@ const RoomListing = () => {
           'https://digital.ihg.com/is/image/ihg/intercontinental-hanoi-8830980397-4x3?wid=800&fit=constrain&resmode=bisharp'
         ]
       },
-      // ... thêm các room khác từ mock data cũ
+      {
+        id: 2,
+        name: 'Phòng Cổ Điển 2 Giường Đơn',
+        area: 46,
+        price: 143,
+        tax: 7.13,
+        remaining: 4,
+        imageSrc: 'https://digital.ihg.com/is/image/ihg/intercontinental-hanoi-5386797058-4x3?wid=1280&fit=constrain&resmode=bisharp',
+        detailImages: [
+          'https://digital.ihg.com/is/image/ihg/intercontinental-hanoi-5386797058-4x3?wid=1280&fit=constrain&resmode=bisharp',
+          'https://digital.ihg.com/is/image/ihg/intercontinental-hanoi-8830980397-4x3?wid=800&fit=constrain&resmode=bisharp',
+          'https://digital.ihg.com/is/image/ihg/intercontinental-hanoi-5386797009-4x3?wid=1280&fit=constrain&resmode=bisharp'
+        ]
+      },
+      {
+        id: 3,
+        name: 'Phòng Cổ Điển',
+        area: 46,
+        price: 143,
+        tax: 7.13,
+        remaining: 5,
+        imageSrc: 'https://digital.ihg.com/is/image/ihg/intercontinental-hanoi-5386797058-4x3?wid=1280&fit=constrain&resmode=bisharp',
+        detailImages: [
+          'https://digital.ihg.com/is/image/ihg/intercontinental-hanoi-5386797058-4x3?wid=1280&fit=constrain&resmode=bisharp',
+          'https://digital.ihg.com/is/image/ihg/intercontinental-hanoi-5386797412-4x3?wid=1280&fit=constrain&resmode=bisharp',
+          'https://digital.ihg.com/is/image/ihg/intercontinental-hanoi-5386797009-4x3?wid=1280&fit=constrain&resmode=bisharp'
+        ]
+      }
     ];
   };
 
