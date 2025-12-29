@@ -90,3 +90,25 @@
 .auth-footer a:hover {
     text-decoration: underline;
 }
+.error-message {
+  background-color: #fee;
+  color: #c33;
+  padding: 10px;
+  border-radius: 5px;
+  margin-bottom: 15px;
+  border: 1px solid #fcc;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+.api-info {
+  margin-top: 15px;
+  font-size: 12px;
+  color: #666;
+  text-align: center;
+}
+
+.btn-auth:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
