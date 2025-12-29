@@ -16,4 +16,4 @@ class Hotel(Base):
     # Relationships
     area = relationship("Area", back_populates="hotels")
     rooms = relationship("Room", back_populates="hotel")
-    contacts = relationship("HotelContact", back_populates="hotel")
+    
