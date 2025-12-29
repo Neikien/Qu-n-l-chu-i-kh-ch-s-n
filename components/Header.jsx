@@ -3,20 +3,21 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import LoginModal from "@/components/LoginModal";
+// 1. Đã xóa import LoginModal vì không dùng nữa
+// import LoginModal from "@/components/LoginModal";
 import { useBooking } from "@/context/BookingContext";
 
 export default function Header() {
-  const [isLoginOpen, setIsLoginOpen] = useState(false);
+  // 2. Đã xóa state isLoginOpen
+  // const [isLoginOpen, setIsLoginOpen] = useState(false);
+
   const [showBookBtn, setShowBookBtn] = useState(true);
   const pathname = usePathname();
   const { toggleBooking } = useBooking();
 
-  // CẬP NHẬT MENU: Đã bỏ "Residences"
   const menuItems = [
     { name: "Destinations", path: "/destinations" },
     { name: "Experience", path: "/experience" },
-    // { name: 'Residences', path: '#' }, <--- Đã xóa dòng này
     { name: "Offers", path: "/offers" },
     { name: "Loyalty", path: "/loyalty" },
   ];
@@ -59,7 +60,7 @@ export default function Header() {
 
   return (
     <>
-      <LoginModal isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} />
+      {/* 3. Đã xóa component <LoginModal /> */}
 
       <header className="sticky top-0 z-50 bg-white shadow-sm border-b border-gray-100 py-4 transition-all">
         <div className="max-w-[95%] mx-auto flex justify-between items-center px-5">
@@ -72,9 +73,6 @@ export default function Header() {
           </Link>
 
           <nav className="hidden lg:flex items-center gap-12">
-            {" "}
-            {/* Tăng gap tổng thể lên 12 */}
-            {/* Menu List: Tăng gap-6 lên gap-10 cho thoáng */}
             <ul className="flex gap-10 items-center text-xs font-medium uppercase tracking-widest text-primary">
               {menuItems.map((item) => (
                 <li key={item.name}>
@@ -96,12 +94,14 @@ export default function Header() {
                 </li>
               ))}
             </ul>
+
             {/* Khu vực chức năng bên phải */}
             <div className="flex items-center gap-6 border-l border-gray-200 pl-10 ml-2">
-              {" "}
-              {/* Tăng padding left */}
-              <button
-                onClick={() => setIsLoginOpen(true)}
+
+              {/* --- CẬP NHẬT CHÍNH: NÚT SIGN IN --- */}
+              {/* Thay đổi từ <button> sang <Link> để chuyển trang */}
+              <Link
+                href="/login"
                 className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-primary hover:text-accent transition-colors group"
               >
                 <svg
@@ -119,7 +119,9 @@ export default function Header() {
                   />
                 </svg>
                 Sign In
-              </button>
+              </Link>
+              {/* --- KẾT THÚC CẬP NHẬT --- */}
+
               <div
                 className={`transition-all duration-500 ease-in-out transform ${
                   showBookBtn
