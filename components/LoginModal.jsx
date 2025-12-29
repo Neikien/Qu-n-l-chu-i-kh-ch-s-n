@@ -24,13 +24,25 @@ export default function LoginModal({ isOpen, onClose }) {
     setLoading(true);
 
     try {
-      const response = await authAPI.login({ username: email, password });
-      localStorage.setItem("token", response.data.access_token);
+      // SỬA: authAPI.login trả về data trực tiếp
+      const data = await authAPI.login({ username: email, password });
+      
+      // SỬA: data.access_token (không phải response.data.access_token)
+      if (data.access_token) {
+        localStorage.setItem("token", data.access_token);
+        // Có thể lưu thêm user info nếu có
+        if (data.user) {
+          localStorage.setItem("user", JSON.stringify(data.user));
+        }
+      }
+      
       alert("Đăng nhập thành công!");
       onClose();
       window.location.reload();
     } catch (err) {
-      setError(err.response?.data?.detail || "Đăng nhập thất bại");
+      // SỬA: err.message (không phải err.response?.data?.detail)
+      setError(err.message || "Đăng nhập thất bại");
+      console.error("Login error:", err);
     } finally {
       setLoading(false);
     }
