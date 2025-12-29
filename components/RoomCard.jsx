@@ -1,5 +1,6 @@
 // components/RoomCard.jsx
 import React, { useState } from 'react';
+import { createBooking } from '@/lib/api'; // THÊM IMPORT NÀY
 
 // Hàm định dạng tiền tệ
 const formatCurrency = (amount, currencyCode) => {
@@ -42,7 +43,7 @@ const RoomCard = ({ room, onOpenDetail, currentCurrency, bookingDates }) => {
     try {
       // Tạo booking data
       const bookingData = {
-        room_id: room.id || room.MaPH || 1, // Dựa vào cấu trực backend
+        room_id: room.id || room.MaPH || 1, // Dựa vào cấu trúc backend
         check_in_date: bookingDates.checkIn, // Format: YYYY-MM-DD
         check_out_date: bookingDates.checkOut,
         guests: bookingDates.guests || 2,
@@ -51,28 +52,16 @@ const RoomCard = ({ room, onOpenDetail, currentCurrency, bookingDates }) => {
         tax: room.tax
       };
 
-      // Gọi API đặt phòng
-      const response = await fetch('http://localhost:8000/bookings', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(bookingData)
-      });
+      // SỬA: Dùng createBooking từ lib/api.js thay vì fetch trực tiếp
+      const data = await createBooking(bookingData);
 
-      const data = await response.json();
-
-      if (response.ok) {
-        setBookingSuccess(true);
-        alert('Đặt phòng thành công! Mã đặt phòng: ' + (data.booking_id || data.id));
-        // Có thể chuyển hướng đến trang booking confirmation
-      } else {
-        setBookingError(data.detail || 'Đặt phòng thất bại. Vui lòng thử lại.');
-      }
+      setBookingSuccess(true);
+      alert('Đặt phòng thành công! Mã đặt phòng: ' + (data.booking_id || data.id || 'N/A'));
+      // Có thể chuyển hướng đến trang booking confirmation
+      
     } catch (err) {
       console.error('Booking error:', err);
-      setBookingError('Không thể kết nối đến server. Vui lòng thử lại.');
+      setBookingError(err.message || 'Đặt phòng thất bại. Vui lòng thử lại.');
     } finally {
       setBookingLoading(false);
     }
