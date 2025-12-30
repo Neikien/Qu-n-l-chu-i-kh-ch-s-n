@@ -1,4 +1,6 @@
+from sqlalchemy import Column, Integer, String, Enum
 from sqlalchemy.orm import relationship
+from app.core.database import Base   # BẮT BUỘC
 
 class Customer(Base):
     __tablename__ = "KHACH_HANG"
