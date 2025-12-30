@@ -13,6 +13,6 @@ class Customer(Base):
     DiaChi = Column(String(255))
     LoaiKH = Column(Enum('Cá nhân', 'Doanh nghiệp', 'VIP'), default='Cá nhân')
     
-    # Relationships
-    bookings = relationship("Booking", back_populates="customer")
-    user = relationship("User", back_populates="customer", uselist=False)
+    # Relationships - TẠM SỬA
+    # bookings = relationship("Booking", back_populates="customer")  # TẠM COMMENT
+    user = relationship("User")  # BỎ back_populates
