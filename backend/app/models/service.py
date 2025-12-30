@@ -7,8 +7,8 @@ class Service(Base):
     
     MaDV = Column(Integer, primary_key=True, autoincrement=True, index=True)
     TenDV = Column(String(100), nullable=False)
-    GiaDV = Column(Numeric(10, 2), nullable=False)  # ⬅️ ĐỔI Decimal → Numeric
+    GiaDV = Column(Numeric(10, 2), nullable=False)
     MoTa = Column(Text)
     
-    # Relationships
-    service_usages = relationship("ServiceUsage", back_populates="service")
+    # Relationships - TẠM SỬA
+    # service_usages = relationship("ServiceUsage", back_populates="service")  # TẠM COMMENT
