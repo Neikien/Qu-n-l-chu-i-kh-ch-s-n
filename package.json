@@ -1,4 +1,4 @@
-// File: package.json (ở ROOT, cùng cấp với frontend/)
+
 {
   "name": "hotel-management",
   "version": "1.0.0",
