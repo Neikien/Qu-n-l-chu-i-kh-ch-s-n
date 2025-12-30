@@ -9,8 +9,8 @@ class ServiceUsage(Base):
     MaDatPhong = Column(Integer, ForeignKey("DAT_PHONG.MaDatPhong"))
     MaDV = Column(Integer, ForeignKey("DICH_VU.MaDV"))
     SoLuong = Column(Integer, default=1)
-    ThanhTien = Column(Numeric(10, 2))  # ⬅️ ĐỔI Decimal → Numeric
+    ThanhTien = Column(Numeric(10, 2))
     
-    # Relationships
-    booking = relationship("Booking", back_populates="service_usages")
+    # Relationships - TẠM SỬA
+    booking = relationship("Booking")  # BỎ back_populates
     service = relationship("Service", back_populates="service_usages")
