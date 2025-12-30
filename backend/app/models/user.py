@@ -11,9 +11,9 @@ class User(Base):
     email = Column(String(100), unique=True)
     fullname = Column(String(100))
     role = Column(String(20), default="user")
-    customer_id = Column(Integer, ForeignKey("KHACH_HANG.MaKH"))  # Liên kết với khách hàng
+    customer_id = Column(Integer, ForeignKey("KHACH_HANG.MaKH"))
     created_at = Column(DateTime)
     
-    # Relationships
-    customer = relationship("Customer", back_populates="user")
-    activity_logs = relationship("ActivityLog", back_populates="user")
+    # Relationships - TẠM SỬA
+    customer = relationship("Customer")  # BỎ back_populates
+    # activity_logs = relationship("ActivityLog", back_populates="user")  # TẠM COMMENT
