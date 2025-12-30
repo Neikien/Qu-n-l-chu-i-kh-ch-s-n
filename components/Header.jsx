@@ -1,20 +1,16 @@
 "use client";
-
 import { useState, useEffect } from "react";
+import { useAuth } from "@/app/context/AuthContext"; // Import Auth
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-// 1. Đã xóa import LoginModal vì không dùng nữa
-// import LoginModal from "@/components/LoginModal";
 import { useBooking } from "@/context/BookingContext";
 
 export default function Header() {
-  // 2. Đã xóa state isLoginOpen
-  // const [isLoginOpen, setIsLoginOpen] = useState(false);
-
-  const [showBookBtn, setShowBookBtn] = useState(true);
+  const { user, logout } = useAuth(); // Lấy thông tin user
+  const [showDropdown, setShowDropdown] = useState(false);
   const pathname = usePathname();
   const { toggleBooking } = useBooking();
-
+  const [showBookBtn, setShowBookBtn] = useState(true);
   const menuItems = [
     { name: "Destinations", path: "/destinations" },
     { name: "Experience", path: "/experience" },
@@ -59,18 +55,11 @@ export default function Header() {
   }, [pathname]);
 
   return (
-    <>
-      {/* 3. Đã xóa component <LoginModal /> */}
-
-      <header className="sticky top-0 z-50 bg-white shadow-sm border-b border-gray-100 py-4 transition-all">
-        <div className="max-w-[95%] mx-auto flex justify-between items-center px-5">
-          {/* Logo */}
-          <Link
-            href="/"
-            className="font-serif text-xl font-semibold uppercase tracking-widest text-primary hover:opacity-80 transition"
-          >
-            InterContinental
-          </Link>
+    <header className="sticky top-0 z-50 bg-white shadow-sm border-b border-gray-100 py-4 transition-all">
+      <div className="max-w-[95%] mx-auto flex justify-between items-center px-5">
+        <Link href="/" className="font-serif text-xl font-semibold uppercase tracking-widest text-primary">
+          InterContinental
+        </Link>
 
           <nav className="hidden lg:flex items-center gap-12">
             <ul className="flex gap-10 items-center text-xs font-medium uppercase tracking-widest text-primary">
@@ -97,49 +86,40 @@ export default function Header() {
 
             {/* Khu vực chức năng bên phải */}
             <div className="flex items-center gap-6 border-l border-gray-200 pl-10 ml-2">
-
-              {/* --- CẬP NHẬT CHÍNH: NÚT SIGN IN --- */}
-              {/* Thay đổi từ <button> sang <Link> để chuyển trang */}
-              <Link
-                href="/login"
-                className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-primary hover:text-accent transition-colors group"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth={1.5}
-                  stroke="currentColor"
-                  className="w-5 h-5 group-hover:scale-110 transition-transform"
+            {user ? (
+              // HIỂN THỊ KHI ĐÃ ĐĂNG NHẬP
+              <div className="relative group">
+                <button
+                  onClick={() => setShowDropdown(!showDropdown)}
+                  className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-primary hover:text-accent"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"
-                  />
+                  <div className="w-8 h-8 rounded-full bg-accent text-white flex items-center justify-center">
+                    {user.name.charAt(0)}
+                  </div>
+                  <span>{user.name}</span>
+                </button>
+
+                {showDropdown && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white shadow-lg rounded py-2 border border-gray-100 z-50">
+                    <Link href="/profile" className="block px-4 py-2 text-xs text-gray-700 hover:bg-gray-50">Hồ sơ cá nhân</Link>
+                    <button onClick={logout} className="w-full text-left px-4 py-2 text-xs text-red-600 hover:bg-gray-50">Đăng xuất</button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              // HIỂN THỊ KHI CHƯA ĐĂNG NHẬP
+              <Link href="/login" className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-primary hover:text-accent group">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
                 </svg>
                 Sign In
               </Link>
-              {/* --- KẾT THÚC CẬP NHẬT --- */}
+            )}
 
-              <div
-                className={`transition-all duration-500 ease-in-out transform ${
-                  showBookBtn
-                    ? "opacity-100 translate-x-0"
-                    : "opacity-0 translate-x-10 pointer-events-none"
-                }`}
-              >
-                <button
-                  onClick={handleBookNow}
-                  className="bg-accent text-white text-xs font-bold uppercase tracking-widest px-8 py-3 hover:bg-[#85604d] transition-all shadow-md block whitespace-nowrap"
-                >
-                  Book Now
-                </button>
-              </div>
-            </div>
-          </nav>
-        </div>
-      </header>
-    </>
+            <button onClick={() => toggleBooking()} className="bg-accent text-white text-xs font-bold px-8 py-3 uppercase">Book Now</button>
+          </div>
+        </nav>
+      </div>
+    </header>
   );
 }

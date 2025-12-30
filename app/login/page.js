@@ -1,59 +1,47 @@
-// app/login/page.js
 "use client";
 import React, { useState } from 'react';
+import { useAuth } from '@/app/context/AuthContext';
 import Link from 'next/link';
-import './login.css'; // Chúng ta sẽ tạo file css này ở Bước 4
+import './login.css';
 
 const LoginPage = () => {
+  const { login } = useAuth(); // Lấy hàm login từ Context
   const [formData, setFormData] = useState({ email: '', password: '' });
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Login data:', formData);
-    // Sau này bạn sẽ gọi API đăng nhập ở đây
+
+    // Giả lập gọi API backend
+    // const res = await fetch('YOUR_API_URL/login', ...);
+    // const data = await res.json();
+
+    // Giả sử data trả về thành công:
+    const mockUserData = {
+      name: "Khách hàng VIP",
+      email: formData.email,
+      avatar: ""
+    };
+
+    // QUAN TRỌNG: Gọi login để lưu vào localStorage và State
+    login(mockUserData);
   };
 
   return (
     <div className="auth-container">
       <div className="auth-card">
         <h2 className="auth-title">Chào mừng trở lại</h2>
-        <p className="auth-subtitle">Đăng nhập để quản lý đặt phòng của bạn</p>
-
         <form onSubmit={handleSubmit} className="auth-form">
           <div className="form-group">
             <label>Email</label>
-            <input
-              type="email"
-              name="email"
-              placeholder="vidu@gmail.com"
-              value={formData.email}
-              onChange={handleChange}
-              required
-            />
+            <input type="email" name="email" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} required />
           </div>
-
           <div className="form-group">
             <label>Mật khẩu</label>
-            <input
-              type="password"
-              name="password"
-              placeholder="••••••••"
-              value={formData.password}
-              onChange={handleChange}
-              required
-            />
+            <input type="password" name="password" value={formData.password} onChange={(e) => setFormData({...formData, password: e.target.value})} required />
           </div>
-
           <button type="submit" className="btn-auth">Đăng Nhập</button>
         </form>
-
-        <p className="auth-footer">
-          Bạn chưa có tài khoản? <Link href="/register">Đăng ký ngay</Link>
-        </p>
+        <p className="auth-footer">Bạn chưa có tài khoản? <Link href="/register">Đăng ký ngay</Link></p>
       </div>
     </div>
   );
