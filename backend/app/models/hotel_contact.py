@@ -14,4 +14,4 @@ class HotelContact(Base):
     GhiChu = Column(Text)
     
     # Relationships
-    hotel = relationship("Hotel", back_populates="contacts")
+    hotel = relationship("Hotel")
