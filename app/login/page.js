@@ -16,14 +16,19 @@ const LoginPage = () => {
     // const data = await res.json();
 
     // Giả sử data trả về thành công:
-    const mockUserData = {
-      name: "Khách hàng VIP",
-      email: formData.email,
-      avatar: ""
-    };
+    if (formData.email === "admin@gmail.com" && formData.password === "123456") {
+      const mockUser = {
+        name: "Nguyễn Văn Admin",
+        email: formData.email,
+        avatar: "https://i.pravatar.cc/150?u=admin",
+        role: "VIP Member"
+      };
 
-    // QUAN TRỌNG: Gọi login để lưu vào localStorage và State
-    login(mockUserData);
+      login(mockUser); // Lưu thông tin vào Context và LocalStorage
+      alert("Đăng nhập thành công!");
+    } else {
+      setError("Email hoặc mật khẩu không đúng! (Gợi ý: admin@gmail.com / 123456)");
+    }
   };
 
   return (
