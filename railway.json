@@ -1,0 +1,11 @@
+// File: railway.json (ở ROOT)
+{
+  "build": {
+    "builder": "NIXPACKS",
+    "buildCommand": "cd frontend && npm run build"
+  },
+  "deploy": {
+    "startCommand": "cd frontend && npm start",
+    "restartPolicyType": "ON_FAILURE"
+  }
+}
