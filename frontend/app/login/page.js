@@ -1,4 +1,3 @@
-// app/login/page.js
 "use client";
 import React, { useState } from 'react';
 import Link from 'next/link';
@@ -6,14 +5,14 @@ import { useRouter } from 'next/navigation';
 import './login.css';
 
 const LoginPage = () => {
-  const [formData, setFormData] = useState({ email: '', password: '' });
+  const [formData, setFormData] = useState({ username: '', password: '' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
-    setError(''); // Clear error khi user nhập
+    setError('');
   };
 
   const handleSubmit = async (e) => {
@@ -22,11 +21,9 @@ const LoginPage = () => {
     setError('');
 
     try {
-      // Gọi API đăng nhập - OAuth2 format
       const formDataEncoded = new URLSearchParams();
-      formDataEncoded.append('username', formData.email); // Backend dùng 'username' field
+      formDataEncoded.append('username', formData.username);
       formDataEncoded.append('password', formData.password);
-      formDataEncoded.append('grant_type', 'password');
 
       const response = await fetch('http://localhost:8000/auth/login', {
         method: 'POST',
@@ -41,15 +38,13 @@ const LoginPage = () => {
       if (response.ok) {
         console.log('Login successful:', data);
         
-        // Lưu token vào localStorage
         if (data.access_token) {
           localStorage.setItem('access_token', data.access_token);
           localStorage.setItem('user', JSON.stringify(data.user || {}));
         }
         
-        // Chuyển hướng sau khi đăng nhập thành công
         alert('Đăng nhập thành công!');
-        router.push('/'); // Về trang chủ
+        router.push('/');
       } else {
         setError(data.detail || 'Đăng nhập thất bại. Vui lòng kiểm tra thông tin.');
       }
@@ -75,12 +70,12 @@ const LoginPage = () => {
 
         <form onSubmit={handleSubmit} className="auth-form">
           <div className="form-group">
-            <label>Email</label>
+            <label>Tên đăng nhập</label>
             <input
-              type="email"
-              name="email"
-              placeholder="vidu@gmail.com"
-              value={formData.email}
+              type="text"
+              name="username"
+              placeholder="Nhập username"
+              value={formData.username}
               onChange={handleChange}
               required
               disabled={loading}
@@ -112,10 +107,6 @@ const LoginPage = () => {
         <p className="auth-footer">
           Bạn chưa có tài khoản? <Link href="/register">Đăng ký ngay</Link>
         </p>
-
-        <div className="api-info">
-          <small>API: http://localhost:8000/auth/login</small>
-        </div>
       </div>
     </div>
   );
