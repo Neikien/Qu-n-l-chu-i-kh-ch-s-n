@@ -12,13 +12,11 @@ class RoomCreate(BaseModel):
     MaKS: int
     LoaiPhong: str
     GiaPhong: Decimal
-    SucChua: int
 
 class RoomUpdate(BaseModel):
     LoaiPhong: Optional[str] = None
     GiaPhong: Optional[Decimal] = None
     TinhTrang: Optional[RoomStatus] = None
-    SucChua: Optional[int] = None
 
 class RoomResponse(BaseModel):
     MaPhong: int
@@ -26,7 +24,6 @@ class RoomResponse(BaseModel):
     LoaiPhong: str
     GiaPhong: Decimal
     TinhTrang: RoomStatus
-    SucChua: int
 
     class Config:
         from_attributes = True
