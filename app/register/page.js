@@ -1,13 +1,12 @@
-// app/register/page.js
 "use client";
 import React, { useState } from 'react';
 import Link from 'next/link';
-import '../login/login.css'; // Tái sử dụng CSS của trang login
+import '../login/login.css';
 
 const RegisterPage = () => {
   const [formData, setFormData] = useState({
     fullName: '',
-    email: '',
+    username: '', // Đổi email thành username để khớp DB
     password: '',
     confirmPassword: ''
   });
@@ -22,8 +21,13 @@ const RegisterPage = () => {
         alert("Mật khẩu xác nhận không khớp!");
         return;
     }
-    console.log('Register data:', formData);
-    // Gọi API đăng ký tại đây
+    // Dữ liệu này bây giờ đã sẵn sàng để gửi lên API Backend (chỉ chứa username)
+    console.log('Dữ liệu gửi lên Database:', {
+        fullName: formData.fullName,
+        username: formData.username,
+        password: formData.password
+    });
+    alert("Đăng ký thành công với tên đăng nhập: " + formData.username);
   };
 
   return (
@@ -46,12 +50,12 @@ const RegisterPage = () => {
           </div>
 
           <div className="form-group">
-            <label>Email</label>
+            <label>Tên đăng nhập</label>
             <input
-              type="email"
-              name="email"
-              placeholder="vidu@gmail.com"
-              value={formData.email}
+              type="text" // Dùng text cho username
+              name="username" // Name phải khớp với key trong useState
+              placeholder="nguyenvana"
+              value={formData.username}
               onChange={handleChange}
               required
             />

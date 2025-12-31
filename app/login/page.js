@@ -5,29 +5,26 @@ import Link from 'next/link';
 import './login.css';
 
 const LoginPage = () => {
-  const { login } = useAuth(); // Lấy hàm login từ Context
-  const [formData, setFormData] = useState({ email: '', password: '' });
+  const { login } = useAuth();
+  const [formData, setFormData] = useState({ userName: '', password: '' });
+  const [error, setError] = useState(""); // Thêm state để hiện lỗi
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Giả lập gọi API backend
-    // const res = await fetch('YOUR_API_URL/login', ...);
-    // const data = await res.json();
-
-    // Giả sử data trả về thành công:
-    if (formData.email === "admin@gmail.com" && formData.password === "123456") {
+    // KIỂM TRA THEO USERNAME (Không dùng email nữa)
+    if (formData.userName === "admin" && formData.password === "123456") {
       const mockUser = {
         name: "Nguyễn Văn Admin",
-        email: formData.email,
+        userName: formData.userName, // Đổi email thành userName
         avatar: "https://i.pravatar.cc/150?u=admin",
         role: "VIP Member"
       };
 
-      login(mockUser); // Lưu thông tin vào Context và LocalStorage
+      login(mockUser);
       alert("Đăng nhập thành công!");
     } else {
-      setError("Email hoặc mật khẩu không đúng! (Gợi ý: admin@gmail.com / 123456)");
+      setError("Tên đăng nhập hoặc mật khẩu không đúng! (Gợi ý: admin / 123456)");
     }
   };
 
@@ -35,14 +32,30 @@ const LoginPage = () => {
     <div className="auth-container">
       <div className="auth-card">
         <h2 className="auth-title">Chào mừng trở lại</h2>
+        {error && <p style={{ color: 'red', fontSize: '13px' }}>{error}</p>}
+
         <form onSubmit={handleSubmit} className="auth-form">
           <div className="form-group">
-            <label>Email</label>
-            <input type="email" name="email" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} required />
+            <label>Tên đăng nhập</label>
+            <input
+              type="text" // Chuyển từ type="username" (không hợp lệ) sang "text"
+              name="userName"
+              value={formData.userName}
+              onChange={(e) => setFormData({...formData, userName: e.target.value})}
+              placeholder="Nhập tên đăng nhập"
+              required
+            />
           </div>
           <div className="form-group">
             <label>Mật khẩu</label>
-            <input type="password" name="password" value={formData.password} onChange={(e) => setFormData({...formData, password: e.target.value})} required />
+            <input
+              type="password"
+              name="password"
+              value={formData.password}
+              onChange={(e) => setFormData({...formData, password: e.target.value})}
+              placeholder="••••••••"
+              required
+            />
           </div>
           <button type="submit" className="btn-auth">Đăng Nhập</button>
         </form>
