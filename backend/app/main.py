@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 
-# Import routers có sẵn của nhóm
+# Routers hệ thống
 from app.controllers.auth import router as auth_router
 from app.controllers.hotel import router as hotel_router
 from app.controllers.room import router as room_router
@@ -10,7 +10,7 @@ from app.controllers.booking import router as booking_router
 from app.controllers.customer import router as customer_router
 from app.controllers.service import router as service_router
 
-# Import router của chatbot
+# Router chatbot AI
 from app.controllers.chatbot_controller import router as chatbot_router
 
 from app.core.database import engine, Base
@@ -22,7 +22,7 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# CORS - SỬA PORT 3000
+# CORS
 origins = ["http://localhost:3000"]
 
 app.add_middleware(
@@ -33,33 +33,42 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Include routers hệ thống quản lý
-app.include_router(auth_router, prefix='/auth', tags=['Authentication'])
-app.include_router(hotel_router, prefix='/hotels', tags=['Hotels'])
-app.include_router(room_router, prefix='/rooms', tags=['Rooms'])
-app.include_router(booking_router, prefix='/bookings', tags=['Bookings'])
-app.include_router(customer_router, prefix='/customers', tags=['Customers'])
-app.include_router(service_router, prefix='/services', tags=['Services'])
+# Include routers hệ thống
+app.include_router(auth_router, prefix="/auth", tags=["Authentication"])
+app.include_router(hotel_router, prefix="/hotels", tags=["Hotels"])
+app.include_router(room_router, prefix="/rooms", tags=["Rooms"])
+app.include_router(booking_router, prefix="/bookings", tags=["Bookings"])
+app.include_router(customer_router, prefix="/customers", tags=["Customers"])
+app.include_router(service_router, prefix="/services", tags=["Services"])
 
-# Include router chatbot
-app.include_router(chatbot_router)
+# ✅ Include chatbot router (BƯỚC 4.5)
+app.include_router(
+    chatbot_router,
+    prefix="/chatbot",
+    tags=["Chatbot AI"]
+)
 
 # Tạo database tables khi start
-@app.on_event("startup")
-async def startup_event():
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-    print("✅ Database tables created successfully")
+#@app.on_event("startup")
+#async def startup_event():
+#    async with engine.begin() as conn:
+#        await conn.run_sync(Base.metadata.create_all)
+#    print("✅ Database tables created successfully")
+
+# @app.on_event("startup")
+# async def startup():
+#     await init_db()
+
 
 # Root endpoint
-@app.get('/')
+@app.get("/")
 async def root():
     return {"message": "Hotel Management API", "version": "1.0.0"}
 
 # Health check
-@app.get('/health')
+@app.get("/health")
 async def health_check():
     return {"status": "healthy", "service": "hotel-management"}
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True)

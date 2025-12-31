@@ -5,6 +5,8 @@ from sqlalchemy.orm import sessionmaker
 import boto3
 
 load_dotenv()
+print("CHECK OPENAI_API_KEY:", os.getenv("OPENAI_API_KEY"))
+
 
 class Config():
     # JWT Configuration (giữ nguyên)
@@ -40,5 +42,8 @@ class Config():
         aws_secret_access_key=os.getenv('AWS_SECRET_KEY')
     )
     BUCKET_NAME = os.getenv('BUCKET_NAME')
+
+    # OpenAI Configuration (THÊM)
+    OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 config = Config()
