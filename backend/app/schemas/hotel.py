@@ -7,7 +7,6 @@ class HotelCreate(BaseModel):
     SoSao: int
     MaKhuVuc: int
     MoTa: Optional[str] = None
-    AnhDaiDien: Optional[str] = None
 
 class HotelUpdate(BaseModel):
     TenKS: Optional[str] = None
@@ -15,7 +14,6 @@ class HotelUpdate(BaseModel):
     SoSao: Optional[int] = None
     MaKhuVuc: Optional[int] = None
     MoTa: Optional[str] = None
-    AnhDaiDien: Optional[str] = None
 
 class HotelResponse(BaseModel):
     MaKS: int
@@ -24,7 +22,6 @@ class HotelResponse(BaseModel):
     SoSao: int
     MaKhuVuc: int
     MoTa: Optional[str]
-    AnhDaiDien: Optional[str]
 
     class Config:
         from_attributes = True
