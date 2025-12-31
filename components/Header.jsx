@@ -2,11 +2,12 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/app/context/AuthContext"; // Import Auth
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useBooking } from "@/context/BookingContext";
 
 export default function Header() {
   const { user, logout } = useAuth(); // Lấy thông tin user
+  const router = useRouter();
   const [showDropdown, setShowDropdown] = useState(false);
   const pathname = usePathname();
   const { toggleBooking } = useBooking();
@@ -20,16 +21,7 @@ export default function Header() {
 
   const handleBookNow = (e) => {
     e.preventDefault();
-    if (pathname === "/") {
-      const bookingSection = document.getElementById("booking");
-      if (bookingSection) {
-        const y =
-          bookingSection.getBoundingClientRect().top + window.scrollY - 100;
-        window.scrollTo({ top: y, behavior: "smooth" });
-      }
-    } else {
-      toggleBooking();
-    }
+    router.push("/booking"); // Chuyển hướng đến thư mục app/booking
   };
 
   useEffect(() => {
@@ -116,7 +108,12 @@ export default function Header() {
               </Link>
             )}
 
-            <button onClick={() => toggleBooking()} className="bg-accent text-white text-xs font-bold px-8 py-3 uppercase">Book Now</button>
+            <button
+            onClick={handleBookNow}
+            className="bg-accent text-white text-xs font-bold px-8 py-3 uppercase"
+          >
+            Book Now
+          </button>
           </div>
         </nav>
       </div>

@@ -3,9 +3,7 @@
 import React, { useState } from 'react';
 import RoomCard from './RoomCard';
 import RoomDetailModal from './RoomDetailModal';
-
-// 1. Dữ liệu phòng (Đã bao gồm detailImages cho Modal)
-const mockRooms = [
+export const initialMockRooms = [
   {
     name: 'Phòng Cổ Điển Giường King',
     area: 46,
@@ -85,11 +83,10 @@ const mockRooms = [
     ]
   },
 ];
-
-const RoomListing = () => {
- const [selectedRoom, setSelectedRoom] = useState(null);
- const [currency, setCurrency] = useState('USD');
- const EXCHANGE_RATE = 26385;
+const RoomListing = ({ rooms = [] }) => {
+  const [selectedRoom, setSelectedRoom] = useState(null);
+  const [currency, setCurrency] = useState('USD');
+  const EXCHANGE_RATE = 26385;
 
   // 2. Dữ liệu tiện nghi với class Icon (FontAwesome)
   const amenitiesData = [
@@ -112,9 +109,8 @@ const RoomListing = () => {
         Keangnam Hanoi Landmark Tower, Cau Giay, Hanoi Vietnam
       </p>
 
-      {/* --- Thông tin Tóm tắt (Đánh giá & Tiện nghi - Đã sửa đẹp hơn) --- */}
+      {/* --- Thông tin Tóm tắt (Đánh giá & Tiện nghi) --- */}
       <div className="summary-info">
-
         {/* Phần đánh giá */}
         <div className="rating-block">
           <span className="rating-score">4,7</span>
@@ -151,39 +147,41 @@ const RoomListing = () => {
         </select>
       </div>
 
-      <p className="found-rooms">Đã tìm thấy {mockRooms.length} phòng</p>
+      <p className="found-rooms">
+        {rooms.length > 0 ? `Đã tìm thấy ${rooms.length} phòng` : "Đang tìm phòng trống..."}
+      </p>
 
-      {/* --- Danh Sách Phòng --- */}
       <div className="rooms-container">
-  {mockRooms.map((room, index) => {
+        {rooms.length > 0 ? (
+          rooms.map((room, index) => {
+            let displayedPrice = room.price;
+            let displayedTax = room.tax;
 
-    // logic chuyển đổi
-    let displayedPrice = room.price; // Giá mặc định là USD
-    let displayedTax = room.tax;
+            if (currency === 'VND') {
+              displayedPrice = room.price * EXCHANGE_RATE;
+              displayedTax = room.tax * EXCHANGE_RATE;
+            }
 
-    if (currency === 'VND') {
-      displayedPrice = room.price * EXCHANGE_RATE;
-      displayedTax = room.tax * EXCHANGE_RATE;
-    }
+            return (
+              <RoomCard
+                key={room.id || index} // Ưu tiên dùng id từ backend
+                room={{
+                  ...room,
+                  price: displayedPrice,
+                  tax: displayedTax,
+                }}
+                currentCurrency={currency}
+                onOpenDetail={() => setSelectedRoom(room)}
+              />
+            );
+          })
+        ) : (
+          <div className="no-rooms">
+            <p>Không có phòng nào phù hợp với yêu cầu của bạn. Vui lòng thử lại với ngày khác.</p>
+          </div>
+        )}
+      </div>
 
-    return (
-      <RoomCard
-        key={index}
-        // Truyền dữ liệu giá đã được tính toán
-        room={{
-          ...room,
-          price: displayedPrice,
-          tax: displayedTax,
-        }}
-        // Truyền đơn vị tiền tệ hiện tại
-        currentCurrency={currency}
-        onOpenDetail={() => setSelectedRoom(room)}
-      />
-    );
-  })}
-</div>
-
-      {/* --- Render Modal nếu có phòng được chọn --- */}
       {selectedRoom && (
         <RoomDetailModal
             room={selectedRoom}
@@ -192,7 +190,6 @@ const RoomListing = () => {
             exchangeRate={EXCHANGE_RATE}
         />
       )}
-
     </div>
   );
 };

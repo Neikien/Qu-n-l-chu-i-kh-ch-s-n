@@ -1,10 +1,9 @@
 "use client";
-// --- page.tsx (Chỉ thay thế component Header) ---
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 import HotelGallery from '@/components/HotelGallery';
 import CustomDatePicker from '@/components/CustomDatePicker';
-import RoomListing from '@/components/RoomListing';
+import RoomListing, { initialMockRooms } from '@/components/RoomListing';
 // Hàm xử lý logic tăng/giảm khách/phòng
 const handleGuestClick = (e, type, operation, rooms, guests, setRooms, setGuests) => {
     e.stopPropagation();
@@ -15,21 +14,17 @@ const handleGuestClick = (e, type, operation, rooms, guests, setRooms, setGuests
     }
 };
 // --- COMPONENT HEADER CÓ TƯƠNG TÁC ---
-const Header = () => {
-
-  // 1. Khai báo State cho các trường nhập liệu
-  // Khai báo biến today và tomorrow
-    const today = new Date();
-    const tomorrow = new Date();
-    tomorrow.setDate(today.getDate() + 1);
+const Header = ({ onSearchUpdate }) => {
+  const today = new Date();
+  const tomorrow = new Date();
+  tomorrow.setDate(today.getDate() + 1);
   const [destination, setDestination] = useState('Intercontinental Hanoi Landmark');
   const [showGuestPopup, setShowGuestPopup] = useState(false); // State cho popup khách
   const [rooms, setRooms] = useState(1);
   const [guests, setGuests] = useState(2);
   const [checkInDate, setCheckInDate] = useState(format(today, 'dd/MM/yyyy'));
-    const [checkOutDate, setCheckOutDate] = useState(format(tomorrow, 'dd/MM/yyyy'));
-    const [showCalendar, setShowCalendar] = useState(false); // State quản lý hiển thị lịch
-
+  const [checkOutDate, setCheckOutDate] = useState(format(tomorrow, 'dd/MM/yyyy'));
+  const [showCalendar, setShowCalendar] = useState(false); // State quản lý hiển thị lịch
     // Hàm xử lý việc chọn ngày từ DatePicker
     const handleDateChange = (inDate, outDate) => {
         setCheckInDate(inDate);
@@ -39,22 +34,32 @@ const Header = () => {
     };
   // NOTE: Việc chọn lịch sẽ cần một thư viện Date Picker chuyên dụng,
   // ở đây chúng ta chỉ mô phỏng trường nhập liệu ngày.
+  const handleSearch = async () => {
+    // 1. Tạo object chứa thông tin khách muốn tìm
+    const searchParams = {
+      location: destination,
+      checkIn: checkInDate,
+      checkOut: checkOutDate,
+      adults: guests,
+      roomCount: rooms
+    };
 
+    // 2. Gọi API đến Backend
+    try {
+      // Thay URL này bằng API thật của bạn khi có backend
+      const response = await fetch(`https://api.yourhotel.com/rooms/search?location=${destination}`);
+      const data = await response.json();
+
+      // 3. Truyền dữ liệu mới nhận được về component cha (RoomListing)
+      onSearchUpdate(data);
+    } catch (error) {
+      console.error("Lỗi khi gọi API:", error);
+    }
+  };
   return (
     <header className="uhf_headerFooter">
-      {/* --- TOP UTILITY BAR (Không thay đổi) --- */}
-      <div className="top-utility-bar">
-        <div className="top-utility-content">
-          <span className="contact">📞 000 111 222 333 444 | Hotline 24/7</span>
-
-        </div>
-      </div>
-
-      {/* --- MAIN NAV BAR --- */}
       <div className="main-nav-bar">
         <div className="search-widget-container">
-
-          {/* Logo */}
           <div className="logo-container">
             <img
               src="https://img2.teletype.in/files/57/54/57541865-7050-4c41-96d2-ac9c0fac64ce.png"
@@ -65,20 +70,12 @@ const Header = () => {
 
           {/* Thanh tìm kiếm chi tiết */}
           <div className="search-form-bar">
-
-            {/* 1. NƠI GỌI ĐẾN (INPUT FIELD) */}
-
             <div className="search-field field-location">
               <span className="field-label">NƠI GỌI ĐẾN</span>
-              <input
-                type="text"
-                placeholder="Hanoi Landmark72..."
-                value={destination}
-                onChange={(e) => setDestination(e.target.value)}
-              />
+              <input type="text" value={destination} onChange={(e) => setDestination(e.target.value)} />
             </div>
 
-            {/* 2. 1 ĐÊM (Mô phỏng Date Picker) */}
+            {/* Ngày tháng */}
             <div
                             className="search-field field-date"
                             onClick={() => setShowCalendar(!showCalendar)} //Bật/Tắt Lịch
@@ -97,7 +94,7 @@ const Header = () => {
                                 />
                             )}
                         </div>
-            {/* 3. PHÒNG & KHÁCH (Tương tác Popup) */}
+            {/* 3. PHÒNG & KHÁCH */}
             <div
               className="search-field field-guests"
               onClick={() => setShowGuestPopup(!showGuestPopup)} // 👈 Mở/Đóng Popup
@@ -131,12 +128,12 @@ const Header = () => {
               <span className="field-label">TÙY CHỌN MỨC GIÁ</span>
               <select className="price-select" defaultValue="Best Available">
                 <option>Best Available</option>
-                <option>Per</option>
-                <option>Best Available</option>
+                <option>Option 2</option>
+                <option>Option 3</option>
               </select>
             </div>
 
-            <button className="btn-tim-kiem-v2">TÌM KIẾM</button>
+            <button className="btn-tim-kiem-v2" onClick={handleSearch}>TÌM KIẾM</button>
           </div>
 
           {/* Breadcrumb Navigation */}
@@ -156,24 +153,28 @@ const Footer = () => (
     <p>Hải Đăng Luxury Hotel</p>
   </footer>
 );
-
-export default function HomePage() {
+export default function BookingPage() {
+  // Nên để dữ liệu mặc định là mảng rỗng hoặc mockRooms cũ để lúc mới vào trang không bị trống
+  const [roomsData, setRoomsData] = useState(initialMockRooms);
+  const updateRooms = (newData) => {
+    // Khi gọi API thành công, dữ liệu mock sẽ bị thay thế bởi newData từ Backend
+    setRoomsData(newData);
+  };
   return (
-    <div>
-      {/* 1. Phần Header & Thanh điều hướng */}
-      <Header /> 
+    <div className="booking-page">
+      <Header onSearchUpdate={(data) => setRoomsData(data)} />
+
       <HotelGallery />
-      {/* 2. Nội dung chính của trang (Phần chọn phòng) */}
+
       <main className="main-content">
-        <RoomListing />
+        {/* RoomListing sẽ nhận roomsData và render.
+            Nếu roomsData rỗng, RoomListing nên hiển thị "Vui lòng nhấn tìm kiếm" */}
+        <RoomListing rooms={roomsData} />
       </main>
-      
-      {/* 3. Footer */}
-      <Footer />
-      
-      {/* LƯU Ý: Nếu bạn sử dụng App Router của Next.js (thư mục `app`), 
-        Header và Footer nên được đặt trong `app/layout.tsx` để hiển thị trên tất cả các trang.
-      */}
+
+      <footer className="footer">
+        <p>Luxury Hotel - Managed by InterContinental</p>
+      </footer>
     </div>
   );
 }
