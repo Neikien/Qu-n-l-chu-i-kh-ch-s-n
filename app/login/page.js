@@ -2,29 +2,41 @@
 import React, { useState } from 'react';
 import { useAuth } from '@/app/context/AuthContext';
 import Link from 'next/link';
+import { login } from '@/lib/api';  // Import từ lib/api
 import './login.css';
 
 const LoginPage = () => {
-  const { login } = useAuth();
+  const { login: authLogin } = useAuth();
   const [formData, setFormData] = useState({ userName: '', password: '' });
-  const [error, setError] = useState(""); // Thêm state để hiện lỗi
+  const [error, setError] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
 
-    // KIỂM TRA THEO USERNAME (Không dùng email nữa)
-    if (formData.userName === "admin" && formData.password === "123456") {
-      const mockUser = {
-        name: "Nguyễn Văn Admin",
-        userName: formData.userName, // Đổi email thành userName
-        avatar: "https://i.pravatar.cc/150?u=admin",
-        role: "VIP Member"
+    try {
+      // Dùng hàm login từ lib/api.js
+      const result = await login(formData.userName, formData.password);
+      
+      console.log('Login thành công:', result);
+      
+      // Tạo user object
+      const user = {
+        name: formData.userName,
+        userName: formData.userName,
+        avatar: "https://i.pravatar.cc/150?u=" + formData.userName,
+        role: "VIP Member",
+        token: result.access_token
       };
 
-      login(mockUser);
-      alert("Đăng nhập thành công!");
-    } else {
-      setError("Tên đăng nhập hoặc mật khẩu không đúng! (Gợi ý: admin / 123456)");
+      // Gọi login từ AuthContext
+      authLogin(user);
+      
+      alert("✅ Đăng nhập thành công!");
+      
+    } catch (error) {
+      console.error('Login error:', error);
+      setError("Tên đăng nhập hoặc mật khẩu không đúng!");
     }
   };
 
@@ -38,11 +50,11 @@ const LoginPage = () => {
           <div className="form-group">
             <label>Tên đăng nhập</label>
             <input
-              type="text" // Chuyển từ type="username" (không hợp lệ) sang "text"
+              type="text"
               name="userName"
               value={formData.userName}
               onChange={(e) => setFormData({...formData, userName: e.target.value})}
-              placeholder="Nhập tên đăng nhập"
+              placeholder="testuser123"
               required
             />
           </div>
@@ -53,12 +65,13 @@ const LoginPage = () => {
               name="password"
               value={formData.password}
               onChange={(e) => setFormData({...formData, password: e.target.value})}
-              placeholder="••••••••"
+              placeholder="123456"
               required
             />
           </div>
           <button type="submit" className="btn-auth">Đăng Nhập</button>
         </form>
+        
         <p className="auth-footer">Bạn chưa có tài khoản? <Link href="/register">Đăng ký ngay</Link></p>
       </div>
     </div>
