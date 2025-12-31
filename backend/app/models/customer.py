@@ -11,8 +11,6 @@ class Customer(Base):
     Email = Column(String(100)) 
     CCCD = Column(String(20)) 
     DiaChi = Column(String(255)) 
-    LoaiKH = Column(Enum('Ca nhan', 'Doanh nghiep', 'VIP'), default='Ca nhan') 
- 
-    # Relationships - TAM S?A 
-    # bookings = relationship("Booking", back_populates="customer")  # TAM COMMENT 
-    user = relationship("User")  # BO back_populates 
+
+    user = relationship("User") 
+
