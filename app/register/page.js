@@ -1,12 +1,16 @@
 "use client";
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { register } from '@/lib/api';
 import '../login/login.css';
 
 const RegisterPage = () => {
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
-    fullName: '',
-    username: '', // Đổi email thành username để khớp DB
+    fullname: '',
+    email: '',
     password: '',
     confirmPassword: ''
   });
@@ -15,19 +19,40 @@ const RegisterPage = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if(formData.password !== formData.confirmPassword) {
-        alert("Mật khẩu xác nhận không khớp!");
-        return;
+    
+    if (formData.password !== formData.confirmPassword) {
+      alert("Mật khẩu xác nhận không khớp!");
+      return;
     }
-    // Dữ liệu này bây giờ đã sẵn sàng để gửi lên API Backend (chỉ chứa username)
-    console.log('Dữ liệu gửi lên Database:', {
-        fullName: formData.fullName,
-        username: formData.username,
-        password: formData.password
-    });
-    alert("Đăng ký thành công với tên đăng nhập: " + formData.username);
+
+    if (formData.password.length < 6) {
+      alert("Mật khẩu phải có ít nhất 6 ký tự!");
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const userData = {
+        email: formData.email,
+        password: formData.password,
+        fullname: formData.fullname,
+        phone: ""
+      };
+
+      const result = await register(userData);
+      
+      alert("Đăng ký thành công! Vui lòng đăng nhập.");
+      
+      router.push('/login');
+      
+    } catch (error) {
+      alert("Đăng ký thất bại: " + error.message);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -41,21 +66,21 @@ const RegisterPage = () => {
             <label>Họ và tên</label>
             <input
               type="text"
-              name="fullName"
+              name="fullname"
               placeholder="Nguyễn Văn A"
-              value={formData.fullName}
+              value={formData.fullname}
               onChange={handleChange}
               required
             />
           </div>
 
           <div className="form-group">
-            <label>Tên đăng nhập</label>
+            <label>Email</label>
             <input
-              type="text" // Dùng text cho username
-              name="username" // Name phải khớp với key trong useState
-              placeholder="nguyenvana"
-              value={formData.username}
+              type="email"
+              name="email"
+              placeholder="example@email.com"
+              value={formData.email}
               onChange={handleChange}
               required
             />
@@ -70,6 +95,7 @@ const RegisterPage = () => {
               value={formData.password}
               onChange={handleChange}
               required
+              minLength={6}
             />
           </div>
 
@@ -82,10 +108,17 @@ const RegisterPage = () => {
               value={formData.confirmPassword}
               onChange={handleChange}
               required
+              minLength={6}
             />
           </div>
 
-          <button type="submit" className="btn-auth">Đăng Ký</button>
+          <button 
+            type="submit" 
+            className="btn-auth"
+            disabled={isLoading}
+          >
+            {isLoading ? 'Đang đăng ký...' : 'Đăng Ký'}
+          </button>
         </form>
 
         <p className="auth-footer">
