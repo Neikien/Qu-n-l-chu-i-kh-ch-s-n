@@ -1,0 +1,119 @@
+/* Container chính bao phủ toàn màn hình */
+.profile-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f8f9fa; /* Nền xám nhạt */
+  padding: 40px 20px;
+  font-family: var(--font-inter), sans-serif;
+}
+
+/* Thẻ Card chứa Form */
+.profile-card {
+  background: #ffffff;
+  width: 100%;
+  max-width: 650px;
+  padding: 40px;
+  border-radius: 4px; /* Bo góc nhẹ theo phong cách tối giản */
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  border: 1px solid #eee;
+}
+
+/* Tiêu đề chính */
+.profile-title {
+  font-family: var(--font-playfair), serif;
+  color: #1a1a1a;
+  font-size: 28px;
+  text-align: center;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* Phụ đề */
+.profile-subtitle {
+  color: #666;
+  text-align: center;
+  font-size: 14px;
+  margin-bottom: 35px;
+}
+
+/* Bố cục Form */
+.profile-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Các nhóm Input */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Dòng chứa 2 cột (SĐT & Email) */
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+/* Label của Input */
+.form-group label {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #333;
+  letter-spacing: 0.5px;
+}
+
+/* Ô nhập liệu */
+.form-group input,
+.form-group textarea {
+  padding: 12px 16px;
+  border: 1px solid #e0e0e0;
+  border-radius: 2px;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  background-color: #fff;
+}
+
+/* Hiệu ứng khi click vào ô nhập */
+.form-group input:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #a68160; /* Màu nâu Accent của thương hiệu */
+  box-shadow: 0 0 0 3px rgba(166, 129, 96, 0.1);
+}
+
+/* Nút bấm Lưu */
+.btn-save {
+  margin-top: 15px;
+  background-color: #a68160; /* Màu nâu đặc trưng của InterContinental */
+  color: white;
+  padding: 14px;
+  border: none;
+  border-radius: 2px;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.btn-save:hover {
+  background-color: #8a6a4d;
+}
+
+/* Responsive cho mobile */
+@media (max-width: 600px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+  .profile-card {
+    padding: 25px;
+  }
+}

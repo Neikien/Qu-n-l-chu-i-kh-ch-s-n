@@ -92,8 +92,10 @@ export default function Header() {
                 </button>
 
                 {showDropdown && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white shadow-lg rounded py-2 border border-gray-100 z-50">
-                    <Link href="/profile" className="block px-4 py-2 text-xs text-gray-700 hover:bg-gray-50">Hồ sơ cá nhân</Link>
+                    <div className="absolute right-0 mt-2 w-48 bg-white shadow-lg rounded py-2 border border-gray-100 z-50">
+                        <Link href="/profile" className="block px-4 py-2 text-xs text-gray-700 hover:bg-gray-50">
+                            Hồ sơ cá nhân
+                        </Link>
                     <button onClick={logout} className="w-full text-left px-4 py-2 text-xs text-red-600 hover:bg-gray-50">Đăng xuất</button>
                   </div>
                 )}
