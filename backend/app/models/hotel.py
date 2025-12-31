@@ -11,8 +11,7 @@ class Hotel(Base):
     SoSao = Column(Integer) 
     MaKhuVuc = Column(Integer, ForeignKey("KHU_VUC.MaKhuVuc")) 
     MoTa = Column(Text) 
-    AnhDaiDien = Column(String(255)) 
  
-    # Relationships - SUA 
-    area = relationship("Area")  # BO back_populates 
-    rooms = relationship("Room")  # BO back_populates 
+    area = relationship("Area")  
+    rooms = relationship("Room")  
+
