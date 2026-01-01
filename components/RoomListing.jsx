@@ -15,72 +15,155 @@ export const initialMockRooms = [
       'https://digital.ihg.com/is/image/ihg/intercontinental-hanoi-5386797077-4x3?wid=1280&fit=constrain&resmode=bisharp',
       'https://digital.ihg.com/is/image/ihg/intercontinental-hanoi-8830980397-4x3?wid=800&fit=constrain&resmode=bisharp',
       'https://digital.ihg.com/is/image/ihg/intercontinental-hanoi-8830980397-4x3?wid=800&fit=constrain&resmode=bisharp'
-    ]
+    ],
+    rates: [
+      {
+        title: 'Mức giá tốt nhất',
+        features: ['Không hoàn tiền', 'Trả trước'],
+        price: 143,
+        tax: 7.13,
+      },{
+      title: 'Mức giá tốt nhất bao gồm bữa sáng',
+      features: ['Không hoàn tiền','Trả trước', 'Bao gồm ăn sáng'],
+      price: 165,
+      tax: 8.25,
+    }
+  ]
   },
   {
     name: 'Phòng Cổ Điển 2 Giường Đơn',
     area: 46,
-    price: 143,
-    tax: 7.13,
+    price: 100,
+    tax: 1.8,
     remaining: 4,
     imageSrc:'https://digital.ihg.com/is/image/ihg/intercontinental-hanoi-5386797058-4x3?wid=1280&fit=constrain&resmode=bisharp',
     detailImages: [
       'https://digital.ihg.com/is/image/ihg/intercontinental-hanoi-5386797058-4x3?wid=1280&fit=constrain&resmode=bisharp',
       'https://digital.ihg.com/is/image/ihg/intercontinental-hanoi-8830980397-4x3?wid=800&fit=constrain&resmode=bisharp',
       'https://digital.ihg.com/is/image/ihg/intercontinental-hanoi-5386797009-4x3?wid=1280&fit=constrain&resmode=bisharp'
-    ]
+    ],
+    rates: [
+      {
+        title: 'Mức giá tốt nhất',
+        features: ['Không hoàn tiền', 'Trả trước'],
+        price: 100,
+        tax: 7.13,
+      },
+  {
+      title: 'Mức giá tốt nhất bao gồm bữa sáng',
+      features: ['Không hoàn tiền','Trả trước', 'Bao gồm ăn sáng'],
+      price: 123,
+      tax: 8.25,
+    }
+  ]
   },
   {
     name: 'Phòng Cổ Điển',
     area: 46,
-    price: 143,
-    tax: 7.13,
+    price: 85,
+    tax: 1.8,
     remaining: 5,
     imageSrc:'https://digital.ihg.com/is/image/ihg/intercontinental-hanoi-5386797058-4x3?wid=1280&fit=constrain&resmode=bisharp',
     detailImages: [
       'https://digital.ihg.com/is/image/ihg/intercontinental-hanoi-5386797058-4x3?wid=1280&fit=constrain&resmode=bisharp',
       'https://digital.ihg.com/is/image/ihg/intercontinental-hanoi-5386797412-4x3?wid=1280&fit=constrain&resmode=bisharp',
       'https://digital.ihg.com/is/image/ihg/intercontinental-hanoi-5386797009-4x3?wid=1280&fit=constrain&resmode=bisharp'
-    ]
+    ],
+    rates: [
+      {
+        title: 'Mức giá tốt nhất',
+        features: ['Không hoàn tiền', 'Trả trước'],
+        price: 85,
+        tax: 1.8,
+      },
+  {
+      title: 'Mức giá tốt nhất bao gồm bữa sáng',
+      features: ['Không hoàn tiền','Trả trước', 'Bao gồm ăn sáng'],
+      price: 100,
+      tax: 1.8,
+    }
+  ]
   },
   {
     name: 'Phòng Cao Cấp Giường King',
     area: 56,
-    price: 171,
-    tax: 8.55,
+    price: 111,
+    tax: 3.6,
     remaining: 2,
     imageSrc:'https://digital.ihg.com/is/image/ihg/intercontinental-hanoi-8830776194-4x3?wid=1280&fit=constrain&resmode=bisharp',
     detailImages: [
       'https://digital.ihg.com/is/image/ihg/intercontinental-hanoi-8830776194-4x3?wid=1280&fit=constrain&resmode=bisharp',
       'https://digital.ihg.com/is/image/ihg/intercontinental-hanoi-5386797412-4x3?wid=1280&fit=constrain&resmode=bisharp',
       'https://digital.ihg.com/is/image/ihg/intercontinental-hanoi-8830980397-4x3?wid=800&fit=constrain&resmode=bisharp'
-    ]
+    ],
+    rates: [
+      {
+        title: 'Mức giá tốt nhất',
+        features: ['Không hoàn tiền', 'Trả trước'],
+        price: 111,
+        tax: 3.6,
+      },
+  {
+      title: 'Mức giá tốt nhất bao gồm bữa sáng',
+      features: ['Không hoàn tiền','Trả trước', 'Bao gồm ăn sáng'],
+      price: 133,
+      tax: 3.6,
+    }
+  ]
   },
   {
     name: 'Phòng Ambassador Suite',
     area: 138,
-    price: 665,
-    tax: 33.25,
+    price: 80,
+    tax: 3.66,
     remaining: 1,
     imageSrc:'https://digital.ihg.com/is/image/ihg/intercontinental-hanoi-8809984339-4x3?wid=1280&fit=constrain&resmode=bisharp',
     detailImages: [
       'https://digital.ihg.com/is/image/ihg/intercontinental-hanoi-8809984339-4x3?wid=1280&fit=constrain&resmode=bisharp',
       'https://digital.ihg.com/is/image/ihg/intercontinental-hanoi-5386797009-4x3?wid=800&fit=constrain&resmode=bisharp',
       'https://digital.ihg.com/is/image/ihg/intercontinental-hanoi-5386797412-4x3?wid=1280&fit=constrain&resmode=bisharp'
-    ]
+    ],
+    rates: [
+      {
+        title: 'Mức giá tốt nhất',
+        features: ['Không hoàn tiền', 'Trả trước'],
+        price: 80,
+        tax: 3.66,
+      },
+  {
+      title: 'Mức giá tốt nhất bao gồm bữa sáng',
+      features: ['Không hoàn tiền','Trả trước', 'Bao gồm ăn sáng'],
+      price: 100,
+      tax: 3.66,
+    }
+  ]
   },
   {
     name: 'Phòng Tổng Thống',
     area: 348,
-    price: 2518,
-    tax: 125.88,
+    price: 300,
+    tax: 18.36,
     remaining: 1,
     imageSrc:'https://digital.ihg.com/is/image/ihg/intercontinental-hanoi-8830959431-4x3?wid=1280&fit=constrain&resmode=bisharp',
     detailImages: [
       'https://digital.ihg.com/is/image/ihg/intercontinental-hanoi-8830959431-4x3?wid=1280&fit=constrain&resmode=bisharp',
       'https://digital.ihg.com/is/image/ihg/intercontinental-hanoi-5386797412-4x3?wid=1280&fit=constrain&resmode=bisharp',
       'https://digital.ihg.com/is/image/ihg/intercontinental-hanoi-8830980397-4x3?wid=800&fit=constrain&resmode=bisharp'
-    ]
+    ],
+    rates: [
+      {
+        title: 'Mức giá tốt nhất',
+        features: ['Không hoàn tiền', 'Trả trước'],
+        price: 300,
+        tax: 18.36,
+      },
+  {
+      title: 'Mức giá tốt nhất bao gồm bữa sáng',
+      features: ['Không hoàn tiền', 'Trả trước', 'Bao gồm ăn sáng'],
+      price: 333,
+      tax: 18.36,
+    }
+  ]
   },
 ];
 const RoomListing = ({ rooms = [] }) => {
