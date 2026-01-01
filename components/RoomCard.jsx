@@ -81,7 +81,7 @@ const RoomCard = ({ room,onOpenDetail, currentCurrency }) => {
           Không bao gồm phí {formattedTax} một đêm
         </p>
 
-        <button className="select-room-btn btn-brown">Xem giá</button>
+        <button className="select-room-btn btn-brown"> Xem giá </button>
       </div>
     </div>
   );

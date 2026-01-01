@@ -117,3 +117,75 @@
     padding: 25px;
   }
 }
+/*căn chỉnh nút Sửa */
+.profile-header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    margin-bottom: 10px;
+}
+
+/* Nút icon sửa (cây bút) */
+.btn-icon-edit {
+    position: absolute;
+    right: 0;
+    top: 5px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    color: #a68160;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.2s;
+}
+
+.btn-icon-edit:hover {
+    color: #8a6a4d;
+    text-decoration: underline;
+}
+
+/* Giao diện khi ở chế độ "Chỉ xem" (Read-only) */
+.read-only-field {
+    padding: 12px 16px;
+    background-color: #f4f4f4; /* Màu nền xám nhẹ để phân biệt */
+    border: 1px solid transparent;
+    border-radius: 2px;
+    font-size: 14px;
+    color: #333;
+    font-weight: 500;
+}
+
+/* Khu vực chứa 2 nút Hủy và Lưu */
+.action-buttons {
+    display: flex;
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.btn-save {
+    flex: 2; /* Nút Lưu to hơn */
+    /* ... giữ style cũ của btn-save ... */
+}
+
+.btn-cancel {
+    flex: 1;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    color: #666;
+    padding: 14px;
+    border-radius: 2px;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btn-cancel:hover {
+    background-color: #f0f0f0;
+    color: #333;
+}

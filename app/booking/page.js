@@ -57,18 +57,9 @@ const Header = ({ onSearchUpdate }) => {
     }
   };
   return (
-    <header className="uhf_headerFooter">
+    <header className="uhf_headerFooter booking-search-bar">
       <div className="main-nav-bar">
         <div className="search-widget-container">
-          <div className="logo-container">
-            <img
-              src="https://img2.teletype.in/files/57/54/57541865-7050-4c41-96d2-ac9c0fac64ce.png"
-              alt="InterContinental Hotels & Resorts"
-              className="logo"
-            />
-          </div>
-
-          {/* Thanh tìm kiếm chi tiết */}
           <div className="search-form-bar">
             <div className="search-field field-location">
               <span className="field-label">NƠI GỌI ĐẾN</span>
@@ -161,19 +152,40 @@ export default function BookingPage() {
     setRoomsData(newData);
   };
   return (
-    <div className="booking-page">
-      <Header onSearchUpdate={(data) => setRoomsData(data)} />
+   <div className="booking-page-container">
+      {/* === PHẦN HERO BANNER MỚI (Ảnh nền + Chữ to) === */}
+      <div className="booking-hero-section">
+        {/* Lớp phủ màu đen mờ để chữ dễ đọc hơn */}
+        <div className="hero-overlay"></div>
 
-      <HotelGallery />
+        <div className="hero-content text-center">
+          <p className="text-white uppercase tracking-[0.2em] text-sm mb-4 font-medium">
+            Discover Your Next Stay
+          </p>
+          {/* Tiêu đề chính lớn (Sử dụng font Playfair từ layout.js) */}
+          <h1 className="text-white font-serif text-6xl md:text-7xl font-normal tracking-wide">
+            Book Your Getaway
+          </h1>
+        </div>
+      </div>
 
-      <main className="main-content">
-        {/* RoomListing sẽ nhận roomsData và render.
-            Nếu roomsData rỗng, RoomListing nên hiển thị "Vui lòng nhấn tìm kiếm" */}
+      {/* === THANH TÌM KIẾM (Header cũ) === */}
+      {/* Đặt trong một container để căn chỉnh đè lên ảnh */}
+      <div className="search-bar-container relative z-20 -mt-16 px-4 sm:px-8 lg:px-16">
+         <Header onSearchUpdate={updateRooms} />
+      </div>
+
+
+      <main className="main-content max-w-[1320px] mx-auto px-5 py-12">
+        {/* Breadcrumb */}
+        <div className="breadcrumb-nav mb-8 text-sm text-gray-500">
+            <a href="#">Trang chủ</a> &gt; <span>Đặt phòng</span>
+        </div>
         <RoomListing rooms={roomsData} />
       </main>
 
-      <footer className="footer">
-        <p>Luxury Hotel - Managed by InterContinental</p>
+      <footer className="footer bg-gray-100 py-8 text-center">
+        <p>Hải Đăng Luxury Hotel - Managed by InterContinental</p>
       </footer>
     </div>
   );
