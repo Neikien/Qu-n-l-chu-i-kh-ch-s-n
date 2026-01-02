@@ -1,7 +1,7 @@
 // ./components/HotelGallery.jsx
 "use client";
 import React from 'react';
-
+import { apiService } from '../services/apiService';
 // Dữ liệu ảnh mô phỏng từ các ảnh bạn đã gửi
 const MOCK_GALLERY_IMAGES = [
   { src: 'https://digital.ihg.com/is/image/ihg/intercontinental-hanoi-5379482061-4x3?wid=940&fit=constrain&resmode=bisharp', alt: 'Khách sạn InterContinental Hà Nội Landmark 72' }, // Tải ảnh này vào public/images/
