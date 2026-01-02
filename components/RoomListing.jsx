@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import RoomCard from './RoomCard';
 import RoomDetailModal from './RoomDetailModal';
 import { getRooms, getRoomsByHotel, searchRooms } from '@/lib/api'; // Import API
-
+import { apiService } from '../services/apiService';
 const EXCHANGE_RATE = 26385;
 
 // Tiện nghi khách sạn (cố định)
