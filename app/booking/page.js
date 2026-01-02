@@ -68,7 +68,7 @@ const Header = ({ onSearchUpdate, searchParams, onSearchParamsChange }) => {
       console.log('🔍 Tìm kiếm ở khu vực:', destination);
       
       // 1. Lấy tất cả khách sạn từ backend
-      const response = await fetch('http://localhost:8000/hotels/');
+      const response = await fetch('https://khachsan-backend-production-9810.up.railway.app/hotels/');
       if (!response.ok) throw new Error('Không thể lấy danh sách khách sạn');
       
       const hotels = await response.json();
@@ -92,7 +92,7 @@ const Header = ({ onSearchUpdate, searchParams, onSearchParamsChange }) => {
       
       // 3. Lấy phòng theo MaKS
       const roomsResponse = await fetch(
-        `http://localhost:8000/rooms/?hotel_id=${selectedHotel.MaKS}`
+        `https://khachsan-backend-production-9810.up.railway.app/rooms/?hotel_id=${selectedHotel.MaKS}`
       );
       
       if (!roomsResponse.ok) {
@@ -319,7 +319,7 @@ export default function BookingPage() {
     console.log('Gửi booking data:', bookingData);
     
     try {
-      const response = await fetch('http://localhost:8000/bookings/', {
+      const response = await fetch('https://khachsan-backend-production-9810.up.railway.app/bookings/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
