@@ -1,7 +1,7 @@
 // components/TaxDetailModal.jsx
 "use client";
 import React from 'react';
-
+import { apiService } from '../services/apiService';
 const TaxDetailModal = ({ isOpen, onClose, rate, currency }) => {
   if (!isOpen || !rate) return null;
 
