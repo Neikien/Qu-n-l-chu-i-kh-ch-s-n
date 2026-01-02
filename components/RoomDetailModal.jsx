@@ -1,7 +1,7 @@
 // components/RoomDetailModal.js
 "use client";
 import React, { useState } from 'react';
-
+import { apiService } from '../services/apiService';
 
 const formatCurrency = (amount, currencyCode) => {
     const locale = currencyCode === 'VND' ? 'vi-VN' : 'en-US';
