@@ -1,6 +1,6 @@
 // components/Footer.jsx
 import Link from "next/link";
-
+import { apiService } from '../services/apiService';
 export default function Footer() {
   return (
     <footer className="bg-[#111] text-gray-400 py-16 mt-auto">
