@@ -33,7 +33,7 @@ const ProfilePage = () => {
         }
 
         // 2. Gọi API lấy danh sách khách hàng
-        const response = await fetch('http://localhost:8000/customers/', {
+        const response = await fetch('https://khachsan-backend-production-9810.up.railway.app/customers/', {
           headers: {
             'Authorization': `Bearer ${user.token}`
           }
@@ -98,8 +98,8 @@ const ProfilePage = () => {
       
       // Gọi API lưu profile
       const url = customerId 
-        ? `http://localhost:8000/customers/${customerId}`  // Cập nhật nếu có ID
-        : 'http://localhost:8000/customers/';  // Tạo mới nếu chưa có
+        ? `https://khachsan-backend-production-9810.up.railway.app/customers/${customerId}`  // Cập nhật nếu có ID
+        : 'https://khachsan-backend-production-9810.up.railway.app/customers/';  // Tạo mới nếu chưa có
       
       const method = customerId ? 'PUT' : 'POST';
       
