@@ -4,7 +4,7 @@ import { useAuth } from "@/app/context/AuthContext";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useBooking } from "@/context/BookingContext";
-
+import { apiService } from '../services/apiService';
 export default function Header() {
   const { user, logout } = useAuth();
   const router = useRouter();
