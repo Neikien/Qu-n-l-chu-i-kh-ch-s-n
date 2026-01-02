@@ -121,18 +121,28 @@ body {
 /* Form Tìm kiếm */
 .search-form-bar {
   display: flex;
-  align-items: center;
-  border: 1px solid var(--border-color);
-  margin-bottom: 30px;
+  align-items: stretch; /* Rất quan trọng: Giúp nút và các ô input cao bằng nhau */
+  background-color: #fff;
+  border: 1px solid #ddd;
+  height: 60px; /* Đặt chiều cao cố định cho cả thanh tìm kiếm */
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
+/* Đảm bảo các ô input không có margin làm lệch nút */
 .search-field {
-  padding: 15px 20px;
-  border-right: 0.95px solid var(--border-color);
-  flex-basis: 20%;
+  flex: 2; /* Các ô nhập liệu rộng hơn nút */
+  border-right: 1px solid #eee;
+  padding: 10px 15px;
   display: flex;
   flex-direction: column;
   justify-content: center;
+}
+
+/* Ô cuối cùng trước nút tìm kiếm thì bỏ border-right */
+.field-price {
+  border-right: none;
 }
 
 .field-location { flex-basis: 35%; }
@@ -158,20 +168,37 @@ body {
   outline: none;
   font-weight: 500;
 }
-
 .btn-tim-kiem-v2 {
-  flex-basis: 10%;
-  background-color: var(--primary-color);
-  color: var(--header-light);
+  /* Thay vì flex-basis cố định, hãy để nó tự co giãn hoặc đặt độ rộng tối thiểu */
+  flex: 1;
+  min-width: 120px;
+
+  background-color: #b08968; /* Màu nâu đồng bộ với ảnh mẫu */
+  color: #ffffff;
   border: none;
-  padding: 15px 10px;
-  font-size: 1em;
-  font-weight: 600;
+
+  /* Đảm bảo nút chiếm hết chiều cao của cha */
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0 20px;
+  font-size: 0.9em;
+  font-weight: 700;
   text-transform: uppercase;
   cursor: pointer;
-  height: 100%;
+
+  /* Loại bỏ bo góc nếu muốn vuông vức như ảnh */
   border-radius: 0;
-  align-self: auto;
+
+  /* Tránh bị co lại quá mức */
+  flex-shrink: 0;
+  transition: background 0.3s;
+}
+
+.btn-tim-kiem-v2:hover {
+  background-color: #8e6d50;
 }
 
 /* ------------------------------------------- */

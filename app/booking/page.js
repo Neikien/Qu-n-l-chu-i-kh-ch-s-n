@@ -115,14 +115,14 @@ const Header = ({ onSearchUpdate }) => {
             </div>
 
             {/* 4. TÙY CHỌN MỨC GIÁ */}
-            <div className="search-field field-price">
+            {/* <div className="search-field field-price">
               <span className="field-label">TÙY CHỌN MỨC GIÁ</span>
               <select className="price-select" defaultValue="Best Available">
                 <option>Best Available</option>
                 <option>Option 2</option>
                 <option>Option 3</option>
               </select>
-            </div>
+            </div> */}
 
             <button className="btn-tim-kiem-v2" onClick={handleSearch}>TÌM KIẾM</button>
           </div>
