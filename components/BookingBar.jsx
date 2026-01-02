@@ -1,5 +1,5 @@
 "use client";
-
+import { apiService } from '../services/apiService';
 export default function BookingBar({ className = "", id = "" }) {
   return (
     // Class mặc định: Nền trắng, bóng đổ đậm, bo góc nhẹ -> Chuẩn Luxury
