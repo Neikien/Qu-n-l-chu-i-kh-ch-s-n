@@ -3,14 +3,14 @@
 import Image from "next/image";
 import Link from "next/link";
 
-// DỮ LIỆU GIẢ: CÁC GÓI ƯU ĐÃI
-const offers = [
+// DỮ LIỆU GIẢ (Bạn nên tách cái này ra file riêng như lib/data.js để dùng chung, nhưng tôi để đây cho tiện copy)
+export const offers = [
   {
     id: 1,
     title: "Advance Purchase",
     category: "Room Offers",
     image:
-      "https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?q=80&w=1200&auto=format&fit=crop", // Ảnh hồ bơi thư giãn
+      "https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?q=80&w=1200&auto=format&fit=crop",
     desc: "Plan ahead and save. Book your stay at least 7 days in advance to enjoy up to 20% off our Best Flexible Rate. Valid at participating hotels and resorts worldwide.",
   },
   {
@@ -18,7 +18,7 @@ const offers = [
     title: "Stay Longer, Pay Less",
     category: "Long Stay",
     image:
-      "https://images.unsplash.com/photo-1582719508461-905c673771fd?q=80&w=1200&auto=format&fit=crop", // Ảnh phòng khách sạn
+      "https://images.unsplash.com/photo-1582719508461-905c673771fd?q=80&w=1200&auto=format&fit=crop",
     desc: "Linger a little longer with more time to explore. Book a minimum of 3 nights and enjoy special savings. The perfect excuse to extend your getaway.",
   },
   {
@@ -26,7 +26,7 @@ const offers = [
     title: "Club InterContinental Experience",
     category: "Exclusive",
     image:
-      "https://images.unsplash.com/photo-1559339352-11d035aa65de?q=80&w=1200&auto=format&fit=crop", // Ảnh ăn uống sang trọng
+      "https://images.unsplash.com/photo-1559339352-11d035aa65de?q=80&w=1200&auto=format&fit=crop",
     desc: "Elevate your stay with access to the Club InterContinental Lounge, including complimentary breakfast, evening cocktails, and personalized service throughout your stay.",
   },
   {
@@ -34,7 +34,7 @@ const offers = [
     title: "Dinner, Bed & Breakfast",
     category: "Dining Packages",
     image:
-      "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?q=80&w=1200&auto=format&fit=crop", // Ảnh ly rượu/bàn ăn
+      "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?q=80&w=1200&auto=format&fit=crop",
     desc: "Indulge in a complete escape. Package includes luxury accommodation, daily breakfast for two, and a three-course dinner at our signature restaurant.",
   },
   {
@@ -42,7 +42,7 @@ const offers = [
     title: "Unforgettable Honeymoons",
     category: "Romance",
     image:
-      "https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?q=80&w=1200&auto=format&fit=crop", // Ảnh cặp đôi/hoa
+      "https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?q=80&w=1200&auto=format&fit=crop",
     desc: "Celebrate your love with champagne on arrival, a romantic turndown service, and a late checkout. Create memories that will last a lifetime.",
   },
   {
@@ -50,7 +50,7 @@ const offers = [
     title: "IHG One Rewards Member Rate",
     category: "Member Only",
     image:
-      "https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?q=80&w=1200&auto=format&fit=crop", // Ảnh view đẹp
+      "https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?q=80&w=1200&auto=format&fit=crop",
     desc: "Members always save more. Enjoy exclusive discounted rates when you book directly with us. Not a member yet? Join for free today.",
   },
 ];
@@ -91,37 +91,33 @@ export default function OffersPage() {
           </p>
         </div>
 
-        {/* 3. OFFERS GRID (2 CỘT) */}
+        {/* 3. OFFERS GRID */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-16 gap-y-24">
           {offers.map((offer) => (
             <div key={offer.id} className="group cursor-pointer flex flex-col">
-              {/* Ảnh Card - ĐÃ XÓA HIỆU ỨNG HOVER */}
               <div className="relative h-[400px] w-full overflow-hidden mb-10 bg-gray-100 shadow-sm">
                 <Image
                   src={offer.image}
                   alt={offer.title}
                   fill
-                  // Đã xóa: transition-transform duration-700 group-hover:scale-105
-                  className="object-cover"
+                  className="object-cover transition-transform duration-700 group-hover:scale-105"
                 />
-                {/* Tag Category */}
                 <div className="absolute top-6 left-6 bg-white/90 backdrop-blur-sm px-4 py-2 text-[10px] font-bold tracking-widest uppercase text-primary">
                   {offer.category}
                 </div>
               </div>
 
-              {/* Thông tin */}
               <div className="text-left">
                 <h3 className="font-serif text-3xl lg:text-4xl text-primary mb-6 leading-tight group-hover:text-accent transition-colors">
                   {offer.title}
                 </h3>
-                <p className="text-lg text-secondary font-light leading-loose mb-10">
+                <p className="text-lg text-secondary font-light leading-loose mb-10 line-clamp-3">
                   {offer.desc}
                 </p>
 
-                {/* Nút Book (Link về Booking Bar hoặc trang chi tiết) */}
+                {/* --- SỬA LINK Ở ĐÂY --- */}
                 <Link
-                  href="/#booking"
+                  href={`/offers/${offer.id}`} // Link Dynamic
                   className="inline-block border border-primary px-10 py-4 text-sm font-bold tracking-[2px] uppercase text-primary hover:bg-primary hover:text-white transition-all"
                 >
                   View Offer

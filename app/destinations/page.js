@@ -1,71 +1,67 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 
-// 1. DỮ LIỆU GIẢ (MOCK DATA)
-const hotels = [
-  {
-    id: 1,
-    name: "InterContinental Crete",
-    location: "Greece",
-    region: "Europe",
-    image:
-      "https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=1200&auto=format&fit=crop",
-    desc: "Set against a stunning seaside backdrop, this luxurious urban resort on Mirabello Bay offers an iconic escape. Open seasonally, serves as your serene island retreat, featuring inspiring infinity pools, exquisite Greek dining options, and refined design.",
-  },
-  {
-    id: 2,
-    name: "InterContinental Auckland",
-    location: "New Zealand",
-    region: "Oceania",
-    image:
-      "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?q=80&w=1200&auto=format&fit=crop",
-    desc: "A luxury haven overlooking the Harbour, InterContinental Auckland is your window to the Waitematā. Unwind in the sanctuary of our elegant guest rooms and set out to connect with the tapestry of local culture, art, and cuisine from this stunning waterfront destination.",
-  },
-  {
-    id: 3,
-    name: "InterContinental Danang Sun Peninsula",
-    location: "Vietnam",
-    region: "Asia",
-    image:
-      "https://images.unsplash.com/photo-1540555700478-4be289fbecef?q=80&w=1200&auto=format&fit=crop",
-    desc: "Where myth meets luxury on the Son Tra Peninsula. A resort designed by Bill Bensley that redefines elegance with private pool villas and world-class dining.",
-  },
-  {
-    id: 4,
-    name: "InterContinental Paris Le Grand",
-    location: "France",
-    region: "Europe",
-    image:
-      "https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?q=80&w=1200&auto=format&fit=crop",
-    desc: "Experience the essence of Parisian elegance overlooking the Opera Garnier. A historic landmark that has hosted royalty and artists for centuries.",
-  },
-  {
-    id: 5,
-    name: "InterContinental Maldives Maamunagau",
-    location: "Maldives",
-    region: "Asia",
-    image:
-      "https://images.unsplash.com/photo-1573843981267-be1999ff37cd?q=80&w=1200&auto=format&fit=crop",
-    desc: "Escape to the infinite blue of the Indian Ocean in our exclusive island sanctuary. The first and only All-Club InterContinental resort.",
-  },
-  {
-    id: 6,
-    name: "InterContinental New York Barclay",
-    location: "USA",
-    region: "Americas",
-    image:
-      "https://images.unsplash.com/photo-1565538810643-b5bdb714032a?q=80&w=1200&auto=format&fit=crop",
-    desc: "Classic luxury in the heart of Manhattan, merging history with modern sophistication. Just steps away from Park Avenue and high-end shopping.",
-  },
+// 1. DANH SÁCH ẢNH MOCK DATA (Dùng để hiển thị cho đẹp vì DB chưa có ảnh xịn)
+const MOCK_IMAGES = [
+  "https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=1200&auto=format&fit=crop", // Ảnh 1 (Resort biển)
+  "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?q=80&w=1200&auto=format&fit=crop", // Ảnh 2 (View biển từ phòng)
+  "https://images.unsplash.com/photo-1540555700478-4be289fbecef?q=80&w=1200&auto=format&fit=crop", // Ảnh 3 (Resort núi/biển)
+  "https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?q=80&w=1200&auto=format&fit=crop", // Ảnh 4 (Thành phố cổ điển)
+  "https://images.unsplash.com/photo-1573843981267-be1999ff37cd?q=80&w=1200&auto=format&fit=crop", // Ảnh 5 (Resort đảo)
+  "https://images.unsplash.com/photo-1565538810643-b5bdb714032a?q=80&w=1200&auto=format&fit=crop", // Ảnh 6 (Thành phố hiện đại)
 ];
 
 const regions = ["All", "Asia", "Europe", "Americas", "Oceania"];
 
 export default function DestinationsPage() {
   const [selectedRegion, setSelectedRegion] = useState("All");
+  const [hotels, setHotels] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // --- 2. GỌI API LẤY KHÁCH SẠN ---
+  useEffect(() => {
+    const fetchHotels = async () => {
+      try {
+        const res = await fetch(
+          "https://khachsan-backend-production-9810.up.railway.app/hotels/?skip=0&limit=100"
+        );
+        if (!res.ok) throw new Error("Failed to fetch hotels");
+
+        const data = await res.json();
+
+        // --- 3. KẾT HỢP DATA THẬT + ẢNH MOCK ---
+        const formattedHotels = data.map((h, index) => {
+          // Xử lý địa chỉ ngắn gọn
+          const addressParts = h.DiaChi ? h.DiaChi.split(",") : [];
+          const shortLocation =
+            addressParts.length > 0
+              ? addressParts[addressParts.length - 1].trim()
+              : "Vietnam";
+
+          return {
+            id: h.MaKS,
+            name: h.TenKS, // Tên thật từ DB
+            location: shortLocation, // Địa chỉ thật (đã rút gọn)
+            region: "Asia",
+            // QUAN TRỌNG: Lấy ảnh từ MOCK_IMAGES theo thứ tự (index % độ dài mảng)
+            image: MOCK_IMAGES[index % MOCK_IMAGES.length],
+            desc: h.MoTa || "Experience luxury in the heart of Vietnam.", // Mô tả thật
+          };
+        });
+
+        setHotels(formattedHotels);
+      } catch (error) {
+        console.error("Lỗi tải khách sạn:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchHotels();
+  }, []);
 
   const filteredHotels =
     selectedRegion === "All"
@@ -102,7 +98,7 @@ export default function DestinationsPage() {
             Let our newest openings inspire your next journey
           </h2>
 
-          {/* Bộ lọc (Filter Tabs) */}
+          {/* Filter Tabs */}
           <div className="flex flex-wrap gap-8 border-b border-gray-100 pb-4">
             {regions.map((region) => (
               <button
@@ -120,52 +116,60 @@ export default function DestinationsPage() {
           </div>
         </div>
 
-        {/* 3. DESTINATIONS GRID (2 CỘT - CHỮ TO - NÚT CHUẨN) */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-16 gap-y-24">
-          {filteredHotels.map((hotel) => (
-            <div key={hotel.id} className="group cursor-pointer flex flex-col">
-              {/* Ảnh Card (Khổ Ngang - Landscape) */}
-              <div className="relative h-[450px] w-full overflow-hidden mb-10 bg-gray-100 shadow-sm">
-                <Image
-                  src={hotel.image}
-                  alt={hotel.name}
-                  fill
-                  className="object-cover transition-transform duration-700 group-hover:scale-105"
-                />
-                {/* Tag Location nhỏ trên ảnh */}
-                <div className="absolute top-6 left-6 bg-white/90 backdrop-blur-sm px-4 py-2 text-[10px] font-bold tracking-widest uppercase text-primary">
-                  {hotel.location}
-                </div>
-              </div>
-
-              {/* Thông tin (Căn trái - Typography Luxury) */}
-              <div className="text-left">
-                {/* Tên Khách sạn (Serif, To 3xl-4xl) */}
-                <h3 className="font-serif text-3xl lg:text-4xl text-primary mb-6 leading-tight group-hover:text-accent transition-colors">
-                  {hotel.name}
-                </h3>
-
-                {/* Mô tả (Font Sans, 18px, Giãn dòng rộng) */}
-                <p className="text-lg text-secondary font-light leading-loose mb-10">
-                  {hotel.desc}
-                </p>
-
-                {/* Nút Explore (Đồng bộ kích thước với nút Home/Experience) */}
-                <Link
-                  href={`/rooms`}
-                  className="inline-block border border-primary px-10 py-4 text-sm font-bold tracking-[2px] uppercase text-primary hover:bg-primary hover:text-white transition-all"
+        {/* LOADING */}
+        {loading ? (
+          <div className="text-center py-20 text-gray-400 font-serif text-xl">
+            Loading destinations...
+          </div>
+        ) : (
+          /* 3. GRID KHÁCH SẠN */
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-16 gap-y-24">
+            {filteredHotels.length > 0 ? (
+              filteredHotels.map((hotel) => (
+                <div
+                  key={hotel.id}
+                  className="group cursor-pointer flex flex-col"
                 >
-                  Explore Hotel
-                </Link>
-              </div>
-            </div>
-          ))}
-        </div>
+                  {/* Ảnh Card (Dùng ảnh Mock) */}
+                  <div className="relative h-[450px] w-full overflow-hidden mb-10 bg-gray-100 shadow-sm">
+                    <Image
+                      src={hotel.image}
+                      alt={hotel.name}
+                      fill
+                      className="object-cover transition-transform duration-700 group-hover:scale-105"
+                    />
+                    {/* Tag Location */}
+                    <div className="absolute top-6 left-6 bg-white/90 backdrop-blur-sm px-4 py-2 text-[10px] font-bold tracking-widest uppercase text-primary">
+                      {hotel.location}
+                    </div>
+                  </div>
 
-        {/* Empty State */}
-        {filteredHotels.length === 0 && (
-          <div className="text-center py-32 text-gray-400 font-serif text-2xl">
-            <p>No destinations found in this region.</p>
+                  {/* Thông tin (Dữ liệu thật từ API) */}
+                  <div className="text-left">
+                    <h3 className="font-serif text-3xl lg:text-4xl text-primary mb-6 leading-tight group-hover:text-accent transition-colors">
+                      {hotel.name}
+                    </h3>
+
+                    <p className="text-lg text-secondary font-light leading-loose mb-10 line-clamp-3">
+                      {hotel.desc}
+                    </p>
+
+                    {/* Nút Explore - Dẫn về trang phòng của khách sạn đó */}
+                    <Link
+                      href={`/rooms?hotel_id=${hotel.id}`}
+                      className="inline-block border border-primary px-10 py-4 text-sm font-bold tracking-[2px] uppercase text-primary hover:bg-primary hover:text-white transition-all"
+                    >
+                      Explore Hotel
+                    </Link>
+                  </div>
+                </div>
+              ))
+            ) : (
+              // Empty State
+              <div className="col-span-full text-center py-20 text-gray-400 font-serif text-xl">
+                No hotels found in {selectedRegion}.
+              </div>
+            )}
           </div>
         )}
       </div>

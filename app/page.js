@@ -3,10 +3,11 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import LoginModal from "@/components/LoginModal";
-import { apiService } from "@/lib/api";
+// Không dùng apiService mặc định nữa để tùy chỉnh limit
+// import { apiService } from "@/lib/api";
 
 export default function Home() {
-  // --- 1. LOGIC SLIDER HERO (GIỮ NGUYÊN ẢNH GỐC CỦA BẠN) ---
+  // --- 1. LOGIC SLIDER HERO ---
   const [currentSlide, setCurrentSlide] = useState(0);
   const slides = [
     "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=1920&q=80",
@@ -21,13 +22,15 @@ export default function Home() {
     return () => clearInterval(interval);
   }, [slides.length]);
 
-  // --- 2. LOGIC TABS (LẤY TEXT TỪ API NHƯNG GIỮ ẢNH CŨ) ---
-  // Danh sách ảnh gốc bạn muốn giữ lại
+  // --- 2. LOGIC TABS (HIỂN THỊ ĐẦY ĐỦ KHÁCH SẠN) ---
+  // Mở rộng danh sách ảnh để đủ cho 6 khách sạn (Hà Nội, Đà Nẵng, Nha Trang, Đà Lạt, HCM, Phú Quốc)
   const hardcodedImages = [
-    "https://digital.ihg.com/is/image/ihg/ic-brand-refresh-homepg-hero-box-carousel-1-lvp-1440x636", // Chantilly
-    "https://images.unsplash.com/photo-1445019980597-93fa8acb246c?q=80&w=1600&auto=format&fit=crop", // Bellevue
-    "https://digital.ihg.com/is/image/ihg/ic-brand-refresh-homepg-hero-box-carousel-3-lvp-1440x636", // Hayman
-    "https://images.unsplash.com/photo-1548574505-5e239809ee19?q=80&w=1600&auto=format&fit=crop", // Dominica
+    "https://digital.ihg.com/is/image/ihg/ic-brand-refresh-homepg-hero-box-carousel-1-lvp-1440x636", // 1. Hà Nội
+    "https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?q=80&w=1600", // 2. Đà Nẵng (Biển)
+    "https://digital.ihg.com/is/image/ihg/ic-brand-refresh-homepg-hero-box-carousel-3-lvp-1440x636", // 3. Nha Trang
+    "https://images.unsplash.com/photo-1548574505-5e239809ee19?q=80&w=1600", // 4. Đà Lạt (Rừng)
+    "https://images.unsplash.com/photo-1565538810643-b5bdb714032a?q=80&w=1600", // 5. TP.HCM (City)
+    "https://images.unsplash.com/photo-1582719508461-905c673771fd?q=80&w=1600", // 6. Phú Quốc (Resort)
   ];
 
   const [featuredHotels, setFeaturedHotels] = useState([]);
@@ -36,23 +39,31 @@ export default function Home() {
   useEffect(() => {
     const fetchFeaturedHotels = async () => {
       try {
-        const data = await apiService.getHotels();
+        // GỌI TRỰC TIẾP API VỚI LIMIT=100 ĐỂ LẤY HẾT DATA
+        const res = await fetch(
+          "https://khachsan-backend-production-9810.up.railway.app/hotels/?skip=0&limit=100"
+        );
+        if (!res.ok) throw new Error("Failed to fetch hotels");
 
-        // Lấy 4 khách sạn đầu tiên
-        // NHƯNG: Gán đè ảnh bằng danh sách hardcodedImages để không bị đổi giao diện
-        const top4 = data.slice(0, 4).map((hotel, index) => ({
+        const data = await res.json();
+
+        // Map dữ liệu và KHÔNG DÙNG .slice() nữa để lấy hết
+        const allHotels = data.map((hotel, index) => ({
           id: hotel.MaKS || hotel.id,
-          name: hotel.TenKhachSan || hotel.name,
-          // Ưu tiên dùng ảnh cứng của bạn theo thứ tự 0,1,2,3
-          image: hardcodedImages[index] || hotel.HinhAnh,
+          name: hotel.TenKhachSan || hotel.TenKS || hotel.name, // Thử nhiều trường tên phòng khi API trả về khác nhau
+          // Lấy ảnh theo thứ tự, nếu hết ảnh thì quay vòng lại (index % length)
+          image:
+            hardcodedImages[index % hardcodedImages.length] || hotel.HinhAnh,
           location: hotel.DiaChi || "Luxury Location",
           desc:
             hotel.MoTa ||
             "Experience the untouched nature with luxury amenities.",
         }));
 
-        setFeaturedHotels(top4);
-        if (top4.length > 0) setActiveTabId(top4[0].id);
+        setFeaturedHotels(allHotels);
+
+        // Mặc định chọn tab đầu tiên
+        if (allHotels.length > 0) setActiveTabId(allHotels[0].id);
       } catch (error) {
         console.error("Lỗi API:", error);
       }
@@ -91,8 +102,6 @@ export default function Home() {
         </div>
       </div>
 
-      {/* ĐÃ XÓA BOOKING BAR (THANH TÌM KIẾM) Ở ĐÂY */}
-
       {/* 2. INTRO TEXT */}
       <section className="pt-20 pb-12 px-5">
         <div className="max-w-[90%] mx-auto text-left">
@@ -111,17 +120,17 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 3. TABS SECTION (Kết hợp: Text từ API + Ảnh gốc của bạn) */}
+      {/* 3. TABS SECTION */}
       <section className="pb-16 px-5">
         <div className="max-w-[90%] mx-auto">
-          {/* Tabs Menu */}
-          <div className="flex flex-wrap justify-center gap-8 mb-8 border-b border-gray-100 pb-2">
+          {/* Tabs Menu - Hiển thị danh sách ngang */}
+          <div className="flex flex-wrap justify-center gap-x-8 gap-y-4 mb-8 border-b border-gray-100 pb-2">
             {featuredHotels.length > 0 ? (
               featuredHotels.map((hotel) => (
                 <button
                   key={hotel.id}
                   onClick={() => setActiveTabId(hotel.id)}
-                  className={`pb-3 text-sm font-medium uppercase tracking-[2px] transition-all ${
+                  className={`pb-3 text-sm font-medium uppercase tracking-[2px] transition-all whitespace-nowrap ${
                     activeTabId === hotel.id
                       ? "text-primary border-b-2 border-accent"
                       : "text-gray-400 hover:text-primary"
@@ -131,7 +140,6 @@ export default function Home() {
                 </button>
               ))
             ) : (
-              // Loading nhẹ nhàng
               <div className="text-gray-400 text-sm pb-3">
                 Loading hotels...
               </div>
@@ -142,14 +150,13 @@ export default function Home() {
           <div className="relative w-full h-[600px] bg-gray-100 overflow-hidden group">
             {activeHotel && (
               <>
-                {/* Ảnh được ép cứng theo danh sách của bạn */}
                 <Image
                   src={activeHotel.image}
-                  alt={activeHotel.name}
+                  alt={activeHotel.name || "Hotel Image"}
                   fill
                   className="object-cover transition-transform duration-700"
                 />
-                <div className="absolute top-1/2 right-10 lg:right-20 transform -translate-y-1/2 bg-white p-10 lg:p-14 max-w-md shadow-xl">
+                <div className="absolute top-1/2 right-10 lg:right-20 transform -translate-y-1/2 bg-white p-10 lg:p-14 max-w-md shadow-xl z-10">
                   <div className="text-xs font-bold text-gray-400 tracking-[3px] mb-4 uppercase">
                     {activeHotel.location}
                   </div>
@@ -172,7 +179,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 4. SPA SECTION (GIỮ NGUYÊN) */}
+      {/* 4. SPA SECTION */}
       <section className="py-12 bg-white">
         <div className="max-w-[90%] mx-auto flex flex-col lg:flex-row h-auto lg:h-[650px]">
           <div className="lg:w-1/2 bg-[#f9f9f9] flex flex-col justify-center p-10 lg:p-20 text-left order-2 lg:order-1">
@@ -208,13 +215,13 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 5. EXPERIENCE SECTION (GIỮ NGUYÊN) */}
+      {/* 5. EXPERIENCE SECTION */}
       <section className="py-12 bg-white">
         <div className="max-w-[90%] mx-auto flex flex-col lg:flex-row h-auto lg:h-[650px]">
           <div className="lg:w-1/2 relative h-[400px] lg:h-full">
             <Image
-              src="https://www.angsana.com/_next/image?url=https%3A%2F%2Fwww.angsana.com%2Fassets%2F2023-03%2F12.%20The%20Rainmist%20Experience.jpg&w=1920&q=75"
-              alt="Experience"
+              src="https://images.unsplash.com/photo-1519823551278-64ac92734fb1?q=80&w=1200"
+              alt="Rainmist Experience"
               fill
               className="object-cover"
             />
@@ -233,7 +240,7 @@ export default function Home() {
               cascading rain showers, and restore the soul.
             </p>
             <a
-              href="#"
+              href="/experience/rainmist"
               className="inline-block border border-primary px-10 py-4 text-sm font-bold tracking-[2px] uppercase hover:bg-primary hover:text-white transition-all w-fit"
             >
               Find Out More
@@ -242,7 +249,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 6. AMBASSADOR SECTION (GIỮ NGUYÊN) */}
+      {/* 6. AMBASSADOR SECTION */}
       <section className="py-8 bg-white">
         <div className="max-w-[96%] mx-auto relative lg:h-[700px] flex flex-col lg:block">
           <Image
@@ -261,7 +268,7 @@ export default function Home() {
               available at over 220 destinations worldwide.
             </p>
             <a
-              href="#"
+              href="/ambassador"
               className="inline-block border border-primary px-8 py-4 text-[10px] font-bold tracking-[2px] uppercase hover:bg-primary hover:text-white transition-all"
             >
               More Rewards

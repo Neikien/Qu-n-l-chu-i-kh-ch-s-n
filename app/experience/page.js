@@ -6,7 +6,7 @@ import Link from "next/link";
 export default function ExperiencePage() {
   return (
     <main className="min-h-screen bg-white pb-20">
-      {/* 1. HERO BANNER (Chuẩn) */}
+      {/* 1. HERO BANNER */}
       <div className="relative h-[60vh] w-full overflow-hidden bg-gray-900">
         <Image
           src="https://digital.ihg.com/is/image/ihg/ic-brand-refresh-exper-lp-offer-hero-box-lvp-1440x636"
@@ -26,7 +26,7 @@ export default function ExperiencePage() {
         </div>
       </div>
 
-      {/* 2. TIMELESS LUXURY (Đồng bộ font to) */}
+      {/* 2. TIMELESS LUXURY */}
       <section className="py-20 px-5">
         <div className="max-w-[90%] mx-auto flex flex-col lg:flex-row h-auto lg:h-[600px]">
           <div className="lg:w-1/2 bg-[#f9f9f9] flex flex-col justify-center p-10 lg:p-20 text-left order-2 lg:order-1">
@@ -57,7 +57,7 @@ export default function ExperiencePage() {
         </div>
       </section>
 
-      {/* 3. INTENTIONAL FLEXIBILITY (Grid 3 cột - Font to) */}
+      {/* 3. INTENTIONAL FLEXIBILITY */}
       <section className="py-24 bg-gray-50 px-5">
         <div className="max-w-[90%] mx-auto">
           <div className="text-left mb-16">
@@ -70,7 +70,7 @@ export default function ExperiencePage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-            {/* Item 1 */}
+            {/* Item 1 - Timeshifter */}
             <div className="group">
               <div className="relative h-[350px] w-full overflow-hidden mb-8 bg-gray-200">
                 <Image
@@ -88,14 +88,14 @@ export default function ExperiencePage() {
                 optimize your travel experience.
               </p>
               <Link
-                href="#"
+                href="/experience/timeshifter"
                 className="text-xs font-bold uppercase tracking-widest text-accent border-b border-accent pb-1 hover:text-primary hover:border-primary transition-colors"
               >
                 Learn More &gt;
               </Link>
             </div>
 
-            {/* Item 2 */}
+            {/* Item 2 - Restorative Design */}
             <div className="group">
               <div className="relative h-[350px] w-full overflow-hidden mb-8 bg-gray-200">
                 <Image
@@ -112,9 +112,15 @@ export default function ExperiencePage() {
                 Carefully curated spaces designed to enhance relaxation and
                 restoration during your stay.
               </p>
+              <Link
+                href="/experience/design"
+                className="text-xs font-bold uppercase tracking-widest text-accent border-b border-accent pb-1 hover:text-primary hover:border-primary transition-colors"
+              >
+                Learn More &gt;
+              </Link>
             </div>
 
-            {/* Item 3 */}
+            {/* Item 3 - Flexible Dining */}
             <div className="group">
               <div className="relative h-[350px] w-full overflow-hidden mb-8 bg-gray-200">
                 <Image
@@ -131,12 +137,18 @@ export default function ExperiencePage() {
                 Balanced and wholesome dishes available on-demand to suit your
                 schedule.
               </p>
+              <Link
+                href="/experience/flexible-dining"
+                className="text-xs font-bold uppercase tracking-widest text-accent border-b border-accent pb-1 hover:text-primary hover:border-primary transition-colors"
+              >
+                Learn More &gt;
+              </Link>
             </div>
           </div>
         </div>
       </section>
 
-      {/* 4. INCREDIBLE OCCASIONS (Nút to) */}
+      {/* 4. INCREDIBLE OCCASIONS */}
       <section className="py-20 px-5">
         <div className="max-w-[90%] mx-auto flex flex-col lg:flex-row h-auto lg:h-[600px]">
           <div className="lg:w-1/2 relative h-[400px] lg:h-full">
@@ -156,20 +168,20 @@ export default function ExperiencePage() {
               unique and personal to you, every milestone is crafted to be truly
               unforgettable.
             </p>
-            <a
-              href="#"
+            <Link
+              href="/experience/occasions"
               className="inline-block border border-primary px-10 py-4 text-sm font-bold tracking-[2px] uppercase hover:bg-primary hover:text-white transition-all w-fit"
             >
               Discover More
-            </a>
+            </Link>
           </div>
         </div>
       </section>
 
-      {/* 5. RESTAURANTS AND BARS (NỀN XÁM - CHỮ TRÁI, ẢNH PHẢI) */}
+      {/* 5. RESTAURANTS AND BARS */}
       <section className="py-12 bg-white">
         <div className="max-w-[90%] mx-auto flex flex-col lg:flex-row h-auto lg:h-[600px]">
-          {/* Cột CHỮ bên TRÁI (Thêm nền xám + padding lớn) */}
+          {/* Cột CHỮ bên TRÁI */}
           <div className="lg:w-1/2 bg-[#f9f9f9] flex flex-col justify-center p-10 lg:p-20 text-left">
             <h2 className="font-serif text-4xl lg:text-5xl text-primary mb-8 leading-tight">
               Restaurants and Bars
@@ -179,15 +191,15 @@ export default function ExperiencePage() {
               celebrate traditional local recipes with a global twist, crafting
               each bite from the freshest ingredients.
             </p>
-            <a
-              href="#"
+            <Link
+              href="/experience/dining"
               className="inline-block border border-primary px-10 py-4 text-sm font-bold tracking-[2px] uppercase hover:bg-primary hover:text-white transition-all w-fit"
             >
               Learn More
-            </a>
+            </Link>
           </div>
 
-          {/* Cột ẢNH bên PHẢI (Bỏ shadow, dính liền với chữ) */}
+          {/* Cột ẢNH bên PHẢI */}
           <div className="lg:w-1/2 relative h-[400px] lg:h-full">
             <Image
               src="https://images.unsplash.com/photo-1559339352-11d035aa65de?q=80&w=1200"
@@ -199,7 +211,7 @@ export default function ExperiencePage() {
         </div>
       </section>
 
-      {/* 6. CLUB INTERCONTINENTAL (Nút to) */}
+      {/* 6. CLUB INTERCONTINENTAL */}
       <section className="py-20 px-5">
         <div className="max-w-[90%] mx-auto flex flex-col lg:flex-row h-auto lg:h-[600px]">
           <div className="lg:w-1/2 relative h-[400px] lg:h-full">
@@ -219,17 +231,17 @@ export default function ExperiencePage() {
               inspired treats such as afternoon tea, evening canapés, and
               signature serves.
             </p>
-            <a
-              href="#"
+            <Link
+              href="/experience/club"
               className="inline-block border border-primary px-10 py-4 text-sm font-bold tracking-[2px] uppercase hover:bg-primary hover:text-white transition-all w-fit"
             >
               Learn More
-            </a>
+            </Link>
           </div>
         </div>
       </section>
 
-      {/* 7. PIONEERING (Overlay Phải - Chữ to) */}
+      {/* 7. PIONEERING */}
       <section className="py-24 bg-white">
         <div className="max-w-[96%] mx-auto relative lg:h-[700px] flex flex-col lg:block">
           <Image
