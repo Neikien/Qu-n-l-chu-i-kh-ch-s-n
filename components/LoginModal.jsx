@@ -2,14 +2,16 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import Link from "next/link"; // Dùng Link thay thẻ a để tối ưu Next.js
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { apiService } from "../services/apiService"; // Import service của bạn
+import { useAuth } from "@/app/context/AuthContext"; // <--- 1. QUAN TRỌNG: Import useAuth
 
 export default function LoginModal({ isOpen, onClose }) {
   const router = useRouter();
 
-  // 1. STATE QUẢN LÝ DỮ LIỆU
+  // 2. QUAN TRỌNG: Lấy hàm login từ Context
+  const { login } = useAuth();
+
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -17,7 +19,6 @@ export default function LoginModal({ isOpen, onClose }) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // Chặn cuộn trang khi mở Modal (Giữ nguyên code của bạn)
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
@@ -29,7 +30,6 @@ export default function LoginModal({ isOpen, onClose }) {
     };
   }, [isOpen]);
 
-  // Reset form khi đóng/mở lại modal
   useEffect(() => {
     if (!isOpen) {
       setError("");
@@ -39,30 +39,25 @@ export default function LoginModal({ isOpen, onClose }) {
 
   if (!isOpen) return null;
 
-  // 2. HÀM XỬ LÝ NHẬP LIỆU
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
-    setError(""); // Xóa lỗi khi người dùng gõ lại
+    setError("");
   };
 
-  // 3. HÀM GỬI FORM (LOGIN)
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     setError("");
 
     try {
-      // Gọi API login từ service của bạn
-      // Giả sử apiService.login trả về dữ liệu user hoặc token
-      const response = await apiService.login(formData);
+      // 3. QUAN TRỌNG: Dùng hàm login của Context (KHÔNG DÙNG apiService Ở ĐÂY)
+      // Hàm này sẽ tự động cập nhật State và Header cho bạn
+      await login(formData.email, formData.password);
 
-      // Nếu API thành công:
-      alert("Welcome back, " + (response.fullname || "User"));
+      alert("Đăng nhập thành công!");
 
-      // Đóng modal và reload trang hoặc chuyển hướng
-      onClose();
-      router.refresh();
-      // router.push("/dashboard"); // Hoặc chuyển trang nếu cần
+      onClose(); // Đóng modal
+      // Không cần reload trang nữa vì React sẽ tự cập nhật giao diện
     } catch (err) {
       console.error(err);
       setError(err.message || "Email hoặc mật khẩu không chính xác.");
@@ -73,15 +68,12 @@ export default function LoginModal({ isOpen, onClose }) {
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center">
-      {/* Lớp nền đen mờ (Backdrop) */}
       <div
         className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
         onClick={onClose}
       ></div>
 
-      {/* Hộp Modal Chính */}
       <div className="relative w-[95%] lg:w-[900px] h-[600px] bg-white shadow-2xl flex overflow-hidden animate-fade-in-up">
-        {/* Nút đóng (X) */}
         <button
           onClick={onClose}
           className="absolute top-5 right-5 z-50 w-10 h-10 flex items-center justify-center bg-white/80 rounded-full hover:bg-primary hover:text-white transition-colors"
@@ -89,7 +81,6 @@ export default function LoginModal({ isOpen, onClose }) {
           ✕
         </button>
 
-        {/* CỘT TRÁI: ẢNH (Giữ nguyên) */}
         <div className="hidden lg:block w-1/2 relative h-full">
           <Image
             src="https://phuquoc.regenthotels.com/sites/rpq/files/styles/height_1400/public/homepage/shutterstock_1446827465_1%20%281%29_0.jpg?itok=ZSXjz5zI"
@@ -106,14 +97,12 @@ export default function LoginModal({ isOpen, onClose }) {
           </div>
         </div>
 
-        {/* CỘT PHẢI: FORM (Đã gắn Logic) */}
         <div className="w-full lg:w-1/2 p-10 lg:p-16 flex flex-col justify-center relative bg-white">
           <h2 className="font-serif text-3xl text-primary mb-2">Sign In</h2>
           <p className="text-secondary text-sm mb-6 font-light">
             Access your member benefits.
           </p>
 
-          {/* Hiển thị lỗi nếu có */}
           {error && (
             <div className="mb-4 p-2 bg-red-50 border-l-2 border-red-500 text-red-600 text-xs font-medium">
               {error}
