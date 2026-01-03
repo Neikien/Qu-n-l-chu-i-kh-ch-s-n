@@ -21,19 +21,18 @@ const playfair = Playfair_Display({
   weight: ["400", "600"],
 });
 
-// Component xử lý giao diện bao quanh (Header, Footer, BookingBar)
-function GlobalBookingWrapper({ children }) {
+// Component con: Chỉ chịu trách nhiệm hiển thị Header, Footer và Logic BookingBar
+// KHÔNG chứa thẻ <body> nữa
+function InnerLayout({ children }) {
   const pathname = usePathname();
   const { isBookingOpen } = useBooking();
   const isHomePage = pathname === "/";
 
   return (
-    <body
-      suppressHydrationWarning={true}
-      className={`${inter.variable} ${playfair.variable} font-sans text-primary bg-white antialiased flex flex-col min-h-screen relative`}
-    >
+    <>
       <Header />
 
+      {/* Booking Bar Logic */}
       {!isHomePage && (
         <div
           className={`fixed top-[100px] left-0 w-full z-40 flex justify-center px-5 transition-all duration-500 ease-in-out transform ${
@@ -48,18 +47,19 @@ function GlobalBookingWrapper({ children }) {
         </div>
       )}
 
+      {/* Main Content */}
       <div className="flex-grow">{children}</div>
+
       <Footer />
-    </body>
+    </>
   );
 }
 
-// CHỈ GIỮ LẠI MỘT HÀM ROOTLAYOUT DUY NHẤT
+// RootLayout: Chịu trách nhiệm cấu trúc HTML gốc
 export default function RootLayout({ children }) {
   return (
     <html lang="en" className="scroll-smooth" suppressHydrationWarning={true}>
-    <head>
-        {/* Thêm dòng này để nhúng FontAwesome từ CDN */}
+      <head>
         <link
           rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
@@ -68,11 +68,19 @@ export default function RootLayout({ children }) {
           referrerPolicy="no-referrer"
         />
       </head>
-      <AuthProvider>
-        <BookingProvider>
-          <GlobalBookingWrapper>{children}</GlobalBookingWrapper>
-        </BookingProvider>
-      </AuthProvider>
+
+      {/* Thẻ BODY nằm ở đây mới đúng chuẩn */}
+      <body
+        suppressHydrationWarning={true}
+        className={`${inter.variable} ${playfair.variable} font-sans text-primary bg-white antialiased flex flex-col min-h-screen relative`}
+      >
+        {/* AuthProvider bao bọc toàn bộ nội dung trong body */}
+        <AuthProvider>
+          <BookingProvider>
+            <InnerLayout>{children}</InnerLayout>
+          </BookingProvider>
+        </AuthProvider>
+      </body>
     </html>
   );
 }
