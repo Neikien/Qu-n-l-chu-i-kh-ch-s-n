@@ -95,13 +95,14 @@ export default function OffersPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-16 gap-y-24">
           {offers.map((offer) => (
             <div key={offer.id} className="group cursor-pointer flex flex-col">
-              {/* Ảnh Card */}
+              {/* Ảnh Card - ĐÃ XÓA HIỆU ỨNG HOVER */}
               <div className="relative h-[400px] w-full overflow-hidden mb-10 bg-gray-100 shadow-sm">
                 <Image
                   src={offer.image}
                   alt={offer.title}
                   fill
-                  className="object-cover transition-transform duration-700 group-hover:scale-105"
+                  // Đã xóa: transition-transform duration-700 group-hover:scale-105
+                  className="object-cover"
                 />
                 {/* Tag Category */}
                 <div className="absolute top-6 left-6 bg-white/90 backdrop-blur-sm px-4 py-2 text-[10px] font-bold tracking-widest uppercase text-primary">
