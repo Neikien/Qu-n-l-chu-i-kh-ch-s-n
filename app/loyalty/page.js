@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
+import Link from "next/link"; // Đảm bảo đã import Link
 
 // DỮ LIỆU NỘI DUNG TỪNG TAB
 const tabContent = {
@@ -12,6 +12,7 @@ const tabContent = {
     image:
       "https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=1200&auto=format&fit=crop",
     benefits: ["Priority Check-in", "Dedicated Support", "Welcome Amenity"],
+    linkId: "elevated-recognition",
   },
   enhancements: {
     title: "Stay Enhancements",
@@ -19,6 +20,7 @@ const tabContent = {
     image:
       "https://images.unsplash.com/photo-1618773928121-c32242e63f39?q=80&w=1200&auto=format&fit=crop",
     benefits: ["Room Upgrades", "Premium Wi-Fi", "Turn-down Service"],
+    linkId: "stay-enhancements",
   },
   dining: {
     title: "Restaurant Provisions",
@@ -30,6 +32,7 @@ const tabContent = {
       "Priority Reservations",
       "Complimentary Breakfast",
     ],
+    linkId: "restaurant-provisions",
   },
   time: {
     title: "Luxury of Time",
@@ -37,6 +40,7 @@ const tabContent = {
     image:
       "https://images.unsplash.com/photo-1540555700478-4be289fbecef?q=80&w=1200&auto=format&fit=crop",
     benefits: ["Late Check-out (4PM)", "Early Check-in", "24hr Stay"],
+    linkId: "luxury-of-time",
   },
 };
 
@@ -62,13 +66,18 @@ export default function LoyaltyPage() {
           <h1 className="font-serif text-6xl md:text-8xl mb-8 animate-fade-in-up delay-100">
             InterContinental Ambassador
           </h1>
-          <button className="bg-white text-primary px-10 py-4 text-sm font-bold tracking-[2px] uppercase hover:bg-accent hover:text-white transition-all animate-fade-in-up delay-200">
+
+          {/* ĐÃ SỬA: Thay button bằng Link trỏ về /register */}
+          <Link
+            href="/register"
+            className="inline-block bg-white text-primary px-10 py-4 text-sm font-bold tracking-[2px] uppercase hover:bg-accent hover:text-white transition-all animate-fade-in-up delay-200"
+          >
             Join For Free
-          </button>
+          </Link>
         </div>
       </div>
 
-      {/* 2. INTRO TEXT (Giống ảnh mẫu 2) */}
+      {/* 2. INTRO TEXT */}
       <section className="pt-24 pb-12 px-5 text-center">
         <div className="max-w-4xl mx-auto">
           <h2 className="font-serif text-5xl lg:text-6xl text-primary mb-8 leading-tight">
@@ -82,54 +91,27 @@ export default function LoyaltyPage() {
         </div>
       </section>
 
-      {/* 3. INTERACTIVE TABS (Giống ảnh mẫu 1) */}
+      {/* 3. INTERACTIVE TABS */}
       <section className="py-12 px-5">
         <div className="max-w-[90%] mx-auto">
           {/* Thanh Tab Ngang */}
           <div className="flex flex-wrap justify-center gap-10 border-b border-gray-200 pb-4 mb-16">
-            <button
-              onClick={() => setActiveTab("recognition")}
-              className={`pb-4 text-sm font-bold uppercase tracking-[2px] transition-all ${
-                activeTab === "recognition"
-                  ? "text-primary border-b-2 border-primary"
-                  : "text-gray-400 hover:text-primary"
-              }`}
-            >
-              Elevated Recognition
-            </button>
-            <button
-              onClick={() => setActiveTab("enhancements")}
-              className={`pb-4 text-sm font-bold uppercase tracking-[2px] transition-all ${
-                activeTab === "enhancements"
-                  ? "text-primary border-b-2 border-primary"
-                  : "text-gray-400 hover:text-primary"
-              }`}
-            >
-              Stay Enhancements
-            </button>
-            <button
-              onClick={() => setActiveTab("dining")}
-              className={`pb-4 text-sm font-bold uppercase tracking-[2px] transition-all ${
-                activeTab === "dining"
-                  ? "text-primary border-b-2 border-primary"
-                  : "text-gray-400 hover:text-primary"
-              }`}
-            >
-              Restaurant Provisions
-            </button>
-            <button
-              onClick={() => setActiveTab("time")}
-              className={`pb-4 text-sm font-bold uppercase tracking-[2px] transition-all ${
-                activeTab === "time"
-                  ? "text-primary border-b-2 border-primary"
-                  : "text-gray-400 hover:text-primary"
-              }`}
-            >
-              Luxury of Time
-            </button>
+            {Object.keys(tabContent).map((key) => (
+              <button
+                key={key}
+                onClick={() => setActiveTab(key)}
+                className={`pb-4 text-sm font-bold uppercase tracking-[2px] transition-all ${
+                  activeTab === key
+                    ? "text-primary border-b-2 border-primary"
+                    : "text-gray-400 hover:text-primary"
+                }`}
+              >
+                {tabContent[key].title}
+              </button>
+            ))}
           </div>
 
-          {/* Nội dung Tab (Thay đổi theo state) */}
+          {/* Nội dung Tab */}
           <div className="flex flex-col lg:flex-row items-center gap-20 animate-fade-in-up">
             {/* Cột Chữ */}
             <div className="lg:w-1/2 text-left">
@@ -149,12 +131,14 @@ export default function LoyaltyPage() {
                   </li>
                 ))}
               </ul>
-              <a
-                href="#"
+
+              {/* Link Discover More */}
+              <Link
+                href={`/membership-benefits#${tabContent[activeTab].linkId}`}
                 className="inline-block border border-primary px-10 py-4 text-sm font-bold tracking-[2px] uppercase hover:bg-primary hover:text-white transition-all"
               >
                 Discover More
-              </a>
+              </Link>
             </div>
 
             {/* Cột Ảnh */}
@@ -166,54 +150,6 @@ export default function LoyaltyPage() {
                 className="object-cover transition-all duration-500"
               />
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 4. MEMBERSHIP TIERS (Grid 4 Cột) */}
-      <section className="py-24 bg-gray-50 px-5">
-        <div className="max-w-[90%] mx-auto">
-          <div className="text-center mb-20">
-            <h2 className="font-serif text-4xl lg:text-5xl text-primary mb-6">
-              Membership Tiers
-            </h2>
-            <p className="text-lg text-secondary font-light">
-              Unlock more benefits as you stay.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {[
-              "Club Member",
-              "Silver Elite",
-              "Gold Elite",
-              "Platinum Elite",
-            ].map((tier, index) => (
-              <div
-                key={index}
-                className="bg-white p-10 border border-gray-100 hover:border-accent transition-all group cursor-pointer text-center"
-              >
-                <div className="w-16 h-16 bg-gray-100 rounded-full mx-auto mb-6 flex items-center justify-center text-2xl group-hover:bg-accent group-hover:text-white transition-colors">
-                  {index === 0
-                    ? "♣️"
-                    : index === 1
-                    ? "🥈"
-                    : index === 2
-                    ? "🥇"
-                    : "💎"}
-                </div>
-                <h3 className="font-serif text-2xl text-primary mb-4">
-                  {tier}
-                </h3>
-                <p className="text-xs text-secondary leading-relaxed mb-6">
-                  Earn points, free Wi-Fi, and exclusive member rates right from
-                  the start.
-                </p>
-                <span className="text-[10px] font-bold uppercase tracking-widest text-accent border-b border-accent pb-1">
-                  View Benefits
-                </span>
-              </div>
-            ))}
           </div>
         </div>
       </section>
