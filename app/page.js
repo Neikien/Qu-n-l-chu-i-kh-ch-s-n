@@ -2,12 +2,11 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import BookingBar from "@/components/BookingBar";
 import LoginModal from "@/components/LoginModal";
-import { apiService } from "@/lib/api"; // Import API
+import { apiService } from "@/lib/api";
 
 export default function Home() {
-  // --- 1. LOGIC SLIDER HERO (Giữ nguyên) ---
+  // --- 1. LOGIC SLIDER HERO (GIỮ NGUYÊN ẢNH GỐC CỦA BẠN) ---
   const [currentSlide, setCurrentSlide] = useState(0);
   const slides = [
     "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=1920&q=80",
@@ -22,41 +21,46 @@ export default function Home() {
     return () => clearInterval(interval);
   }, [slides.length]);
 
-  // --- 2. LOGIC LẤY DATA TỪ API CHO TABS ---
+  // --- 2. LOGIC TABS (LẤY TEXT TỪ API NHƯNG GIỮ ẢNH CŨ) ---
+  // Danh sách ảnh gốc bạn muốn giữ lại
+  const hardcodedImages = [
+    "https://digital.ihg.com/is/image/ihg/ic-brand-refresh-homepg-hero-box-carousel-1-lvp-1440x636", // Chantilly
+    "https://images.unsplash.com/photo-1445019980597-93fa8acb246c?q=80&w=1600&auto=format&fit=crop", // Bellevue
+    "https://digital.ihg.com/is/image/ihg/ic-brand-refresh-homepg-hero-box-carousel-3-lvp-1440x636", // Hayman
+    "https://images.unsplash.com/photo-1548574505-5e239809ee19?q=80&w=1600&auto=format&fit=crop", // Dominica
+  ];
+
   const [featuredHotels, setFeaturedHotels] = useState([]);
-  const [activeTabId, setActiveTabId] = useState(null); // Dùng ID thay vì tên
+  const [activeTabId, setActiveTabId] = useState(null);
 
   useEffect(() => {
     const fetchFeaturedHotels = async () => {
       try {
         const data = await apiService.getHotels();
 
-        // Lấy 4 khách sạn đầu tiên để hiển thị ở Tabs
-        const top4 = data.slice(0, 4).map((hotel) => ({
+        // Lấy 4 khách sạn đầu tiên
+        // NHƯNG: Gán đè ảnh bằng danh sách hardcodedImages để không bị đổi giao diện
+        const top4 = data.slice(0, 4).map((hotel, index) => ({
           id: hotel.MaKS || hotel.id,
           name: hotel.TenKhachSan || hotel.name,
-          image:
-            hotel.HinhAnh ||
-            "https://digital.ihg.com/is/image/ihg/ic-brand-refresh-homepg-hero-box-carousel-1-lvp-1440x636",
+          // Ưu tiên dùng ảnh cứng của bạn theo thứ tự 0,1,2,3
+          image: hardcodedImages[index] || hotel.HinhAnh,
           location: hotel.DiaChi || "Luxury Location",
           desc:
             hotel.MoTa ||
-            "Experience the untouched nature with luxury amenities and world-class service tailored just for you.",
+            "Experience the untouched nature with luxury amenities.",
         }));
 
         setFeaturedHotels(top4);
-        if (top4.length > 0) {
-          setActiveTabId(top4[0].id);
-        }
+        if (top4.length > 0) setActiveTabId(top4[0].id);
       } catch (error) {
-        console.error("Lỗi lấy danh sách khách sạn:", error);
+        console.error("Lỗi API:", error);
       }
     };
 
     fetchFeaturedHotels();
   }, []);
 
-  // Xác định khách sạn đang Active
   const activeHotel =
     featuredHotels.find((h) => h.id === activeTabId) || featuredHotels[0];
 
@@ -65,13 +69,12 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-white">
-      {/* MODAL LOGIN */}
       <LoginModal isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} />
 
       {/* 1. HERO SECTION */}
       <div className="relative h-[85vh] w-full overflow-hidden bg-gray-900">
         <Image
-          src={slides[currentSlide]} // Sử dụng slide động
+          src={slides[currentSlide]}
           alt="Hero Background"
           fill
           priority
@@ -88,17 +91,9 @@ export default function Home() {
         </div>
       </div>
 
-      {/* 2. BOOKING BAR */}
-      <div
-        className="relative z-30 -mt-[50px] px-5 scroll-mt-[200px]"
-        id="booking"
-      >
-        <div className="max-w-standard mx-auto">
-          <BookingBar />
-        </div>
-      </div>
+      {/* ĐÃ XÓA BOOKING BAR (THANH TÌM KIẾM) Ở ĐÂY */}
 
-      {/* 3. INTRO TEXT */}
+      {/* 2. INTRO TEXT */}
       <section className="pt-20 pb-12 px-5">
         <div className="max-w-[90%] mx-auto text-left">
           <h1 className="font-serif text-4xl lg:text-5xl text-primary mb-6 leading-tight">
@@ -116,10 +111,10 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 4. TABS SECTION (ĐÃ KẾT NỐI API) */}
+      {/* 3. TABS SECTION (Kết hợp: Text từ API + Ảnh gốc của bạn) */}
       <section className="pb-16 px-5">
         <div className="max-w-[90%] mx-auto">
-          {/* Danh sách Tabs */}
+          {/* Tabs Menu */}
           <div className="flex flex-wrap justify-center gap-8 mb-8 border-b border-gray-100 pb-2">
             {featuredHotels.length > 0 ? (
               featuredHotels.map((hotel) => (
@@ -136,17 +131,18 @@ export default function Home() {
                 </button>
               ))
             ) : (
-              // Loading state nếu chưa tải xong
-              <div className="pb-3 text-sm text-gray-400">
-                Loading destinations...
+              // Loading nhẹ nhàng
+              <div className="text-gray-400 text-sm pb-3">
+                Loading hotels...
               </div>
             )}
           </div>
 
-          {/* Nội dung Tab */}
+          {/* Tab Content */}
           <div className="relative w-full h-[600px] bg-gray-100 overflow-hidden group">
             {activeHotel && (
               <>
+                {/* Ảnh được ép cứng theo danh sách của bạn */}
                 <Image
                   src={activeHotel.image}
                   alt={activeHotel.name}
@@ -176,7 +172,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 6. SPA SECTION */}
+      {/* 4. SPA SECTION (GIỮ NGUYÊN) */}
       <section className="py-12 bg-white">
         <div className="max-w-[90%] mx-auto flex flex-col lg:flex-row h-auto lg:h-[650px]">
           <div className="lg:w-1/2 bg-[#f9f9f9] flex flex-col justify-center p-10 lg:p-20 text-left order-2 lg:order-1">
@@ -212,7 +208,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 7. EXPERIENCE SECTION */}
+      {/* 5. EXPERIENCE SECTION (GIỮ NGUYÊN) */}
       <section className="py-12 bg-white">
         <div className="max-w-[90%] mx-auto flex flex-col lg:flex-row h-auto lg:h-[650px]">
           <div className="lg:w-1/2 relative h-[400px] lg:h-full">
@@ -246,7 +242,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 7. AMBASSADOR SECTION */}
+      {/* 6. AMBASSADOR SECTION (GIỮ NGUYÊN) */}
       <section className="py-8 bg-white">
         <div className="max-w-[96%] mx-auto relative lg:h-[700px] flex flex-col lg:block">
           <Image
