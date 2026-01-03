@@ -4,7 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 
-// 1. DỮ LIỆU GIẢ (MOCK DATA) - KHÔNG GỌI API
+// 1. DỮ LIỆU GIẢ (MOCK DATA)
 const hotels = [
   {
     id: 1,
@@ -67,7 +67,6 @@ const regions = ["All", "Asia", "Europe", "Americas", "Oceania"];
 export default function DestinationsPage() {
   const [selectedRegion, setSelectedRegion] = useState("All");
 
-  // Logic lọc dữ liệu giả
   const filteredHotels =
     selectedRegion === "All"
       ? hotels
@@ -121,11 +120,11 @@ export default function DestinationsPage() {
           </div>
         </div>
 
-        {/* 3. DESTINATIONS GRID */}
+        {/* 3. DESTINATIONS GRID (2 CỘT - CHỮ TO - NÚT CHUẨN) */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-16 gap-y-24">
           {filteredHotels.map((hotel) => (
             <div key={hotel.id} className="group cursor-pointer flex flex-col">
-              {/* Ảnh Card - Giữ nguyên thiết kế */}
+              {/* Ảnh Card (Khổ Ngang - Landscape) */}
               <div className="relative h-[450px] w-full overflow-hidden mb-10 bg-gray-100 shadow-sm">
                 <Image
                   src={hotel.image}
@@ -133,22 +132,25 @@ export default function DestinationsPage() {
                   fill
                   className="object-cover transition-transform duration-700 group-hover:scale-105"
                 />
-                {/* Tag Location */}
+                {/* Tag Location nhỏ trên ảnh */}
                 <div className="absolute top-6 left-6 bg-white/90 backdrop-blur-sm px-4 py-2 text-[10px] font-bold tracking-widest uppercase text-primary">
                   {hotel.location}
                 </div>
               </div>
 
-              {/* Thông tin */}
+              {/* Thông tin (Căn trái - Typography Luxury) */}
               <div className="text-left">
+                {/* Tên Khách sạn (Serif, To 3xl-4xl) */}
                 <h3 className="font-serif text-3xl lg:text-4xl text-primary mb-6 leading-tight group-hover:text-accent transition-colors">
                   {hotel.name}
                 </h3>
 
+                {/* Mô tả (Font Sans, 18px, Giãn dòng rộng) */}
                 <p className="text-lg text-secondary font-light leading-loose mb-10">
                   {hotel.desc}
                 </p>
 
+                {/* Nút Explore (Đồng bộ kích thước với nút Home/Experience) */}
                 <Link
                   href={`/rooms`}
                   className="inline-block border border-primary px-10 py-4 text-sm font-bold tracking-[2px] uppercase text-primary hover:bg-primary hover:text-white transition-all"
