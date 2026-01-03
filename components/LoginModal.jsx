@@ -4,13 +4,11 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/app/context/AuthContext"; // <--- 1. QUAN TRỌNG: Import useAuth
+import { useAuth } from "@/app/context/AuthContext"; // Đảm bảo đường dẫn tới AuthContext chính xác
 
 export default function LoginModal({ isOpen, onClose }) {
   const router = useRouter();
-
-  // 2. QUAN TRỌNG: Lấy hàm login từ Context
-  const { login } = useAuth();
+  const { login } = useAuth(); // Lấy hàm login từ Context để đồng bộ trạng thái toàn app
 
   const [formData, setFormData] = useState({
     email: "",
@@ -19,6 +17,7 @@ export default function LoginModal({ isOpen, onClose }) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
+  // Chặn cuộn trang khi mở Modal
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
@@ -30,6 +29,7 @@ export default function LoginModal({ isOpen, onClose }) {
     };
   }, [isOpen]);
 
+  // Reset lỗi và dữ liệu khi đóng/mở lại modal
   useEffect(() => {
     if (!isOpen) {
       setError("");
@@ -39,9 +39,15 @@ export default function LoginModal({ isOpen, onClose }) {
 
   if (!isOpen) return null;
 
+  // Cập nhật dữ liệu khi người dùng gõ phím
+  // Bắt buộc các thẻ input phải có thuộc tính 'name'
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-    setError("");
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+    setError(""); // Xóa thông báo lỗi khi đang gõ
   };
 
   const handleSubmit = async (e) => {
@@ -50,16 +56,14 @@ export default function LoginModal({ isOpen, onClose }) {
     setError("");
 
     try {
-      // 3. QUAN TRỌNG: Dùng hàm login của Context (KHÔNG DÙNG apiService Ở ĐÂY)
-      // Hàm này sẽ tự động cập nhật State và Header cho bạn
+      // Gọi hàm login từ AuthContext.
+      // Hàm này sẽ tự động gọi api.js để cắt chuỗi email lấy username gửi lên backend
       await login(formData.email, formData.password);
 
-      alert("Đăng nhập thành công!");
-
-      onClose(); // Đóng modal
-      // Không cần reload trang nữa vì React sẽ tự cập nhật giao diện
+      alert("Welcome back!");
+      onClose(); // Đóng modal sau khi thành công
     } catch (err) {
-      console.error(err);
+      console.error("Login Error:", err);
       setError(err.message || "Email hoặc mật khẩu không chính xác.");
     } finally {
       setIsLoading(false);
@@ -68,12 +72,15 @@ export default function LoginModal({ isOpen, onClose }) {
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center">
+      {/* Lớp nền đen mờ (Backdrop) */}
       <div
         className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
         onClick={onClose}
       ></div>
 
+      {/* Hộp Modal Chính - Layout 2 cột sang trọng */}
       <div className="relative w-[95%] lg:w-[900px] h-[600px] bg-white shadow-2xl flex overflow-hidden animate-fade-in-up">
+        {/* Nút đóng (X) */}
         <button
           onClick={onClose}
           className="absolute top-5 right-5 z-50 w-10 h-10 flex items-center justify-center bg-white/80 rounded-full hover:bg-primary hover:text-white transition-colors"
@@ -81,6 +88,7 @@ export default function LoginModal({ isOpen, onClose }) {
           ✕
         </button>
 
+        {/* CỘT TRÁI: ẢNH (Chỉ hiện trên màn hình lớn) */}
         <div className="hidden lg:block w-1/2 relative h-full">
           <Image
             src="https://phuquoc.regenthotels.com/sites/rpq/files/styles/height_1400/public/homepage/shutterstock_1446827465_1%20%281%29_0.jpg?itok=ZSXjz5zI"
@@ -97,12 +105,14 @@ export default function LoginModal({ isOpen, onClose }) {
           </div>
         </div>
 
+        {/* CỘT PHẢI: FORM ĐĂNG NHẬP */}
         <div className="w-full lg:w-1/2 p-10 lg:p-16 flex flex-col justify-center relative bg-white">
           <h2 className="font-serif text-3xl text-primary mb-2">Sign In</h2>
-          <p className="text-secondary text-sm mb-6 font-light">
+          <p className="text-secondary text-sm mb-8 font-light">
             Access your member benefits.
           </p>
 
+          {/* Hiển thị lỗi nếu đăng nhập thất bại */}
           {error && (
             <div className="mb-4 p-2 bg-red-50 border-l-2 border-red-500 text-red-600 text-xs font-medium">
               {error}
@@ -113,7 +123,7 @@ export default function LoginModal({ isOpen, onClose }) {
             <div>
               <input
                 type="email"
-                name="email"
+                name="email" // QUAN TRỌNG: Phải khớp với key trong formData
                 required
                 value={formData.email}
                 onChange={handleChange}
@@ -124,7 +134,7 @@ export default function LoginModal({ isOpen, onClose }) {
             <div>
               <input
                 type="password"
-                name="password"
+                name="password" // QUAN TRỌNG: Phải khớp với key trong formData
                 required
                 value={formData.password}
                 onChange={handleChange}
