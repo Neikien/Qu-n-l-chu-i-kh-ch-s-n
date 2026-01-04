@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import TaxDetailModal from './TaxDetailModal';
 import { apiService } from '../services/apiService';
+import { useRouter } from 'next/router'; // Nếu dùng Next.js
+// Hoặc: import { useNavigate } from 'react-router-dom'; // Nếu dùng React Router
+
 const formatCurrency = (amount, currencyCode) => {
     const locale = currencyCode === 'VND' ? 'vi-VN' : 'en-US';
     return new Intl.NumberFormat(locale, {
@@ -14,21 +17,62 @@ const RoomCard = ({
   room, 
   onOpenDetail, 
   currentCurrency, 
-  onBookRoom, // THÊM CALLBACK ĐẶT PHÒNG
-  searchParams // THÊM searchParams để lấy ngày đặt
+  onBookRoom, // Callback đặt phòng từ parent
+  searchParams,
+  showProfileAlert // Thêm prop để hiển thị thông báo
 }) => {
   const [showRates, setShowRates] = useState(false);
   const [selectedRateForTax, setSelectedRateForTax] = useState(null);
-  const [bookingLoading, setBookingLoading] = useState(false); // Loading cho đặt phòng
+  const [bookingLoading, setBookingLoading] = useState(false);
+  const [showProfileModal, setShowProfileModal] = useState(false); // Modal yêu cầu cập nhật profile
+  
+  // Nếu dùng Next.js
+  // const router = useRouter();
+  // Nếu dùng React Router
+  // const navigate = useNavigate();
 
   const formattedPrice = formatCurrency(room.price, currentCurrency);
 
-  // HÀM XỬ LÝ ĐẶT PHÒNG
+  // HÀM KIỂM TRA PROFILE TRƯỚC KHI ĐẶT
+  const checkProfileBeforeBooking = async () => {
+    try {
+      // Kiểm tra xem user đã đăng nhập chưa
+      const token = localStorage.getItem('access_token');
+      if (!token) {
+        alert('Vui lòng đăng nhập để đặt phòng');
+        // Chuyển hướng đến trang login
+        // router.push('/login');
+        return false;
+      }
+
+      // Kiểm tra customer profile
+      const hasProfile = await apiService.checkCustomerProfileExists();
+      
+      if (!hasProfile) {
+        // Hiển thị modal yêu cầu cập nhật profile
+        setShowProfileModal(true);
+        return false;
+      }
+      
+      return true;
+    } catch (error) {
+      console.error('Lỗi kiểm tra profile:', error);
+      return false;
+    }
+  };
+
+  // HÀM XỬ LÝ ĐẶT PHÒNG (ĐÃ CẬP NHẬT)
   const handleBookNow = async (e, rate = null) => {
     e.stopPropagation();
     
     if (!onBookRoom) {
       console.error('Không có callback onBookRoom');
+      return;
+    }
+
+    // Kiểm tra profile trước
+    const canBook = await checkProfileBeforeBooking();
+    if (!canBook) {
       return;
     }
 
@@ -39,7 +83,6 @@ const RoomCard = ({
       const bookingData = {
         room: {
           ...room,
-          // Nếu có chọn rate cụ thể, dùng giá từ rate
           selectedRate: rate || room.rates?.[0],
           selectedRatePrice: rate ? rate.price : room.price,
           selectedRateTitle: rate ? rate.title : 'Mức giá tốt nhất'
@@ -61,9 +104,25 @@ const RoomCard = ({
       
     } catch (error) {
       console.error('❌ Lỗi khi đặt phòng từ RoomCard:', error);
-      alert('Lỗi khi đặt phòng: ' + error.message);
+      // Hiển thị thông báo lỗi cụ thể
+      if (error.message.includes('customer profile') || error.message.includes('thông tin cá nhân')) {
+        setShowProfileModal(true);
+      } else {
+        alert('Lỗi khi đặt phòng: ' + error.message);
+      }
     } finally {
       setBookingLoading(false);
+    }
+  };
+
+  // HÀM CHUYỂN HƯỚNG ĐẾN TRANG CẬP NHẬT PROFILE
+  const handleUpdateProfile = () => {
+    setShowProfileModal(false);
+    // Chuyển hướng đến trang cập nhật profile
+    // router.push('/update-profile');
+    // Hoặc mở modal cập nhật profile
+    if (showProfileAlert) {
+      showProfileAlert();
     }
   };
 
@@ -95,7 +154,7 @@ const RoomCard = ({
             <span className="price-per-night">Mỗi đêm</span>
           </div>
           
-          {/* THÊM NÚT ĐẶT PHÒNG Ở ĐÂY */}
+          {/* NÚT ĐẶT PHÒNG */}
           <button
             className="book-now-btn"
             onClick={(e) => handleBookNow(e)}
@@ -141,7 +200,7 @@ const RoomCard = ({
                     </div>
                     <p className="rate-subtext">Mỗi đêm</p>
                     
-                    {/* THÊM NÚT ĐẶT PHÒNG CHO TỪNG RATE */}
+                    {/* NÚT ĐẶT PHÒNG CHO TỪNG RATE */}
                     <button 
                       className="btn-select-rate"
                       onClick={(e) => handleBookNow(e, rate)}
@@ -169,8 +228,134 @@ const RoomCard = ({
           }
         }}
       />
+
+      {/* MODAL YÊU CẦU CẬP NHẬT PROFILE */}
+      {showProfileModal && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h3>Cần cập nhật thông tin cá nhân</h3>
+              <button className="modal-close" onClick={() => setShowProfileModal(false)}>×</button>
+            </div>
+            <div className="modal-body">
+              <p>Để đặt phòng, bạn cần cập nhật đầy đủ thông tin cá nhân (customer profile).</p>
+              <p>Thông tin này bao gồm:</p>
+              <ul>
+                <li>Số điện thoại</li>
+                <li>Địa chỉ</li>
+                <li>Số CMND/CCCD</li>
+                <li>Thông tin liên hệ khác</li>
+              </ul>
+            </div>
+            <div className="modal-footer">
+              <button className="btn-secondary" onClick={() => setShowProfileModal(false)}>
+                Để sau
+              </button>
+              <button className="btn-primary" onClick={handleUpdateProfile}>
+                Cập nhật ngay
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
+
+// Thêm CSS cho modal
+const styles = `
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header {
+  padding: 20px;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-header h3 {
+  margin: 0;
+  color: #333;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #999;
+}
+
+.modal-body {
+  padding: 20px;
+  color: #666;
+}
+
+.modal-body ul {
+  margin: 10px 0;
+  padding-left: 20px;
+}
+
+.modal-body li {
+  margin-bottom: 5px;
+}
+
+.modal-footer {
+  padding: 20px;
+  border-top: 1px solid #eee;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.btn-primary {
+  background: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.btn-secondary {
+  background: #6c757d;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.btn-primary:hover {
+  background: #0056b3;
+}
+
+.btn-secondary:hover {
+  background: #545b62;
+}
+`;
+
+// Thêm styles vào head nếu cần
+// Hoặc đưa vào file CSS riêng
 
 export default RoomCard;
