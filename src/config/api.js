@@ -15,3 +15,6 @@ const API_CONFIG = {
 };
 
 export default API_CONFIG;
+export const API_BASE_URL = "http://localhost:8000/api";
+
+export const CHATBOT_API = `${API_BASE_URL}/chatbot`;

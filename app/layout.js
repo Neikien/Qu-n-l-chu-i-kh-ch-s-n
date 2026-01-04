@@ -2,13 +2,17 @@
 
 import { Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
+
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import BookingBar from "@/components/BookingBar";
+import Chatbot from "@/components/chatbot/Chatbot";
+
 import { BookingProvider, useBooking } from "@/context/BookingContext";
 import { AuthProvider } from "./context/AuthContext";
 import { usePathname } from "next/navigation";
 
+/* ================= FONT CONFIG ================= */
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
@@ -21,8 +25,7 @@ const playfair = Playfair_Display({
   weight: ["400", "600"],
 });
 
-// Component con: Chỉ chịu trách nhiệm hiển thị Header, Footer và Logic BookingBar
-// KHÔNG chứa thẻ <body> nữa
+/* ================= INNER LAYOUT ================= */
 function InnerLayout({ children }) {
   const pathname = usePathname();
   const { isBookingOpen } = useBooking();
@@ -32,7 +35,7 @@ function InnerLayout({ children }) {
     <>
       <Header />
 
-      {/* Booking Bar Logic */}
+      {/* BOOKING BAR (KHÔNG HIỂN THỊ Ở HOME) */}
       {!isHomePage && (
         <div
           className={`fixed top-[100px] left-0 w-full z-40 flex justify-center px-5 transition-all duration-500 ease-in-out transform ${
@@ -47,7 +50,7 @@ function InnerLayout({ children }) {
         </div>
       )}
 
-      {/* Main Content */}
+      {/* MAIN CONTENT */}
       <div className="flex-grow">{children}</div>
 
       <Footer />
@@ -55,29 +58,29 @@ function InnerLayout({ children }) {
   );
 }
 
-// RootLayout: Chịu trách nhiệm cấu trúc HTML gốc
+/* ================= ROOT LAYOUT ================= */
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className="scroll-smooth" suppressHydrationWarning={true}>
+    <html lang="en" className="scroll-smooth" suppressHydrationWarning>
       <head>
         <link
           rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
-          integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
           crossOrigin="anonymous"
           referrerPolicy="no-referrer"
         />
       </head>
 
-      {/* Thẻ BODY nằm ở đây mới đúng chuẩn */}
       <body
-        suppressHydrationWarning={true}
+        suppressHydrationWarning
         className={`${inter.variable} ${playfair.variable} font-sans text-primary bg-white antialiased flex flex-col min-h-screen relative`}
       >
-        {/* AuthProvider bao bọc toàn bộ nội dung trong body */}
         <AuthProvider>
           <BookingProvider>
             <InnerLayout>{children}</InnerLayout>
+
+            {/* ===== CHATBOT GLOBAL (ĐÚNG CHỖ) ===== */}
+            <Chatbot />
           </BookingProvider>
         </AuthProvider>
       </body>
