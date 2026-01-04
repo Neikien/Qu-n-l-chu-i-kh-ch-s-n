@@ -1,180 +1,237 @@
 "use client";
 
-import React, { useState } from "react";
-import Link from "next/link";
+import { useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { register } from "@/lib/api";
+import { apiService } from "@/services/apiService";
 
-const RegisterPage = () => {
+export default function RegisterPage() {
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
-    fullname: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
+    HoTen: "",
+    Email: "",
+    SDT: "",
+    DiaChi: "",
+    CCCD: "",
+    MatKhau: "",
+    ConfirmMatKhau: "",
   });
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+    setError("");
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (formData.password !== formData.confirmPassword) {
-      alert("Mật khẩu xác nhận không khớp!");
-      return;
-    }
-
-    if (formData.password.length < 6) {
-      alert("Mật khẩu phải có ít nhất 6 ký tự!");
-      return;
-    }
-
     setIsLoading(true);
+    setError("");
+
+    // 1. Kiểm tra mật khẩu khớp nhau
+    if (formData.MatKhau !== formData.ConfirmMatKhau) {
+      setError("Mật khẩu xác nhận không khớp!");
+      return;
+    }
+
+    // 2. Kiểm tra độ dài mật khẩu (Backend thường yêu cầu > 4 ký tự)
+    if (formData.MatKhau.length < 4) {
+      setError("Mật khẩu phải có ít nhất 4 ký tự.");
+      return;
+    }
 
     try {
-      const userData = {
-        email: formData.email,
-        password: formData.password,
-        fullname: formData.fullname,
-        phone: "",
-      };
+      console.log("📤 Đang đăng ký...", formData);
 
-      await register(userData); // Giả sử register trả về promise
-      alert("Đăng ký thành công! Vui lòng đăng nhập.");
+      // Gọi hàm register từ apiService (Hàm này đã được sửa ở bước trước để map đúng trường)
+      await apiService.register(formData);
+
+      alert("🎉 Đăng ký thành công! Bạn sẽ được chuyển sang trang đăng nhập.");
       router.push("/login");
-    } catch (error) {
-      alert("Đăng ký thất bại: " + error.message);
+    } catch (err) {
+      console.error("Lỗi đăng ký:", err);
+      setError(err.message || "Đăng ký thất bại. Vui lòng thử lại.");
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="relative min-h-screen w-full flex items-center justify-center bg-gray-900">
-      {/* 1. BACKGROUND IMAGE (Full màn hình, tối màu) */}
-      <div className="absolute inset-0 z-0">
-        <Image
-          src="https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?q=80&w=1920&auto=format&fit=crop"
-          alt="Luxury Hotel Background"
-          fill
-          priority
-          className="object-cover opacity-60"
-        />
-        <div className="absolute inset-0 bg-black/40"></div>
-      </div>
-
-      {/* 2. REGISTER CARD */}
-      <div className="relative z-10 w-full max-w-md bg-white/95 backdrop-blur-sm shadow-2xl p-8 md:p-12 animate-fade-in-up">
-        {/* Header */}
-        <div className="text-center mb-10">
-          <p className="text-xs font-bold tracking-[3px] uppercase text-gray-500 mb-2">
-            IHG One Rewards
-          </p>
-          <h2 className="font-serif text-3xl md:text-4xl text-gray-900 mb-2">
-            Create Account
-          </h2>
-          <p className="text-sm text-gray-500 font-light">
-            Begin your journey to exceptional stays.
-          </p>
+    <div className="min-h-screen w-full flex items-center justify-center bg-gray-50 py-10 px-4">
+      <div className="relative w-full max-w-[1000px] bg-white shadow-2xl flex rounded-lg overflow-hidden animate-fade-in-up">
+        {/* CỘT TRÁI: ẢNH MINH HỌA */}
+        <div className="hidden lg:block w-5/12 relative min-h-[600px]">
+          <Image
+            src="https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=1000"
+            alt="Register Background"
+            fill
+            className="object-cover"
+          />
+          <div className="absolute inset-0 bg-black/30"></div>
+          <div className="absolute bottom-10 left-8 text-white p-4">
+            <h3 className="font-serif text-3xl mb-2">Join Us</h3>
+            <p className="text-sm opacity-90">
+              Bắt đầu hành trình nghỉ dưỡng đẳng cấp.
+            </p>
+          </div>
         </div>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Full Name */}
-          <div className="group">
-            <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-2 group-focus-within:text-amber-600 transition-colors">
-              Full Name
-            </label>
-            <input
-              type="text"
-              name="fullname"
-              placeholder="e.g. Nguyen Van A"
-              value={formData.fullname}
-              onChange={handleChange}
-              required
-              className="w-full border-b border-gray-300 bg-transparent py-3 text-gray-900 placeholder-gray-400 outline-none transition-all focus:border-amber-600 focus:placeholder-gray-500"
-            />
-          </div>
+        {/* CỘT PHẢI: FORM ĐĂNG KÝ */}
+        <div className="w-full lg:w-7/12 p-8 lg:p-12">
+          <h2 className="font-serif text-3xl text-primary mb-2">
+            Tạo Tài Khoản
+          </h2>
+          <p className="text-gray-500 text-sm mb-6">
+            Điền thông tin để đăng ký thành viên.
+          </p>
 
-          {/* Email */}
-          <div className="group">
-            <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-2 group-focus-within:text-amber-600 transition-colors">
-              Email Address
-            </label>
-            <input
-              type="email"
-              name="email"
-              placeholder="name@example.com"
-              value={formData.email}
-              onChange={handleChange}
-              required
-              className="w-full border-b border-gray-300 bg-transparent py-3 text-gray-900 placeholder-gray-400 outline-none transition-all focus:border-amber-600 focus:placeholder-gray-500"
-            />
-          </div>
+          {/* Hiển thị thông báo lỗi */}
+          {error && (
+            <div className="mb-4 p-3 bg-red-50 text-red-600 text-sm border-l-4 border-red-500 rounded font-medium">
+              {error}
+            </div>
+          )}
 
-          {/* Password */}
-          <div className="group">
-            <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-2 group-focus-within:text-amber-600 transition-colors">
-              Password
-            </label>
-            <input
-              type="password"
-              name="password"
-              placeholder="••••••••"
-              value={formData.password}
-              onChange={handleChange}
-              required
-              minLength={6}
-              className="w-full border-b border-gray-300 bg-transparent py-3 text-gray-900 placeholder-gray-400 outline-none transition-all focus:border-amber-600 focus:placeholder-gray-500"
-            />
-          </div>
-
-          {/* Confirm Password */}
-          <div className="group">
-            <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-2 group-focus-within:text-amber-600 transition-colors">
-              Confirm Password
-            </label>
-            <input
-              type="password"
-              name="confirmPassword"
-              placeholder="••••••••"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              required
-              minLength={6}
-              className="w-full border-b border-gray-300 bg-transparent py-3 text-gray-900 placeholder-gray-400 outline-none transition-all focus:border-amber-600 focus:placeholder-gray-500"
-            />
-          </div>
-
-          {/* Submit Button */}
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="w-full mt-8 bg-gray-900 text-white py-4 text-xs font-bold uppercase tracking-[2px] hover:bg-amber-600 transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
+          <form
+            onSubmit={handleSubmit}
+            className="grid grid-cols-1 md:grid-cols-2 gap-6"
           >
-            {isLoading ? "Processing..." : "Join Now"}
-          </button>
-        </form>
+            {/* Họ Tên */}
+            <div className="col-span-2">
+              <label className="block text-xs font-bold text-gray-500 uppercase mb-1">
+                Họ Tên
+              </label>
+              <input
+                type="text"
+                name="HoTen"
+                required
+                value={formData.HoTen}
+                onChange={handleChange}
+                className="w-full border-b border-gray-300 py-2 focus:border-accent outline-none transition-colors"
+                placeholder="Nguyễn Văn A"
+              />
+            </div>
 
-        {/* Footer Link */}
-        <div className="mt-8 text-center border-t border-gray-100 pt-6">
-          <p className="text-sm text-gray-500">
-            Already a member?{" "}
+            {/* Email */}
+            <div className="col-span-2 md:col-span-1">
+              <label className="block text-xs font-bold text-gray-500 uppercase mb-1">
+                Email
+              </label>
+              <input
+                type="email"
+                name="Email"
+                required
+                value={formData.Email}
+                onChange={handleChange}
+                className="w-full border-b border-gray-300 py-2 focus:border-accent outline-none transition-colors"
+                placeholder="email@example.com"
+              />
+            </div>
+
+            {/* Số Điện Thoại */}
+            <div className="col-span-2 md:col-span-1">
+              <label className="block text-xs font-bold text-gray-500 uppercase mb-1">
+                Số Điện Thoại
+              </label>
+              <input
+                type="tel"
+                name="SDT"
+                required
+                value={formData.SDT}
+                onChange={handleChange}
+                className="w-full border-b border-gray-300 py-2 focus:border-accent outline-none transition-colors"
+                placeholder="0912345678"
+              />
+            </div>
+
+            {/* CCCD */}
+            <div className="col-span-2 md:col-span-1">
+              <label className="block text-xs font-bold text-gray-500 uppercase mb-1">
+                CCCD / CMND
+              </label>
+              <input
+                type="text"
+                name="CCCD"
+                required
+                value={formData.CCCD}
+                onChange={handleChange}
+                className="w-full border-b border-gray-300 py-2 focus:border-accent outline-none transition-colors"
+                placeholder="Số căn cước"
+              />
+            </div>
+
+            {/* Địa chỉ */}
+            <div className="col-span-2 md:col-span-1">
+              <label className="block text-xs font-bold text-gray-500 uppercase mb-1">
+                Địa Chỉ
+              </label>
+              <input
+                type="text"
+                name="DiaChi"
+                value={formData.DiaChi}
+                onChange={handleChange}
+                className="w-full border-b border-gray-300 py-2 focus:border-accent outline-none transition-colors"
+                placeholder="Hà Nội"
+              />
+            </div>
+
+            {/* Mật Khẩu */}
+            <div className="col-span-2 md:col-span-1">
+              <label className="block text-xs font-bold text-gray-500 uppercase mb-1">
+                Mật Khẩu
+              </label>
+              <input
+                type="password"
+                name="MatKhau"
+                required
+                value={formData.MatKhau}
+                onChange={handleChange}
+                className="w-full border-b border-gray-300 py-2 focus:border-accent outline-none transition-colors"
+                placeholder="******"
+              />
+            </div>
+
+            {/* Nhập lại Mật Khẩu */}
+            <div className="col-span-2 md:col-span-1">
+              <label className="block text-xs font-bold text-gray-500 uppercase mb-1">
+                Xác nhận Mật Khẩu
+              </label>
+              <input
+                type="password"
+                name="ConfirmMatKhau"
+                required
+                value={formData.ConfirmMatKhau}
+                onChange={handleChange}
+                className="w-full border-b border-gray-300 py-2 focus:border-accent outline-none transition-colors"
+                placeholder="******"
+              />
+            </div>
+
+            {/* Nút Đăng Ký */}
+            <div className="col-span-2 mt-6">
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="w-full bg-primary text-white py-4 font-bold uppercase tracking-widest hover:bg-gray-800 transition-all disabled:bg-gray-400 rounded shadow-lg"
+              >
+                {isLoading ? "Đang xử lý..." : "Đăng Ký Ngay"}
+              </button>
+            </div>
+          </form>
+
+          <div className="mt-6 text-center text-sm">
+            <span className="text-gray-500">Đã có tài khoản? </span>
             <Link
               href="/login"
-              className="font-bold text-gray-900 hover:text-amber-600 transition-colors uppercase tracking-wider text-xs border-b border-transparent hover:border-amber-600 pb-0.5"
+              className="text-primary font-bold hover:underline"
             >
-              Sign In
+              Đăng nhập tại đây
             </Link>
-          </p>
+          </div>
         </div>
       </div>
     </div>
   );
-};
-
-export default RegisterPage;
+}

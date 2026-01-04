@@ -4,10 +4,12 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { apiService } from "@/services/apiService"; // Nhớ sửa đường dẫn import cho đúng thư mục của bạn
+import { useAuth } from "@/app/context/AuthContext";
 
 export default function LoginPage() {
   const router = useRouter();
+  const { login } = useAuth();
+
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -26,10 +28,17 @@ export default function LoginPage() {
     setError("");
 
     try {
-      await apiService.login(formData);
-      alert("Đăng nhập thành công!");
-      router.push("/"); // Chuyển về trang chủ sau khi login xong
+      // Trim dữ liệu
+      const cleanEmail = formData.email.trim();
+      const cleanPass = formData.password;
+
+      await login(cleanEmail, cleanPass);
+
+      // Nếu không lỗi -> Chuyển trang
+      // alert("Đăng nhập thành công!"); // Có thể bỏ alert nếu muốn mượt hơn
+      router.push("/");
     } catch (err) {
+      console.error("Page Login Error:", err);
       setError(err.message || "Email hoặc mật khẩu không đúng.");
     } finally {
       setIsLoading(false);
@@ -37,11 +46,9 @@ export default function LoginPage() {
   };
 
   return (
-    // Dùng min-h-screen để full màn hình thay vì fixed inset-0 như Modal
     <div className="min-h-screen w-full flex items-center justify-center bg-gray-50 py-10 px-4">
-      {/* Container chính - Giống hệt Modal nhưng bỏ nút X đóng */}
       <div className="relative w-full max-w-[900px] h-[600px] bg-white shadow-2xl flex overflow-hidden animate-fade-in-up rounded-lg">
-        {/* CỘT TRÁI: ẢNH (Giữ nguyên như Modal) */}
+        {/* CỘT TRÁI */}
         <div className="hidden lg:block w-1/2 relative h-full">
           <Image
             src="https://phuquoc.regenthotels.com/sites/rpq/files/styles/height_1400/public/homepage/shutterstock_1446827465_1%20%281%29_0.jpg?itok=ZSXjz5zI"
@@ -53,21 +60,20 @@ export default function LoginPage() {
           <div className="absolute bottom-8 left-8 text-white">
             <h3 className="font-serif text-3xl">Welcome Back</h3>
             <p className="text-xs tracking-[2px] opacity-90 uppercase mt-2">
-              InterContinental Life
+              Luxury Hotel Collection
             </p>
           </div>
         </div>
 
-        {/* CỘT PHẢI: FORM */}
+        {/* CỘT PHẢI */}
         <div className="w-full lg:w-1/2 p-10 lg:p-16 flex flex-col justify-center relative bg-white">
           <h2 className="font-serif text-3xl text-primary mb-2">Sign In</h2>
           <p className="text-secondary text-sm mb-6 font-light">
             Access your member benefits.
           </p>
 
-          {/* Hiển thị lỗi */}
           {error && (
-            <div className="mb-4 p-2 bg-red-50 border-l-2 border-red-500 text-red-600 text-xs font-medium">
+            <div className="mb-4 p-3 bg-red-50 border-l-4 border-red-500 text-red-600 text-sm font-medium">
               {error}
             </div>
           )}
@@ -101,7 +107,7 @@ export default function LoginPage() {
               disabled={isLoading}
               className="w-full bg-primary text-white py-4 text-xs font-bold tracking-[2px] uppercase hover:bg-accent transition-all mt-2 disabled:opacity-70 disabled:cursor-not-allowed"
             >
-              {isLoading ? "Signing In..." : "Sign In"}
+              {isLoading ? "Verifying..." : "Sign In"}
             </button>
           </form>
 

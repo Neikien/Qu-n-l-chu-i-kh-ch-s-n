@@ -1,22 +1,26 @@
 "use client";
+
 import { useState, useEffect } from "react";
-import { useAuth } from "@/app/context/AuthContext";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useBooking } from "@/context/BookingContext";
-// 1. IMPORT LOGIN MODAL (Đảm bảo đường dẫn đúng với nơi bạn lưu file LoginModal)
+
+// --- 1. SỬA ĐƯỜNG DẪN IMPORT CONTEXT ---
+import { useAuth } from "@/app/context/AuthContext";
+import { useBooking } from "@/app/context/BookingContext"; // Thêm /app vào đây
+
+// Import Login Modal
 import LoginModal from "./LoginModal";
 
 export default function Header() {
   const { user, logout } = useAuth();
   const router = useRouter();
-  const [showDropdown, setShowDropdown] = useState(false);
-
-  // 2. STATE QUẢN LÝ POPUP LOGIN
-  const [isLoginOpen, setIsLoginOpen] = useState(false);
-
   const pathname = usePathname();
+
+  // Lấy hàm từ BookingContext (nếu bạn muốn dùng toggleBooking sau này)
   const { toggleBooking } = useBooking();
+
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [showBookBtn, setShowBookBtn] = useState(true);
 
   const menuItems = [
@@ -26,8 +30,10 @@ export default function Header() {
     { name: "Loyalty", path: "/loyalty" },
   ];
 
+  // Xử lý nút Book Now
   const handleBookNow = (e) => {
     e.preventDefault();
+    // Chuyển hướng sang trang Booking hoàn chỉnh
     router.push("/booking");
   };
 
@@ -35,19 +41,18 @@ export default function Header() {
     setShowDropdown(!showDropdown);
   };
 
+  // Đóng dropdown khi click ra ngoài
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (showDropdown && !event.target.closest(".user-dropdown")) {
         setShowDropdown(false);
       }
     };
-
     document.addEventListener("click", handleClickOutside);
-    return () => {
-      document.removeEventListener("click", handleClickOutside);
-    };
+    return () => document.removeEventListener("click", handleClickOutside);
   }, [showDropdown]);
 
+  // Logic hiển thị nút Book Now khi cuộn trang (chỉ áp dụng cho trang chủ)
   useEffect(() => {
     if (pathname !== "/") {
       setShowBookBtn(true);
@@ -109,7 +114,7 @@ export default function Header() {
             {/* Right side functionality */}
             <div className="flex items-center gap-6 border-l border-gray-200 pl-10 ml-2">
               {user ? (
-                // HIỂN THỊ KHI ĐÃ ĐĂNG NHẬP
+                // --- ĐÃ ĐĂNG NHẬP ---
                 <div className="relative user-dropdown">
                   <button
                     onClick={handleDropdownToggle}
@@ -138,16 +143,13 @@ export default function Header() {
 
                   {/* Dropdown Menu */}
                   {showDropdown && (
-                    <div className="absolute right-0 mt-2 w-48 bg-white shadow-lg rounded-md py-2 border border-gray-100 z-50">
+                    <div className="absolute right-0 mt-2 w-48 bg-white shadow-lg rounded-md py-2 border border-gray-100 z-50 animate-fade-in-up">
                       <div className="px-4 py-2 border-b border-gray-100">
-                        <p className="text-xs font-semibold text-gray-900">
+                        <p className="text-xs font-semibold text-gray-900 truncate">
                           {user.name || user.userName}
                         </p>
-                        <p className="text-xs text-gray-500 truncate">
-                          {user.email || user.userName}
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          {user.role || "VIP Member"}
+                        <p className="text-[10px] text-gray-500 truncate">
+                          {user.email}
                         </p>
                       </div>
 
@@ -156,20 +158,7 @@ export default function Header() {
                         className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
                         onClick={() => setShowDropdown(false)}
                       >
-                        <svg
-                          className="w-4 h-4"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                          />
-                        </svg>
-                        Hồ sơ cá nhân
+                        <i className="fa-regular fa-user w-4"></i> Hồ sơ cá nhân
                       </Link>
 
                       <Link
@@ -177,20 +166,8 @@ export default function Header() {
                         className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
                         onClick={() => setShowDropdown(false)}
                       >
-                        <svg
-                          className="w-4 h-4"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                          />
-                        </svg>
-                        Đặt phòng của tôi
+                        <i className="fa-solid fa-suitcase w-4"></i> Đặt phòng
+                        của tôi
                       </Link>
 
                       <button
@@ -199,40 +176,27 @@ export default function Header() {
                           setShowDropdown(false);
                           router.push("/");
                         }}
-                        className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-50"
+                        className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-50 border-t border-gray-100 mt-1"
                       >
-                        <svg
-                          className="w-4 h-4"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-                          />
-                        </svg>
+                        <i className="fa-solid fa-right-from-bracket w-4"></i>{" "}
                         Đăng xuất
                       </button>
                     </div>
                   )}
                 </div>
               ) : (
-                // HIỂN THỊ KHI CHƯA ĐĂNG NHẬP
+                // --- CHƯA ĐĂNG NHẬP ---
                 <div className="flex items-center gap-4">
                   <Link
                     href="/register"
-                    className="text-xs font-bold uppercase tracking-widest text-primary hover:text-accent"
+                    className="text-xs font-bold uppercase tracking-widest text-primary hover:text-accent transition-colors"
                   >
                     Đăng ký
                   </Link>
 
-                  {/* --- 3. ĐỔI LINK LOGIN THÀNH BUTTON MỞ POPUP --- */}
                   <button
                     onClick={() => setIsLoginOpen(true)}
-                    className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-primary hover:text-accent group"
+                    className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-primary hover:text-accent transition-colors"
                   >
                     <svg
                       className="w-5 h-5"
@@ -256,7 +220,7 @@ export default function Header() {
               {showBookBtn && (
                 <button
                   onClick={handleBookNow}
-                  className="bg-accent text-white text-xs font-bold px-8 py-3 uppercase hover:bg-accent/90 transition-colors"
+                  className="bg-accent text-white text-xs font-bold px-8 py-3 uppercase hover:bg-gray-800 transition-all shadow-md"
                 >
                   Book Now
                 </button>
@@ -264,7 +228,7 @@ export default function Header() {
             </div>
           </nav>
 
-          {/* Mobile menu button (optional) */}
+          {/* Mobile menu button */}
           <button className="lg:hidden text-primary">
             <svg
               className="w-6 h-6"
@@ -283,7 +247,7 @@ export default function Header() {
         </div>
       </header>
 
-      {/* 4. CHÈN POPUP LOGIN Ở ĐÂY */}
+      {/* Popup Login */}
       <LoginModal isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} />
     </>
   );
