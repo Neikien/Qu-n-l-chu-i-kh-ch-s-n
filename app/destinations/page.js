@@ -6,12 +6,12 @@ import Link from "next/link";
 
 // 1. DANH SÁCH ẢNH MOCK DATA (Dùng để hiển thị cho đẹp vì DB chưa có ảnh xịn)
 const MOCK_IMAGES = [
-  "https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=1200&auto=format&fit=crop", // Ảnh 1 (Resort biển)
-  "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?q=80&w=1200&auto=format&fit=crop", // Ảnh 2 (View biển từ phòng)
-  "https://images.unsplash.com/photo-1540555700478-4be289fbecef?q=80&w=1200&auto=format&fit=crop", // Ảnh 3 (Resort núi/biển)
-  "https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?q=80&w=1200&auto=format&fit=crop", // Ảnh 4 (Thành phố cổ điển)
-  "https://images.unsplash.com/photo-1573843981267-be1999ff37cd?q=80&w=1200&auto=format&fit=crop", // Ảnh 5 (Resort đảo)
-  "https://images.unsplash.com/photo-1565538810643-b5bdb714032a?q=80&w=1200&auto=format&fit=crop", // Ảnh 6 (Thành phố hiện đại)
+  "https://digital.ihg.com/is/image/ihg/intercontinental-hanoi-4068417844-16x9?", // Ảnh 1 -HN
+  "https://phuquoc.regenthotels.com/sites/rpq/files/styles/width_1920/public/homepage/Drone%20beach%20%282%29.jpg?itok=sIrMX5EB", // Ảnh 2 - ĐN
+  "https://phuquoc.regenthotels.com/sites/rpq/files/styles/height_1400/public/homepage/OneBedroomSkyPoolVilla.jpg?itok=02RUSs_N", // Ảnh 3 - NT
+  "https://phuquoc.regenthotels.com/sites/rpq/files/styles/height_1400/public/homepage/R6WI8638%20copy.jpg?itok=1AeuwdT6", // Ảnh 4 Da Lat
+  "https://images.unsplash.com/photo-1583417319070-4a69db38a482?q=80&w=1200&auto=format&fit=crop", // Ảnh 5 TPHCM
+  "https://phuquoc.regenthotels.com/sites/rpq/files/styles/height_1400/public/homepage/DSC07735re2.jpg?itok=7xE6xiRd", // Ảnh 6 Thanh Hóa
 ];
 
 const regions = ["All", "Asia", "Europe", "Americas", "Oceania"];

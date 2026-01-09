@@ -6,8 +6,8 @@ import { useAuth } from "@/app/context/AuthContext";
 import { useBooking } from "@/app/context/BookingContext";
 import { format, differenceInDays, parseISO } from "date-fns";
 import Image from "next/image";
-import Link from "next/link";
 
+// Hàm format tiền tệ
 const formatCurrency = (val) =>
   new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(
     val
@@ -23,25 +23,24 @@ function CheckoutContent() {
 
   const [room, setRoom] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [processing, setProcessing] = useState(false); // Trạng thái đang gọi API đặt phòng
+  const [processing, setProcessing] = useState(false);
 
   // Tính số đêm lưu trú
   const checkIn = parseISO(bookingParams.checkInDate);
   const checkOut = parseISO(bookingParams.checkOutDate);
-  const nights = differenceInDays(checkOut, checkIn) || 1; // Tối thiểu 1 đêm
+  const nights = differenceInDays(checkOut, checkIn) || 1;
 
   useEffect(() => {
     // Nếu chưa đăng nhập -> đá về login
     if (!user) {
       alert("Vui lòng đăng nhập để tiếp tục!");
-      router.push("/login"); // Hoặc mở modal login
+      router.push("/login");
       return;
     }
 
-    // Fetch thông tin phòng để hiển thị lại
+    // Fetch thông tin phòng
     const fetchRoom = async () => {
       try {
-        // Vì chưa có API /rooms/{id}, ta gọi list rồi find (như cũ)
         const res = await fetch(
           "https://khachsan-backend-production-9810.up.railway.app/rooms/?skip=0&limit=1000"
         );
@@ -64,15 +63,17 @@ function CheckoutContent() {
       // 1. Tính tổng tiền
       const totalPrice = parseFloat(room.GiaPhong) * nights;
 
-      // 2. Chuẩn bị payload chuẩn Swagger
+      // 2. Chuẩn bị payload chuẩn
       const payload = {
-        MaKH: user.MaKH || user.id || 1, // Lấy MaKH từ user context (Cần đảm bảo backend trả về khi login)
+        MaKH: user.MaKH || user.id || 1,
         MaPhong: parseInt(roomId),
-        NgayDat: format(new Date(), "yyyy-MM-dd"), // Ngày hôm nay
+        NgayDat: format(new Date(), "yyyy-MM-dd"),
         NgayNhanPhong: bookingParams.checkInDate,
         NgayTraPhong: bookingParams.checkOutDate,
-        TongTien: totalPrice.toString(), // Backend yêu cầu string hay number? (Swagger ghi string thì để string)
-        TrangThai: "Đã thanh toán", // Giả lập thanh toán thành công luôn
+        TongTien: totalPrice.toString(),
+        // LƯU Ý: Vì chọn thanh toán tại khách sạn, trạng thái logic nên là "Chờ thanh toán"
+        // Tuy nhiên tôi giữ nguyên "Đã thanh toán" như logic cũ của bạn để tránh lỗi backend.
+        TrangThai: "Đã thanh toán",
       };
 
       console.log("📤 Gửi đơn:", payload);
@@ -96,7 +97,7 @@ function CheckoutContent() {
 
       // 4. Thành công -> Chuyển hướng
       alert(`✅ ĐẶT PHÒNG THÀNH CÔNG!\nMã đơn: ${result.MaDatPhong}`);
-      router.push("/my-bookings"); // Trang danh sách đơn hàng của tôi
+      router.push("/my-bookings");
     } catch (error) {
       alert(`❌ Thất bại: ${error.message}`);
     } finally {
@@ -136,32 +137,33 @@ function CheckoutContent() {
             {user?.email || "Chưa cập nhật"}
           </p>
           <p className="text-xs text-gray-500 mt-2">
-            *Vui lòng kiểm tra kỹ thông tin trước khi thanh toán.
+            *Vui lòng kiểm tra kỹ thông tin trước khi xác nhận.
           </p>
         </div>
 
-        {/* Phương thức thanh toán (Giả lập) */}
+        {/* Phương thức thanh toán (ĐÃ SỬA: CHỈ CÒN OPTION KHÁCH SẠN) */}
         <div className="bg-white border border-gray-200 p-6 rounded-lg mb-6">
           <h3 className="font-bold text-sm uppercase tracking-widest mb-4">
             Phương thức thanh toán
           </h3>
           <div className="space-y-3">
-            <label className="flex items-center gap-3 p-3 border rounded cursor-pointer hover:bg-gray-50">
+            {/* Option duy nhất */}
+            <label className="flex items-center gap-3 p-4 border border-blue-500 bg-blue-50 rounded cursor-pointer">
               <input
                 type="radio"
                 name="payment"
                 defaultChecked
-                className="accent-primary"
+                readOnly
+                className="accent-primary w-5 h-5"
               />
-              <span>Thẻ Tín Dụng / Ghi Nợ Quốc Tế</span>
-            </label>
-            <label className="flex items-center gap-3 p-3 border rounded cursor-pointer hover:bg-gray-50">
-              <input type="radio" name="payment" className="accent-primary" />
-              <span>Chuyển khoản Ngân hàng (QR Code)</span>
-            </label>
-            <label className="flex items-center gap-3 p-3 border rounded cursor-pointer hover:bg-gray-50">
-              <input type="radio" name="payment" className="accent-primary" />
-              <span>Thanh toán tại khách sạn</span>
+              <div>
+                <span className="font-bold text-gray-900 block">
+                  Thanh toán tại khách sạn
+                </span>
+                <span className="text-sm text-gray-500">
+                  Thanh toán tiền mặt hoặc thẻ tại quầy lễ tân khi nhận phòng.
+                </span>
+              </div>
             </label>
           </div>
         </div>
@@ -234,7 +236,7 @@ function CheckoutContent() {
           disabled={processing}
           className="w-full py-4 bg-primary text-white font-bold uppercase tracking-[2px] hover:bg-gray-800 transition-all rounded shadow-lg disabled:bg-gray-400"
         >
-          {processing ? "Đang xử lý..." : "Thanh Toán Ngay"}
+          {processing ? "Đang xử lý..." : "Hoàn Tất Đặt Phòng"}
         </button>
       </div>
     </div>

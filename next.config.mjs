@@ -18,6 +18,18 @@ const nextConfig = {
         protocol: "https",
         hostname: "phuquoc.regenthotels.com", // <-- DÒNG MỚI THÊM VÀO ĐÂY
       },
+      {
+        protocol: "https",
+        hostname: "tse4.mm.bing.net",
+        port: "",
+        pathname: "/**",
+      },
+      // Nếu bạn muốn cho phép tất cả các server ảnh của Bing (tse1, tse2, tse3...)
+      // thì có thể thêm dòng dưới đây (tùy chọn):
+      {
+        protocol: "https",
+        hostname: "upload.wikimedia.org",
+      },
     ],
   },
 };

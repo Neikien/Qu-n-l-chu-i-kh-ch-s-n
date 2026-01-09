@@ -1,304 +1,280 @@
 "use client";
-import React, { useState, useEffect } from 'react';
-import { useAuth } from '@/app/context/AuthContext';
-import './profile.css';
 
-const ProfilePage = () => {
-  const { user } = useAuth();
+import { useState, useEffect } from "react";
+import { useAuth } from "@/app/context/AuthContext";
+import { apiService } from "@/services/apiService";
+import {
+  User,
+  Mail,
+  Lock,
+  LogOut,
+  Trash2,
+  Save,
+  Loader2,
+  ShieldAlert,
+} from "lucide-react";
+import Link from "next/link";
+
+export default function ProfilePage() {
+  const { user, logout, setUser } = useAuth();
+
+  // State cho form update
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
-    HoTen: '',
-    SoDienThoai: '',
-    Email: '',
-    CCCD: '',
-    DiaChi: ''
+    fullname: "",
+    email: "",
+    current_password: "",
+    new_password: "",
   });
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState('');
-  const [customerId, setCustomerId] = useState(null); // Lưu MaKH nếu có
 
-  // Load dữ liệu từ backend
+  // Load data vào form
   useEffect(() => {
-    const loadProfile = async () => {
-      if (!user?.token) return;
-      
-      setLoading(true);
-      try {
-        // 1. Ưu tiên lấy từ LocalStorage (tạm thời)
-        const savedData = localStorage.getItem('userProfile');
-        if (savedData) {
-          setFormData(JSON.parse(savedData));
-          setLoading(false);
-          return;
-        }
-
-        // 2. Gọi API lấy danh sách khách hàng
-        const response = await fetch('https://khachsan-backend-production-9810.up.railway.app/customers/', {
-          headers: {
-            'Authorization': `Bearer ${user.token}`
-          }
-        });
-
-        if (!response.ok) throw new Error('Không thể lấy danh sách KH');
-        
-        const customers = await response.json();
-        
-        // 3. Tìm profile của user hiện tại (dựa vào email hoặc username)
-        const userEmail = user.email || user.userName;
-        const myProfile = customers.find(c => 
-          c.Email === userEmail || c.Email === user.email || c.Email === user.userName
-        );
-
-        if (myProfile) {
-          setFormData({
-            HoTen: myProfile.HoTen || '',
-            SoDienThoai: myProfile.SoDienThoai || '',
-            Email: myProfile.Email || userEmail,
-            CCCD: myProfile.CCCD || '',
-            DiaChi: myProfile.DiaChi || ''
-          });
-          setCustomerId(myProfile.MaKH);
-          localStorage.setItem('userProfile', JSON.stringify(myProfile));
-        } else {
-          // 4. Nếu chưa có profile, dùng thông tin đăng nhập
-          setFormData(prev => ({
-            ...prev,
-            HoTen: user.name || '',
-            Email: userEmail
-          }));
-        }
-
-      } catch (error) {
-        console.error('Lỗi load profile:', error);
-        // Fallback: lấy từ thông tin đăng nhập
-        setFormData(prev => ({
-          ...prev,
-          HoTen: user.name || '',
-          Email: user.email || user.userName || ''
-        }));
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadProfile();
+    if (user) {
+      setFormData((prev) => ({
+        ...prev,
+        fullname: user.fullname || "",
+        email: user.email || "",
+      }));
+    }
   }, [user]);
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleSave = async (e) => {
+  // Xử lý CẬP NHẬT
+  const handleUpdate = async (e) => {
     e.preventDefault();
+    if (!formData.current_password) {
+      alert("Vui lòng nhập mật khẩu hiện tại để xác nhận thay đổi.");
+      return;
+    }
+
     setLoading(true);
-    setMessage('');
-
     try {
-      console.log("Đang lưu thông tin:", formData);
-      
-      // Gọi API lưu profile
-      const url = customerId 
-        ? `https://khachsan-backend-production-9810.up.railway.app/customers/${customerId}`  // Cập nhật nếu có ID
-        : 'https://khachsan-backend-production-9810.up.railway.app/customers/';  // Tạo mới nếu chưa có
-      
-      const method = customerId ? 'PUT' : 'POST';
-      
-      const response = await fetch(url, {
-        method: method,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${user.token}`
-        },
-        body: JSON.stringify(formData)
-      });
-
-      if (!response.ok) {
-        throw new Error(`Lỗi ${response.status}: ${response.statusText}`);
-      }
-
-      const result = await response.json();
-      console.log("Kết quả:", result);
-      
-      // Lưu vào LocalStorage (tạm thời)
-      localStorage.setItem('userProfile', JSON.stringify(formData));
-      
-      if (result.MaKH && !customerId) {
-        setCustomerId(result.MaKH);
-      }
-      
-      setMessage(`✅ Đã lưu thông tin thành công!`);
+      const updatedUser = await apiService.updateUser(formData);
+      setUser(updatedUser);
+      alert("Cập nhật thông tin thành công!");
       setIsEditing(false);
-      
+      setFormData((prev) => ({
+        ...prev,
+        current_password: "",
+        new_password: "",
+      }));
     } catch (error) {
-      console.error("Lỗi:", error);
-      setMessage(`❌ Lỗi: ${error.message}`);
-      
-      // Fallback: lưu vào localStorage nếu API fail
-      localStorage.setItem('userProfile', JSON.stringify(formData));
-      setIsEditing(false);
-      alert("✅ Đã lưu thông tin (offline mode)!");
+      alert(`Lỗi: ${error.message}`);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleEdit = () => {
-    setIsEditing(true);
+  // Xử lý XÓA TÀI KHOẢN
+  const handleDeleteAccount = async () => {
+    if (
+      confirm(
+        "CẢNH BÁO: Hành động này không thể hoàn tác. Bạn chắc chắn muốn xóa tài khoản?"
+      )
+    ) {
+      try {
+        await apiService.deleteAccount();
+        alert("Tài khoản đã bị xóa.");
+        logout();
+      } catch (error) {
+        alert("Không thể xóa tài khoản.");
+      }
+    }
   };
 
-  const handleCancel = () => {
-    // Load lại dữ liệu cũ từ LocalStorage
-    const savedData = localStorage.getItem('userProfile');
-    if (savedData) {
-      setFormData(JSON.parse(savedData));
-    }
-    setIsEditing(false);
-  };
+  if (!user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Link href="/login" className="text-primary underline">
+          Vui lòng đăng nhập
+        </Link>
+      </div>
+    );
+  }
 
   return (
-    <div className="profile-container">
-      <div className="profile-card">
-        <div className="profile-header">
-            <h2 className="profile-title">Hồ Sơ Của Tôi</h2>
-
-            {!isEditing && (
-                <button 
-                  onClick={handleEdit} 
-                  className="btn-icon-edit" 
-                  title="Chỉnh sửa thông tin"
-                  disabled={loading}
-                >
-                  {loading ? 'Đang tải...' : '✏️ Sửa'}
-                </button>
-            )}
+    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-4xl mx-auto">
+        {/* HEADER */}
+        <div className="bg-white rounded-2xl shadow-sm p-8 mb-6 flex flex-col md:flex-row items-center justify-between gap-6 border border-gray-100">
+          <div className="flex items-center gap-6">
+            <div className="w-20 h-20 bg-gray-200 rounded-full flex items-center justify-center text-2xl font-serif text-gray-500 font-bold">
+              {/* --- FIX LỖI CRASH TẠI ĐÂY --- */}
+              {/* Ép kiểu String trước khi gọi charAt để an toàn */}
+              {String(user.fullname || user.username || "U")
+                .charAt(0)
+                .toUpperCase()}
+            </div>
+            <div>
+              <h1 className="text-2xl font-serif font-bold text-gray-900">
+                {user.fullname}
+              </h1>
+              <p className="text-gray-500">
+                @{user.username} • {user.role}
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={logout}
+            className="flex items-center gap-2 px-5 py-2 border border-gray-300 rounded-full hover:bg-black hover:text-white transition"
+          >
+            <LogOut size={18} /> Đăng xuất
+          </button>
         </div>
 
-        <p className="profile-subtitle">
-            {isEditing
-                ? "Vui lòng cập nhật thông tin chính xác."
-                : "Thông tin cá nhân & liên hệ đặt phòng."}
-        </p>
-
-        {message && (
-          <div className="message-alert" style={{ 
-            background: message.includes('✅') ? '#d4edda' : '#f8d7da',
-            color: message.includes('✅') ? '#155724' : '#721c24',
-          }}>
-            {message}
-          </div>
-        )}
-
-        <form onSubmit={handleSave} className="profile-form">
-          <div className="form-group">
-            <label>Họ và Tên</label>
-            {isEditing ? (
-                <input 
-                  type="text" 
-                  name="HoTen" 
-                  value={formData.HoTen} 
-                  onChange={handleChange} 
-                  required 
-                  disabled={loading}
-                  placeholder="Nhập họ tên đầy đủ"
-                />
-            ) : (
-                <div className="read-only-field">{formData.HoTen || "Chưa cập nhật"}</div>
-            )}
-          </div>
-
-          <div className="form-row">
-            <div className="form-group">
-              <label>Số Điện Thoại</label>
-              {isEditing ? (
-                <input 
-                  type="tel" 
-                  name="SoDienThoai" 
-                  value={formData.SoDienThoai} 
-                  onChange={handleChange} 
-                  required 
-                  disabled={loading}
-                  placeholder="0912345678"
-                />
-              ) : (
-                <div className="read-only-field">{formData.SoDienThoai || "Chưa cập nhật"}</div>
-              )}
-            </div>
-            <div className="form-group">
-              <label>Email</label>
-              {isEditing ? (
-                 <input 
-                   type="email" 
-                   name="Email" 
-                   value={formData.Email} 
-                   onChange={handleChange} 
-                   required 
-                   disabled={loading}
-                   placeholder="email@example.com"
-                 />
-              ) : (
-                 <div className="read-only-field">{formData.Email || user?.email || user?.userName || "Chưa cập nhật"}</div>
-              )}
-            </div>
-          </div>
-
-          <div className="form-group">
-            <label>Số CCCD / Passport</label>
-            {isEditing ? (
-                <input 
-                  type="text" 
-                  name="CCCD" 
-                  value={formData.CCCD} 
-                  onChange={handleChange} 
-                  required 
-                  disabled={loading}
-                  placeholder="123456789012"
-                />
-            ) : (
-                <div className="read-only-field">{formData.CCCD || "Chưa cập nhật"}</div>
-            )}
-          </div>
-
-          <div className="form-group">
-            <label>Địa Chỉ</label>
-            {isEditing ? (
-                <textarea 
-                  name="DiaChi" 
-                  value={formData.DiaChi} 
-                  onChange={handleChange} 
-                  rows="3" 
-                  required 
-                  disabled={loading}
-                  placeholder="Số nhà, đường, phường, quận, thành phố"
-                />
-            ) : (
-                <div className="read-only-field">{formData.DiaChi || "Chưa cập nhật"}</div>
-            )}
-          </div>
-
-          {/* Khu vực nút bấm: Chỉ hiện khi ĐANG SỬA */}
-          {isEditing && (
-              <div className="action-buttons">
-                  <button 
-                    type="button" 
-                    onClick={handleCancel} 
-                    className="btn-cancel"
-                    disabled={loading}
-                  >
-                    Hủy Bỏ
-                  </button>
-                  <button 
-                    type="submit" 
-                    className="btn-save" 
-                    disabled={loading}
-                  >
-                    {loading ? 'Đang lưu...' : 'Lưu Thay Đổi'}
-                  </button>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* SIDEBAR INFO */}
+          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 h-fit">
+            <h3 className="font-bold text-lg mb-4 uppercase tracking-wider text-gray-400 text-xs">
+              Thông tin cơ bản
+            </h3>
+            <div className="space-y-4">
+              <div className="flex items-center gap-3 text-gray-700">
+                <User size={18} />
+                <span className="font-medium">ID: {user.id}</span>
               </div>
-          )}
-        </form>
+              <div className="flex items-center gap-3 text-gray-700">
+                <Mail size={18} />
+                <span className="font-medium truncate">
+                  {user.email || "Chưa cập nhật"}
+                </span>
+              </div>
+              <div className="flex items-center gap-3 text-gray-700">
+                <ShieldAlert size={18} />
+                <span className="font-medium">Role: {user.role}</span>
+              </div>
+            </div>
+
+            <button
+              onClick={() => setIsEditing(!isEditing)}
+              className="mt-6 w-full py-2 bg-primary text-white rounded font-bold text-sm hover:opacity-90 transition"
+            >
+              {isEditing ? "Hủy chỉnh sửa" : "Chỉnh sửa thông tin"}
+            </button>
+          </div>
+
+          {/* MAIN FORM AREA */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* FORM UPDATE */}
+            {isEditing && (
+              <div className="bg-white rounded-xl shadow-sm p-8 border border-gray-100 animate-fade-in-up">
+                <h2 className="text-xl font-bold mb-6">Cập nhật hồ sơ</h2>
+                <form onSubmit={handleUpdate} className="space-y-5">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Họ tên
+                      </label>
+                      <input
+                        type="text"
+                        className="w-full border p-2 rounded focus:ring-black outline-none"
+                        value={formData.fullname}
+                        onChange={(e) =>
+                          setFormData({ ...formData, fullname: e.target.value })
+                        }
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Email
+                      </label>
+                      <input
+                        type="email"
+                        className="w-full border p-2 rounded focus:ring-black outline-none"
+                        value={formData.email}
+                        onChange={(e) =>
+                          setFormData({ ...formData, email: e.target.value })
+                        }
+                      />
+                    </div>
+                  </div>
+
+                  <div className="pt-4 border-t border-gray-100">
+                    <p className="text-xs uppercase font-bold text-gray-400 mb-4">
+                      Đổi mật khẩu & Xác nhận
+                    </p>
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Mật khẩu mới (Nếu muốn đổi)
+                        </label>
+                        <div className="relative">
+                          <Lock className="absolute left-3 top-2.5 text-gray-400 w-4 h-4" />
+                          <input
+                            type="password"
+                            className="w-full border pl-9 p-2 rounded focus:ring-black outline-none"
+                            placeholder="Nhập mật khẩu mới..."
+                            value={formData.new_password}
+                            onChange={(e) =>
+                              setFormData({
+                                ...formData,
+                                new_password: e.target.value,
+                              })
+                            }
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-red-600 mb-1">
+                          Mật khẩu hiện tại (Bắt buộc)
+                        </label>
+                        <div className="relative">
+                          <Lock className="absolute left-3 top-2.5 text-red-400 w-4 h-4" />
+                          <input
+                            type="password"
+                            required
+                            className="w-full border border-red-200 bg-red-50 pl-9 p-2 rounded focus:ring-red-500 outline-none"
+                            placeholder="Xác nhận mật khẩu cũ..."
+                            value={formData.current_password}
+                            onChange={(e) =>
+                              setFormData({
+                                ...formData,
+                                current_password: e.target.value,
+                              })
+                            }
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="pt-4 flex justify-end">
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className="bg-black text-white px-6 py-3 rounded font-bold flex items-center gap-2 hover:bg-gray-800 disabled:opacity-50"
+                    >
+                      {loading ? (
+                        <Loader2 className="animate-spin w-4 h-4" />
+                      ) : (
+                        <Save size={18} />
+                      )}
+                      Lưu thay đổi
+                    </button>
+                  </div>
+                </form>
+              </div>
+            )}
+
+            {/* DANGER ZONE */}
+            <div className="bg-red-50 rounded-xl p-6 border border-red-100 flex items-center justify-between">
+              <div>
+                <h3 className="text-red-800 font-bold">Xóa tài khoản</h3>
+                <p className="text-red-600 text-sm mt-1">
+                  Hành động này sẽ xóa vĩnh viễn dữ liệu của bạn.
+                </p>
+              </div>
+              <button
+                onClick={handleDeleteAccount}
+                className="bg-white text-red-600 border border-red-200 px-4 py-2 rounded hover:bg-red-600 hover:text-white transition flex items-center gap-2 text-sm font-bold"
+              >
+                <Trash2 size={16} /> Xóa ngay
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
-};
-
-export default ProfilePage;
+}
