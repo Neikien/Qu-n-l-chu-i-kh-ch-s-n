@@ -2,18 +2,13 @@
 
 import { Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
-
-// Giả định các components này nằm trong thư mục gốc /components
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import BookingBar from "@/components/BookingBar"; // Nếu bạn đã xóa file này thì hãy xóa dòng này đi
-
-// --- SỬA LẠI IMPORT CONTEXT (QUAN TRỌNG) ---
-// Dùng "./" thay vì "@/" để Next.js tìm đúng file nằm cùng cấp trong thư mục app
+import BookingBar from "@/components/BookingBar";
 import { BookingProvider, useBooking } from "@/app/context/BookingContext";
 import { AuthProvider } from "./context/AuthContext";
-
 import { usePathname } from "next/navigation";
+import Chatbot from "@/components/Chatbot";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -48,7 +43,6 @@ function InnerLayout({ children }) {
           }`}
         >
           <div className="w-full max-w-[1320px]">
-            {/* Nếu bạn đã xóa BookingBar cũ, hãy xóa dòng dưới hoặc thay bằng component khác */}
             <BookingBar id="global-booking" />
           </div>
         </div>
@@ -56,7 +50,7 @@ function InnerLayout({ children }) {
 
       {/* Main Content */}
       <div className="flex-grow">{children}</div>
-
+        <Chatbot />
       <Footer />
     </>
   );
