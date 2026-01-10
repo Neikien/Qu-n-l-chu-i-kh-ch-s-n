@@ -1,8 +1,6 @@
-// components/Chatbot.jsx
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-// Import hàm gọi API từ lib/api.js
 import { askChatbot } from "@/lib/api";
 
 export default function Chatbot() {
@@ -17,7 +15,6 @@ export default function Chatbot() {
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef(null);
 
-  // Tự động cuộn xuống tin nhắn mới nhất
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -30,21 +27,15 @@ export default function Chatbot() {
     e.preventDefault();
     if (!input.trim()) return;
 
-    // 1. Thêm tin nhắn của user vào list
     const userMessage = { role: "user", content: input };
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
     setIsLoading(true);
 
     try {
-      // 2. Gọi API Backend
-      // Lưu ý: Hàm askChatbot trong lib/api.js có sử dụng getAuthHeaders()
-      // Nếu backend yêu cầu đăng nhập mới chat được, bạn cần xử lý lỗi 401 ở đây.
       const data = await askChatbot(userMessage.content);
-
-      // Giả định backend trả về { answer: "Nội dung trả lời" } hoặc { message: "..." }
-      // Bạn cần kiểm tra xem backend thực tế trả về key gì. Ở đây tôi lấy data.answer hoặc data.response
-      const botResponseContent = data.answer || data.response || data.message || JSON.stringify(data);
+      
+      const botResponseContent = data.reply || data.answer || data.response || data.message || JSON.stringify(data);
 
       const botMessage = { role: "bot", content: botResponseContent };
       setMessages((prev) => [...prev, botMessage]);
@@ -62,11 +53,9 @@ export default function Chatbot() {
 
   return (
     <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-2 font-sans">
-      {/* --- CỬA SỔ CHAT --- */}
       {isOpen && (
         <div className="w-[350px] h-[450px] bg-white rounded-xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden animate-in slide-in-from-bottom-5 duration-300">
 
-          {/* Header Chat */}
           <div className="bg-primary text-white p-4 flex justify-between items-center">
             <h3 className="font-bold text-lg">Hỗ trợ trực tuyến</h3>
             <button
@@ -77,7 +66,6 @@ export default function Chatbot() {
             </button>
           </div>
 
-          {/* Nội dung tin nhắn */}
           <div className="flex-1 overflow-y-auto p-4 bg-gray-50 space-y-4">
             {messages.map((msg, index) => (
               <div
@@ -109,7 +97,6 @@ export default function Chatbot() {
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Input Chat */}
           <form onSubmit={handleSendMessage} className="p-3 bg-white border-t border-gray-200 flex gap-2">
             <input
               type="text"
@@ -129,19 +116,14 @@ export default function Chatbot() {
         </div>
       )}
 
-      {/* --- NÚT TRÒN TOGGLE --- */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        // Tôi đã tăng kích thước w-16 h-16 (64px) để nút to và đẹp hơn một chút
         className="w-16 h-16 bg-primary text-white rounded-full shadow-xl flex items-center justify-center hover:scale-110 transition-transform duration-200"
       >
         {isOpen ? (
-          // Icon khi đang mở cửa sổ chat (dấu mũi tên xuống hoặc dấu X)
           <i className="fa-solid fa-chevron-down text-xl"></i>
         ) : (
-          // [THAY ĐỔI Ở ĐÂY] Thay icon comments bằng icon robot
-          // <i className="fa-solid fa-comments text-2xl"></i>  <-- Dòng cũ
-          <i className="fa-solid fa-robot text-3xl"></i> // <-- Dòng mới (icon to hơn chút)
+          <i className="fa-solid fa-robot text-3xl"></i>
         )}
       </button>
     </div>
