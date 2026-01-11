@@ -4,10 +4,12 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { apiService } from "@/services/apiService";
+import { apiService } from "@/services/apiService"; // Đảm bảo import đúng đường dẫn
 
 export default function RegisterPage() {
   const router = useRouter();
+
+  // State chứa dữ liệu form
   const [formData, setFormData] = useState({
     HoTen: "",
     Email: "",
@@ -17,6 +19,7 @@ export default function RegisterPage() {
     MatKhau: "",
     ConfirmMatKhau: "",
   });
+
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -33,23 +36,19 @@ export default function RegisterPage() {
     // 1. Kiểm tra mật khẩu khớp nhau
     if (formData.MatKhau !== formData.ConfirmMatKhau) {
       setError("Mật khẩu xác nhận không khớp!");
-      return;
-    }
-
-    // 2. Kiểm tra độ dài mật khẩu (Backend thường yêu cầu > 4 ký tự)
-    if (formData.MatKhau.length < 4) {
-      setError("Mật khẩu phải có ít nhất 4 ký tự.");
+      setIsLoading(false);
       return;
     }
 
     try {
-      console.log("📤 Đang đăng ký...", formData);
+      console.log("📤 Đang gửi form:", formData);
 
-      // Gọi hàm register từ apiService (Hàm này đã được sửa ở bước trước để map đúng trường)
+      // 2. Gọi API Service (Toàn bộ logic khó nằm ở đây)
       await apiService.register(formData);
 
-      alert("🎉 Đăng ký thành công! Bạn sẽ được chuyển sang trang đăng nhập.");
-      router.push("/login");
+      // 3. Thành công
+      alert("🎉 Đăng ký thành công! Đang chuyển về trang chủ...");
+      router.push("/"); // Hoặc router.push("/login")
     } catch (err) {
       console.error("Lỗi đăng ký:", err);
       setError(err.message || "Đăng ký thất bại. Vui lòng thử lại.");
@@ -61,7 +60,7 @@ export default function RegisterPage() {
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-gray-50 py-10 px-4">
       <div className="relative w-full max-w-[1000px] bg-white shadow-2xl flex rounded-lg overflow-hidden animate-fade-in-up">
-        {/* CỘT TRÁI: ẢNH MINH HỌA */}
+        {/* CỘT TRÁI: ẢNH */}
         <div className="hidden lg:block w-5/12 relative min-h-[600px]">
           <Image
             src="https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=1000"
@@ -78,7 +77,7 @@ export default function RegisterPage() {
           </div>
         </div>
 
-        {/* CỘT PHẢI: FORM ĐĂNG KÝ */}
+        {/* CỘT PHẢI: FORM */}
         <div className="w-full lg:w-7/12 p-8 lg:p-12">
           <h2 className="font-serif text-3xl text-primary mb-2">
             Tạo Tài Khoản
@@ -87,7 +86,6 @@ export default function RegisterPage() {
             Điền thông tin để đăng ký thành viên.
           </p>
 
-          {/* Hiển thị thông báo lỗi */}
           {error && (
             <div className="mb-4 p-3 bg-red-50 text-red-600 text-sm border-l-4 border-red-500 rounded font-medium">
               {error}
@@ -109,7 +107,7 @@ export default function RegisterPage() {
                 required
                 value={formData.HoTen}
                 onChange={handleChange}
-                className="w-full border-b border-gray-300 py-2 focus:border-accent outline-none transition-colors"
+                className="w-full border-b border-gray-300 py-2 focus:border-accent outline-none"
                 placeholder="Nguyễn Văn A"
               />
             </div>
@@ -125,12 +123,12 @@ export default function RegisterPage() {
                 required
                 value={formData.Email}
                 onChange={handleChange}
-                className="w-full border-b border-gray-300 py-2 focus:border-accent outline-none transition-colors"
+                className="w-full border-b border-gray-300 py-2 focus:border-accent outline-none"
                 placeholder="email@example.com"
               />
             </div>
 
-            {/* Số Điện Thoại */}
+            {/* Số Điện Thoại (Sửa name="SDT" cho khớp state) */}
             <div className="col-span-2 md:col-span-1">
               <label className="block text-xs font-bold text-gray-500 uppercase mb-1">
                 Số Điện Thoại
@@ -141,8 +139,8 @@ export default function RegisterPage() {
                 required
                 value={formData.SDT}
                 onChange={handleChange}
-                className="w-full border-b border-gray-300 py-2 focus:border-accent outline-none transition-colors"
-                placeholder="0912345678"
+                className="w-full border-b border-gray-300 py-2 focus:border-accent outline-none"
+                placeholder="0912..."
               />
             </div>
 
@@ -157,7 +155,7 @@ export default function RegisterPage() {
                 required
                 value={formData.CCCD}
                 onChange={handleChange}
-                className="w-full border-b border-gray-300 py-2 focus:border-accent outline-none transition-colors"
+                className="w-full border-b border-gray-300 py-2 focus:border-accent outline-none"
                 placeholder="Số căn cước"
               />
             </div>
@@ -172,7 +170,7 @@ export default function RegisterPage() {
                 name="DiaChi"
                 value={formData.DiaChi}
                 onChange={handleChange}
-                className="w-full border-b border-gray-300 py-2 focus:border-accent outline-none transition-colors"
+                className="w-full border-b border-gray-300 py-2 focus:border-accent outline-none"
                 placeholder="Hà Nội"
               />
             </div>
@@ -188,15 +186,15 @@ export default function RegisterPage() {
                 required
                 value={formData.MatKhau}
                 onChange={handleChange}
-                className="w-full border-b border-gray-300 py-2 focus:border-accent outline-none transition-colors"
+                className="w-full border-b border-gray-300 py-2 focus:border-accent outline-none"
                 placeholder="******"
               />
             </div>
 
-            {/* Nhập lại Mật Khẩu */}
+            {/* Xác nhận MK */}
             <div className="col-span-2 md:col-span-1">
               <label className="block text-xs font-bold text-gray-500 uppercase mb-1">
-                Xác nhận Mật Khẩu
+                Xác nhận MK
               </label>
               <input
                 type="password"
@@ -204,12 +202,12 @@ export default function RegisterPage() {
                 required
                 value={formData.ConfirmMatKhau}
                 onChange={handleChange}
-                className="w-full border-b border-gray-300 py-2 focus:border-accent outline-none transition-colors"
+                className="w-full border-b border-gray-300 py-2 focus:border-accent outline-none"
                 placeholder="******"
               />
             </div>
 
-            {/* Nút Đăng Ký */}
+            {/* Nút Submit */}
             <div className="col-span-2 mt-6">
               <button
                 type="submit"

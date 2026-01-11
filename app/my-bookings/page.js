@@ -9,10 +9,12 @@ import {
   X,
   Trash2,
   Eye,
-  MapPin,
   BedDouble,
   Loader2,
-  Calculator,
+  Utensils,
+  MapPin,
+  PlusCircle,
+  ShoppingBag,
 } from "lucide-react";
 
 const API_BASE_URL = "https://khachsan-backend-production-9810.up.railway.app";
@@ -22,30 +24,49 @@ export default function MyBookingsPage() {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // --- STATE MODAL CHI TIẾT ---
+  // Modal Detail State
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [detailLoading, setDetailLoading] = useState(false);
   const [roomDetail, setRoomDetail] = useState(null);
   const [hotelDetail, setHotelDetail] = useState(null);
+  const [bookingServices, setBookingServices] = useState([]);
 
-  // --- STATE MODAL SỬA ---
+  // Menu State
+  const [showMenu, setShowMenu] = useState(false);
+  const [menuList, setMenuList] = useState([]);
+  const [menuLoading, setMenuLoading] = useState(false);
+
+  // Edit State (QUAN TRỌNG)
   const [isEditing, setIsEditing] = useState(false);
   const [editingBooking, setEditingBooking] = useState(null);
-  const [editRoomPrice, setEditRoomPrice] = useState(0); // Lưu giá phòng gốc để tính lại tiền
-  const [calculatingPrice, setCalculatingPrice] = useState(false); // Loading khi tính tiền
+  const [editingRoomRate, setEditingRoomRate] = useState(0); // Lưu giá phòng gốc để tính lại tiền
 
-  // --- HÀM HỖ TRỢ NGÀY THÁNG (FIX LỖI LỆCH NGÀY) ---
-  // Chuyển ISO String từ Backend sang YYYY-MM-DD theo giờ địa phương
+  // --- HELPERS ---
+  const fmtMoney = (val) =>
+    new Intl.NumberFormat("vi-VN", {
+      style: "currency",
+      currency: "VND",
+    }).format(val);
+
   const formatDateLocal = (isoString) => {
     if (!isoString) return "";
     const date = new Date(isoString);
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
-    return `${year}-${month}-${day}`;
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(
+      2,
+      "0"
+    )}-${String(date.getDate()).padStart(2, "0")}`;
   };
 
-  // --- 1. LẤY DANH SÁCH ---
+  // Tính số đêm
+  const calculateNights = (start, end) => {
+    const d1 = new Date(start);
+    const d2 = new Date(end);
+    const diffTime = Math.abs(d2 - d1);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays > 0 ? diffDays : 1;
+  };
+
+  // --- 1. LẤY DANH SÁCH BOOKING ---
   const fetchHistory = async () => {
     if (user && (user.MaKH || user.id)) {
       setLoading(true);
@@ -53,11 +74,13 @@ export default function MyBookingsPage() {
         const res = await fetch(`${API_BASE_URL}/bookings/?skip=0&limit=100`);
         if (res.ok) {
           const data = await res.json();
-          const myData = data.filter((b) => b.MaKH === (user.MaKH || user.id));
+          const myData = data.filter(
+            (b) => String(b.MaKH) === String(user.MaKH || user.id)
+          );
           setBookings(myData.reverse());
         }
       } catch (error) {
-        console.error("Lỗi tải lịch sử:", error);
+        console.error(error);
       } finally {
         setLoading(false);
       }
@@ -70,45 +93,83 @@ export default function MyBookingsPage() {
     fetchHistory();
   }, [user]);
 
-  // --- 2. LOGIC CHI TIẾT ---
+  // --- 2. LẤY DỊCH VỤ CHI TIẾT ---
+  const refreshBookingServices = async (bookingId) => {
+    try {
+      const resServices = await fetch(
+        `${API_BASE_URL}/service-usages/booking/${bookingId}`
+      );
+
+      if (resServices.ok) {
+        const myUsages = await resServices.json();
+
+        const resListService = await fetch(
+          `${API_BASE_URL}/services/?skip=0&limit=1000`
+        );
+        let listServiceData = [];
+        if (resListService.ok) {
+          listServiceData = await resListService.json();
+        }
+
+        const enrichedServices = myUsages.map((usage) => {
+          const detail = listServiceData.find(
+            (s) => String(s.MaDV) === String(usage.MaDV)
+          );
+          return {
+            ...usage,
+            TenDV: detail
+              ? detail.TenDV
+              : usage.TenDV || `Dịch vụ #${usage.MaDV}`,
+            DonGia: detail ? detail.GiaDV : 0,
+            HinhAnh: detail ? detail.HinhAnh : null,
+            ThanhTien:
+              usage.ThanhTien || parseFloat(detail?.GiaDV || 0) * usage.SoLuong,
+          };
+        });
+        setBookingServices(enrichedServices);
+      } else {
+        setBookingServices([]);
+      }
+    } catch (err) {
+      console.error("Lỗi refresh dịch vụ:", err);
+      setBookingServices([]);
+    }
+  };
+
+  // --- 3. LOGIC CHI TIẾT (Detail Modal) ---
   useEffect(() => {
     const fetchModalDetails = async () => {
       if (!selectedBooking) return;
       setDetailLoading(true);
       setRoomDetail(null);
       setHotelDetail(null);
+      setBookingServices([]);
+      setShowMenu(false);
 
       try {
+        // A. Lấy Phòng
         const resRoom = await fetch(`${API_BASE_URL}/rooms/?skip=0&limit=1000`);
         const roomsData = await resRoom.json();
         const foundRoom = roomsData.find(
-          (r) => r.MaPhong === selectedBooking.MaPhong
+          (r) => String(r.MaPhong) === String(selectedBooking.MaPhong)
         );
 
         if (foundRoom) {
           setRoomDetail(foundRoom);
-          try {
-            const resHotel = await fetch(
-              `${API_BASE_URL}/hotels/${foundRoom.MaKS}`
-            );
-            if (resHotel.ok) {
-              const hotelData = await resHotel.json();
-              setHotelDetail(hotelData);
-            } else {
-              setHotelDetail({
-                TenKhachSan: "Khách Sạn Luxury",
-                DiaChi: "Việt Nam",
-              });
-            }
-          } catch (err) {
-            setHotelDetail({
-              TenKhachSan: "Khách Sạn Luxury",
-              DiaChi: "Việt Nam",
-            });
+          if (foundRoom.MaKS) {
+            try {
+              const resHotel = await fetch(
+                `${API_BASE_URL}/hotels/${foundRoom.MaKS}`
+              );
+              if (resHotel.ok) setHotelDetail(await resHotel.json());
+            } catch {}
           }
         }
+
+        // B. Lấy Dịch vụ
+        await refreshBookingServices(selectedBooking.MaDatPhong);
       } catch (error) {
-        console.error("Lỗi modal:", error);
+        console.error(error);
       } finally {
         setDetailLoading(false);
       }
@@ -116,288 +177,323 @@ export default function MyBookingsPage() {
     fetchModalDetails();
   }, [selectedBooking]);
 
-  const renderStatus = (status) => {
-    const s = status ? String(status).toLowerCase() : "";
-    if (s.includes("cancel") || s.includes("hủy")) {
-      return (
-        <span className="px-3 py-1 bg-red-100 text-red-700 text-xs font-bold uppercase rounded-full border border-red-200">
-          Đã hủy
-        </span>
-      );
-    }
-    return (
-      <span className="px-3 py-1 bg-green-100 text-green-800 text-xs font-bold uppercase rounded-full border border-green-200">
-        Thành công
-      </span>
-    );
-  };
-
-  // --- 3. XỬ LÝ HỦY ---
-  const handleCancel = async (booking) => {
-    const id = booking.MaDatPhong || booking.id;
-    if (!confirm(`Bạn có chắc chắn muốn hủy đơn #${id}?`)) return;
+  // --- 4. LOGIC GỌI MÓN (Order) ---
+  const handleOpenMenu = async () => {
+    setShowMenu(true);
+    setMenuLoading(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/bookings/${id}`, {
-        method: "DELETE",
-      });
+      const res = await fetch(`${API_BASE_URL}/services/?skip=0&limit=100`);
       if (res.ok) {
-        alert("Đã hủy phòng thành công!");
-        setBookings(
-          bookings.map((b) =>
-            b.MaDatPhong === id || b.id === id
-              ? { ...b, TrangThai: "Đã hủy" }
-              : b
-          )
-        );
-      } else {
-        alert("Lỗi server không thể hủy.");
+        setMenuList(await res.json());
       }
-    } catch (error) {
-      alert("Lỗi kết nối.");
-    }
-  };
-
-  // --- 4. LOGIC SỬA (UPDATE) ---
-
-  // A. Mở Modal & Lấy giá phòng gốc
-  const openEditModal = async (booking) => {
-    setIsEditing(true);
-    setCalculatingPrice(true);
-
-    // 1. Set dữ liệu ban đầu (Dùng formatDateLocal để fix lỗi lệch ngày)
-    setEditingBooking({
-      ...booking,
-      NgayNhanPhong: formatDateLocal(booking.NgayNhanPhong),
-      NgayTraPhong: formatDateLocal(booking.NgayTraPhong),
-    });
-
-    // 2. Gọi API lấy giá phòng gốc để tính toán
-    try {
-      // Phải lấy lại list rooms để tìm giá phòng (Vì trong booking ko có giá gốc/đêm)
-      const resRoom = await fetch(`${API_BASE_URL}/rooms/?skip=0&limit=1000`);
-      const roomsData = await resRoom.json();
-      const foundRoom = roomsData.find((r) => r.MaPhong === booking.MaPhong);
-
-      if (foundRoom) {
-        setEditRoomPrice(parseFloat(foundRoom.GiaPhong)); // Lưu giá/đêm
-      } else {
-        // Fallback: Nếu ko tìm thấy phòng, lấy tổng tiền cũ chia số đêm cũ (tương đối)
-        const oldStart = new Date(booking.NgayNhanPhong);
-        const oldEnd = new Date(booking.NgayTraPhong);
-        const oldDays = Math.max(
-          1,
-          Math.ceil((oldEnd - oldStart) / (1000 * 60 * 60 * 24))
-        );
-        setEditRoomPrice(parseFloat(booking.TongTien) / oldDays);
-      }
-    } catch (error) {
-      console.error("Lỗi lấy giá phòng:", error);
+    } catch (err) {
+      alert("Lỗi tải menu");
     } finally {
-      setCalculatingPrice(false);
+      setMenuLoading(false);
     }
   };
 
-  // B. Tự động tính lại tiền khi đổi ngày
-  const handleDateChange = (field, value) => {
-    const newData = { ...editingBooking, [field]: value };
-    setEditingBooking(newData);
-
-    // Nếu có đủ 2 ngày -> Tính tiền
-    if (newData.NgayNhanPhong && newData.NgayTraPhong) {
-      const start = new Date(newData.NgayNhanPhong);
-      const end = new Date(newData.NgayTraPhong);
-
-      // Tính số đêm
-      const diffTime = end - start;
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-      if (diffDays > 0) {
-        // Tính tổng tiền mới = Số đêm * Giá phòng gốc
-        const newTotal = diffDays * editRoomPrice;
-        setEditingBooking((prev) => ({ ...prev, TongTien: newTotal }));
-      }
-    }
-  };
-
-  // C. Gửi API Update
-  const handleUpdateSubmit = async (e) => {
-    e.preventDefault();
-    if (!editingBooking) return;
-
+  const handleOrderService = async (service) => {
     try {
-      const id = editingBooking.MaDatPhong || editingBooking.id;
-
-      // Chuẩn bị payload: Gửi cả ngày mới VÀ tổng tiền mới
       const payload = {
-        ...editingBooking,
-        NgayNhanPhong: editingBooking.NgayNhanPhong,
-        NgayTraPhong: editingBooking.NgayTraPhong,
-        TongTien: editingBooking.TongTien, // Quan trọng: Gửi giá mới xuống
+        MaDatPhong: parseInt(selectedBooking.MaDatPhong),
+        MaDV: parseInt(service.MaDV),
+        SoLuong: 1,
+        ThanhTien: String(service.GiaDV),
       };
 
-      console.log("Sending Update:", payload);
-
-      const res = await fetch(`${API_BASE_URL}/bookings/${id}`, {
-        method: "PUT",
+      const res = await fetch(`${API_BASE_URL}/service-usages/`, {
+        method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 
       if (res.ok) {
-        alert("Cập nhật thành công! Giá phòng đã được tính lại.");
-        setIsEditing(false);
-        fetchHistory(); // Load lại list để thấy thay đổi
+        alert("✅ Gọi món thành công!");
+
+        // A. Cập nhật list dịch vụ trong Modal
+        await refreshBookingServices(selectedBooking.MaDatPhong);
+
+        // B. Cập nhật giá tổng ở list bookings bên ngoài (Optimistic UI Update)
+        const addedPrice = parseFloat(service.GiaDV || 0);
+
+        setBookings((prevBookings) =>
+          prevBookings.map((b) => {
+            if (String(b.MaDatPhong) === String(selectedBooking.MaDatPhong)) {
+              return {
+                ...b,
+                TongTien: parseFloat(b.TongTien || 0) + addedPrice,
+              };
+            }
+            return b;
+          })
+        );
+
+        // C. Cập nhật luôn state selectedBooking
+        setSelectedBooking((prev) => ({
+          ...prev,
+          TongTien: parseFloat(prev.TongTien || 0) + addedPrice,
+        }));
       } else {
-        const err = await res.json();
-        alert(`Lỗi cập nhật: ${err.detail || "Server từ chối"}`);
+        let errorMsg = "Lỗi Server";
+        try {
+          const errorData = await res.json();
+          errorMsg = errorData.detail || JSON.stringify(errorData);
+        } catch (e) {}
+        alert(`❌ Lỗi: ${errorMsg}`);
       }
-    } catch (error) {
-      alert("Lỗi hệ thống!");
+    } catch (err) {
+      console.error(err);
+      alert("❌ Lỗi kết nối mạng.");
     }
   };
 
-  // Format tiền tệ
-  const fmtMoney = (val) =>
-    new Intl.NumberFormat("vi-VN", {
-      style: "currency",
-      currency: "VND",
-    }).format(val);
+  // --- 5. LOGIC SỬA NGÀY (Edit Booking) ---
+  const openEditModal = async (b) => {
+    setIsEditing(true);
+    // 1. Set thông tin cơ bản
+    setEditingBooking({
+      ...b,
+      NgayNhanPhong: formatDateLocal(b.NgayNhanPhong),
+      NgayTraPhong: formatDateLocal(b.NgayTraPhong),
+    });
+
+    // 2. Gọi API lấy giá phòng gốc của phòng này (Để tính toán lại tiền)
+    try {
+      const res = await fetch(`${API_BASE_URL}/rooms/${b.MaPhong}`);
+      if (res.ok) {
+        const roomData = await res.json();
+        setEditingRoomRate(parseFloat(roomData.GiaPhong));
+      }
+    } catch (e) {
+      console.error("Lỗi lấy giá phòng:", e);
+      setEditingRoomRate(0);
+    }
+  };
+
+  const handleUpdateSubmit = async (e) => {
+    e.preventDefault();
+
+    // 1. Tính số đêm MỚI
+    const newNights = calculateNights(
+      editingBooking.NgayNhanPhong,
+      editingBooking.NgayTraPhong
+    );
+
+    // 2. Tính số đêm CŨ (để bóc tách tiền dịch vụ)
+    // bookings là danh sách gốc chưa sửa
+    const originalBooking = bookings.find(
+      (b) => b.MaDatPhong === editingBooking.MaDatPhong
+    );
+    const oldNights = calculateNights(
+      originalBooking.NgayNhanPhong,
+      originalBooking.NgayTraPhong
+    );
+
+    // 3. Tính tiền dịch vụ hiện có = Tổng cũ - (Giá phòng * Đêm cũ)
+    const currentServiceFee =
+      parseFloat(originalBooking.TongTien) - editingRoomRate * oldNights;
+
+    // 4. Tính TỔNG TIỀN MỚI = (Giá phòng * Đêm Mới) + Dịch vụ cũ
+    const newRoomTotal = editingRoomRate * newNights;
+    const newTotalMoney = newRoomTotal + currentServiceFee;
+
+    console.log(
+      `Debug tính giá: Đêm Mới ${newNights}, Giá ${editingRoomRate}, Dịch vụ ${currentServiceFee} => Tổng ${newTotalMoney}`
+    );
+
+    try {
+      const payload = {
+        ...editingBooking,
+        TongTien: newTotalMoney, // Cập nhật giá mới
+      };
+
+      const res = await fetch(
+        `${API_BASE_URL}/bookings/${editingBooking.MaDatPhong}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      if (res.ok) {
+        alert(
+          `✅ Cập nhật thành công!\nTổng tiền mới: ${fmtMoney(newTotalMoney)}`
+        );
+        setIsEditing(false);
+        fetchHistory(); // Load lại danh sách từ server
+      } else {
+        alert("Lỗi cập nhật booking (Server Error)");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Lỗi kết nối mạng");
+    }
+  };
+
+  const handleDateChange = (f, v) =>
+    setEditingBooking({ ...editingBooking, [f]: v });
+
+  // --- 6. CÁC HÀM UI KHÁC ---
+  const renderStatus = (s) => {
+    const st = String(s || "").toLowerCase();
+    if (st.includes("hủy") || st.includes("cancel"))
+      return (
+        <span className="text-red-600 font-bold bg-red-100 px-2 py-1 rounded text-xs">
+          Đã hủy
+        </span>
+      );
+    return (
+      <span className="text-green-600 font-bold bg-green-100 px-2 py-1 rounded text-xs">
+        Thành công
+      </span>
+    );
+  };
+
+  const handleCancel = async (b) => {
+    if (!confirm("Chắc chắn hủy đơn này?")) return;
+    try {
+      await fetch(`${API_BASE_URL}/bookings/${b.MaDatPhong}`, {
+        method: "DELETE",
+      });
+      alert("Đã hủy đơn đặt phòng.");
+      fetchHistory();
+    } catch (e) {
+      alert("Lỗi khi hủy");
+    }
+  };
+
+  // Tính tổng tiền realtime cho Modal Detail
+  const calculateTotalBill = () => {
+    if (!selectedBooking || !roomDetail) return 0;
+    // Tiền phòng
+    const nights = calculateNights(
+      selectedBooking.NgayNhanPhong,
+      selectedBooking.NgayTraPhong
+    );
+    const roomTotal = parseFloat(roomDetail.GiaPhong) * nights;
+    // Tiền dịch vụ
+    const serviceTotal = bookingServices.reduce(
+      (sum, s) => sum + (parseFloat(s.ThanhTien) || 0),
+      0
+    );
+    return roomTotal + serviceTotal;
+  };
 
   if (!user)
-    return <div className="p-10 text-center">Vui lòng đăng nhập...</div>;
+    return (
+      <div className="p-20 text-center text-gray-500">
+        Vui lòng đăng nhập để xem lịch sử.
+      </div>
+    );
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4 relative font-sans">
+    <div className="min-h-screen bg-gray-50 py-12 px-4 font-sans">
       <div className="max-w-5xl mx-auto">
-        <h1 className="font-serif text-3xl text-primary mb-8 text-center">
+        <h1 className="text-3xl text-primary font-serif text-center mb-8">
           Lịch Sử Đặt Phòng
         </h1>
-
         {loading ? (
-          <div className="text-center py-10">
-            <Loader2 className="animate-spin inline w-8 h-8" />
-          </div>
-        ) : bookings.length === 0 ? (
-          <div className="text-center p-10 bg-white rounded shadow">
-            Chưa có dữ liệu đặt phòng.
+          <div className="text-center">
+            <Loader2 className="animate-spin inline text-primary" size={32} />
           </div>
         ) : (
           <div className="space-y-4">
-            {bookings.map((item) => {
-              const statusStr = item.TrangThai
-                ? String(item.TrangThai).toLowerCase()
-                : "";
-              const isCancelled =
-                statusStr.includes("hủy") || statusStr.includes("cancel");
+            {bookings.length === 0 && (
+              <p className="text-center text-gray-500">
+                Bạn chưa có đơn đặt phòng nào.
+              </p>
+            )}
 
-              return (
-                <div
-                  key={item.MaDatPhong}
-                  className={`bg-white p-6 rounded-xl shadow-sm border flex flex-col md:flex-row justify-between items-center transition-opacity ${
-                    isCancelled ? "opacity-70 bg-gray-50" : ""
-                  }`}
-                >
-                  <div className="mb-4 md:mb-0">
-                    <div className="flex items-center gap-3 mb-1">
-                      <p className="font-bold text-lg">
-                        Mã: #{item.MaDatPhong}
-                      </p>
-                      {renderStatus(item.TrangThai)}
-                    </div>
-                    <p className="text-sm text-gray-500">
-                      Ngày đặt:{" "}
-                      {new Date(item.NgayDat).toLocaleDateString("vi-VN")}
-                    </p>
+            {bookings.map((b) => (
+              <div
+                key={b.MaDatPhong}
+                className="bg-white p-6 rounded-lg shadow-sm border flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
+              >
+                <div>
+                  <div className="flex items-center gap-3">
+                    <p className="font-bold text-lg">#{b.MaDatPhong}</p>
+                    {renderStatus(b.TrangThai)}
                   </div>
+                  <p className="text-sm text-gray-500 mt-1">
+                    Ngày đặt: {new Date(b.NgayDat).toLocaleDateString("vi-VN")}
+                  </p>
+                  <p className="text-sm font-medium mt-1">
+                    Check-in:{" "}
+                    {new Date(b.NgayNhanPhong).toLocaleDateString("vi-VN")} -
+                    Check-out:{" "}
+                    {new Date(b.NgayTraPhong).toLocaleDateString("vi-VN")}
+                  </p>
+                </div>
 
-                  <div className="text-right w-full md:w-auto">
-                    <p
-                      className={`text-xl font-bold ${
-                        isCancelled
-                          ? "text-gray-400 line-through"
-                          : "text-primary"
-                      }`}
+                <div className="text-right w-full md:w-auto flex flex-row md:flex-col justify-between items-center md:items-end">
+                  <p className="text-xl font-bold text-primary">
+                    {fmtMoney(b.TongTien)}
+                  </p>
+                  <div className="flex gap-2 mt-0 md:mt-2">
+                    <button
+                      onClick={() => setSelectedBooking(b)}
+                      className="bg-gray-800 text-white px-3 py-1.5 rounded text-sm hover:bg-black flex items-center gap-1 transition"
                     >
-                      {fmtMoney(item.TongTien)}
-                    </p>
-
-                    <div className="flex gap-2 mt-3 justify-end">
-                      <button
-                        onClick={() => setSelectedBooking(item)}
-                        className="bg-gray-800 text-white px-3 py-2 rounded text-sm hover:bg-black flex items-center gap-1"
-                      >
-                        <Eye size={14} /> Chi tiết
-                      </button>
-
-                      {!isCancelled && (
-                        <>
-                          <button
-                            onClick={() => openEditModal(item)}
-                            className="border border-blue-500 text-blue-500 px-3 py-2 rounded text-sm hover:bg-blue-50 flex items-center gap-1"
-                          >
-                            <Edit size={14} /> Sửa
-                          </button>
-                          <button
-                            onClick={() => handleCancel(item)}
-                            className="border border-red-500 text-red-500 px-3 py-2 rounded text-sm hover:bg-red-50 flex items-center gap-1"
-                          >
-                            <Trash2 size={14} /> Hủy
-                          </button>
-                        </>
-                      )}
-                    </div>
+                      <Eye size={14} /> Chi tiết
+                    </button>
+                    {!String(b.TrangThai).toLowerCase().includes("hủy") && (
+                      <>
+                        <button
+                          onClick={() => openEditModal(b)}
+                          className="border border-blue-200 text-blue-600 px-3 py-1.5 rounded text-sm hover:bg-blue-50 transition"
+                          title="Sửa ngày"
+                        >
+                          <Edit size={14} />
+                        </button>
+                        <button
+                          onClick={() => handleCancel(b)}
+                          className="border border-red-200 text-red-600 px-3 py-1.5 rounded text-sm hover:bg-red-50 transition"
+                          title="Hủy đơn"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </>
+                    )}
                   </div>
                 </div>
-              );
-            })}
+              </div>
+            ))}
           </div>
         )}
       </div>
 
-      {/* --- MODAL XEM CHI TIẾT --- */}
+      {/* --- MODAL CHI TIẾT --- */}
       {selectedBooking && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
-          <div
-            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-            onClick={() => setSelectedBooking(null)}
-          ></div>
-          <div className="relative bg-white w-full max-w-2xl rounded-xl shadow-2xl overflow-hidden animate-fade-in-up max-h-[90vh] overflow-y-auto">
-            <div className="bg-primary px-6 py-4 flex justify-between items-center sticky top-0 z-10">
-              <h3 className="text-white font-serif text-xl">
-                Thông tin chi tiết
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/60 p-4 animate-in fade-in duration-200">
+          <div className="relative bg-white w-full max-w-2xl rounded-xl overflow-hidden max-h-[90vh] overflow-y-auto shadow-2xl">
+            <div className="bg-primary p-4 flex justify-between items-center text-white sticky top-0 z-10">
+              <h3 className="font-bold text-lg">
+                Chi tiết đơn #{selectedBooking.MaDatPhong}
               </h3>
               <button
                 onClick={() => setSelectedBooking(null)}
-                className="text-white hover:text-gray-300 text-2xl"
+                className="hover:bg-white/20 rounded p-1 transition"
               >
-                &times;
+                <X />
               </button>
             </div>
+
             <div className="p-6 space-y-6">
               {detailLoading ? (
-                <div className="text-center py-10 text-gray-500">
-                  <Loader2 className="animate-spin w-8 h-8 mx-auto mb-2" />
-                  Đang tải...
+                <div className="text-center py-10">
+                  <Loader2
+                    className="animate-spin inline text-primary"
+                    size={32}
+                  />
                 </div>
               ) : (
                 <>
-                  <div className="grid grid-cols-2 gap-4 border-b pb-4">
-                    <div>
-                      <p className="text-xs text-gray-400 uppercase">Mã đơn</p>
-                      <p className="font-bold text-lg">
-                        #{selectedBooking.MaDatPhong}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-xs text-gray-400 uppercase">
-                        Trạng thái
-                      </p>
-                      <div>{renderStatus(selectedBooking.TrangThai)}</div>
-                    </div>
-                  </div>
-                  {roomDetail ? (
-                    <div className="bg-blue-50 p-4 rounded-lg border border-blue-100 flex gap-4">
-                      <div className="w-24 h-24 relative rounded-md overflow-hidden flex-shrink-0">
+                  {/* THÔNG TIN PHÒNG */}
+                  {roomDetail && (
+                    <div className="flex gap-4 bg-blue-50 p-4 rounded border border-blue-100">
+                      <div className="w-24 h-24 relative rounded overflow-hidden shrink-0 shadow-sm">
                         <Image
                           src={
                             roomDetail.HinhAnh ||
@@ -405,70 +501,122 @@ export default function MyBookingsPage() {
                           }
                           fill
                           className="object-cover"
-                          alt="Room"
+                          alt="room"
                         />
                       </div>
                       <div>
-                        <h4 className="font-bold text-primary flex items-center gap-2">
-                          <BedDouble size={18} />{" "}
-                          {roomDetail.LoaiPhong || roomDetail.TenPhong}
+                        <h4 className="font-bold text-primary flex items-center gap-2 text-lg">
+                          <BedDouble size={20} /> {roomDetail.TenPhong}
                         </h4>
-                        <p className="text-sm text-gray-600">
-                          Mã phòng: {roomDetail.MaPhong}
+                        <p className="text-sm font-medium mt-1">
+                          Đơn giá: {fmtMoney(roomDetail.GiaPhong)} / đêm
                         </p>
                         <p className="text-sm text-gray-600">
-                          Giá: {fmtMoney(roomDetail.GiaPhong)} / đêm
+                          Thời gian lưu trú:{" "}
+                          <span className="font-bold text-black">
+                            {calculateNights(
+                              selectedBooking.NgayNhanPhong,
+                              selectedBooking.NgayTraPhong
+                            )}
+                          </span>{" "}
+                          đêm
                         </p>
+                        {hotelDetail && (
+                          <p className="text-xs text-orange-600 mt-2 flex items-center gap-1">
+                            <MapPin size={12} /> {hotelDetail.TenKhachSan}
+                          </p>
+                        )}
                       </div>
-                    </div>
-                  ) : (
-                    <div className="text-red-500 italic">
-                      Không tìm thấy phòng
                     </div>
                   )}
 
-                  <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                    <h4 className="font-bold text-gray-800 flex items-center gap-2 mb-2">
-                      <MapPin size={18} className="text-red-500" /> Địa điểm
-                    </h4>
-                    {hotelDetail ? (
-                      <>
-                        <p className="font-semibold">
-                          {hotelDetail.TenKhachSan}
-                        </p>
-                        <p className="text-sm text-gray-600">
-                          {hotelDetail.DiaChi}
-                        </p>
-                      </>
+                  {/* DANH SÁCH DỊCH VỤ */}
+                  <div className="border rounded-lg overflow-hidden">
+                    <div className="bg-gray-100 px-4 py-3 border-b font-bold text-sm text-gray-700 flex justify-between items-center">
+                      <span>
+                        <Utensils size={16} className="inline mr-2" /> Dịch vụ
+                        đã sử dụng
+                      </span>
+                      {!String(selectedBooking.TrangThai)
+                        .toLowerCase()
+                        .includes("hủy") && (
+                        <button
+                          onClick={handleOpenMenu}
+                          className="bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded text-xs flex items-center gap-1 transition shadow-sm"
+                        >
+                          <PlusCircle size={14} /> Gọi món
+                        </button>
+                      )}
+                    </div>
+
+                    {bookingServices.length > 0 ? (
+                      <div className="divide-y max-h-60 overflow-y-auto">
+                        {bookingServices.map((s, idx) => (
+                          <div
+                            key={idx}
+                            className="p-3 flex justify-between text-sm items-center hover:bg-gray-50"
+                          >
+                            <div className="flex gap-3 items-center">
+                              {s.HinhAnh && (
+                                <div className="w-10 h-10 relative rounded overflow-hidden border">
+                                  <Image
+                                    src={s.HinhAnh}
+                                    fill
+                                    className="object-cover"
+                                    alt="s"
+                                  />
+                                </div>
+                              )}
+                              <div>
+                                <p className="font-medium text-gray-900">
+                                  {s.TenDV}
+                                </p>
+                                <p className="text-xs text-gray-500">
+                                  SL: {s.SoLuong} x {fmtMoney(s.DonGia)}
+                                </p>
+                              </div>
+                            </div>
+                            <span className="font-bold text-gray-700">
+                              {fmtMoney(parseFloat(s.ThanhTien) || 0)}
+                            </span>
+                          </div>
+                        ))}
+                        <div className="p-3 bg-gray-50 flex justify-between border-t text-sm sticky bottom-0">
+                          <span className="font-bold text-gray-600">
+                            Tổng tiền dịch vụ:
+                          </span>
+                          <span className="font-bold text-primary">
+                            {fmtMoney(
+                              bookingServices.reduce(
+                                (sum, s) =>
+                                  sum + (parseFloat(s.ThanhTien) || 0),
+                                0
+                              )
+                            )}
+                          </span>
+                        </div>
+                      </div>
                     ) : (
-                      <p className="text-sm italic">Đang cập nhật...</p>
+                      <div className="p-8 text-center bg-gray-50">
+                        <p className="text-sm text-gray-400 italic">
+                          Chưa có dịch vụ nào được gọi.
+                        </p>
+                      </div>
                     )}
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div className="bg-white border p-3 rounded">
-                      <p className="text-gray-500">Check-in</p>
-                      <p className="font-bold">
-                        {new Date(
-                          selectedBooking.NgayNhanPhong
-                        ).toLocaleDateString("vi-VN")}
-                      </p>
+                  {/* TỔNG KẾT TIỀN */}
+                  <div className="bg-gray-900 text-white p-4 rounded-lg flex justify-between items-center shadow-lg">
+                    <div>
+                      <span className="text-gray-300 text-sm block">
+                        Tổng thanh toán dự kiến
+                      </span>
+                      <span className="text-xs text-gray-400 font-light">
+                        *Đã bao gồm tiền phòng và dịch vụ
+                      </span>
                     </div>
-                    <div className="bg-white border p-3 rounded">
-                      <p className="text-gray-500">Check-out</p>
-                      <p className="font-bold">
-                        {new Date(
-                          selectedBooking.NgayTraPhong
-                        ).toLocaleDateString("vi-VN")}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex justify-between items-center pt-4 border-t mt-4">
-                    <span className="font-bold text-gray-700">
-                      Tổng thanh toán
-                    </span>
-                    <span className="text-2xl font-bold text-primary">
-                      {fmtMoney(selectedBooking.TongTien)}
+                    <span className="font-bold text-2xl text-yellow-400 tracking-wider">
+                      {fmtMoney(calculateTotalBill())}
                     </span>
                   </div>
                 </>
@@ -478,87 +626,141 @@ export default function MyBookingsPage() {
         </div>
       )}
 
-      {/* --- MODAL SỬA (FIXED) --- */}
-      {isEditing && editingBooking && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="bg-white p-6 rounded-lg w-full max-w-md shadow-xl animate-in zoom-in-95 duration-200">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="font-bold text-lg">Cập nhật ngày đặt</h3>
-              <button onClick={() => setIsEditing(false)}>
-                <X className="text-gray-400 hover:text-black" />
+      {/* --- MENU MODAL (Gọi Món) --- */}
+      {showMenu && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 animate-in fade-in">
+          <div className="bg-white w-full max-w-lg rounded-xl overflow-hidden shadow-2xl h-[80vh] flex flex-col">
+            <div className="bg-gray-900 p-4 flex justify-between items-center text-white shrink-0">
+              <h3 className="font-bold flex items-center gap-2 text-lg">
+                <ShoppingBag size={20} /> Menu Dịch Vụ
+              </h3>
+              <button
+                onClick={() => setShowMenu(false)}
+                className="hover:bg-white/20 rounded p-1 transition"
+              >
+                <X />
               </button>
             </div>
 
-            {calculatingPrice ? (
-              <div className="py-10 text-center text-sm text-gray-500">
-                <Loader2 className="animate-spin inline w-5 h-5 mb-2" />
-                <p>Đang lấy thông tin giá phòng...</p>
+            <div className="flex-1 overflow-y-auto p-4 bg-gray-50">
+              {menuLoading ? (
+                <div className="text-center py-10">
+                  <Loader2
+                    className="animate-spin inline text-gray-400"
+                    size={32}
+                  />
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {menuList.map((item) => (
+                    <div
+                      key={item.MaDV}
+                      className="bg-white p-3 rounded-lg shadow-sm border border-gray-100 flex gap-3 hover:shadow-md transition group"
+                    >
+                      <div className="w-20 h-20 relative rounded-md overflow-hidden shrink-0 bg-gray-200">
+                        <Image
+                          src={
+                            item.HinhAnh ||
+                            "https://images.unsplash.com/photo-1544148103-0773bf10d330?w=200"
+                          }
+                          fill
+                          className="object-cover group-hover:scale-105 transition duration-500"
+                          alt={item.TenDV}
+                        />
+                      </div>
+                      <div className="flex-1 flex flex-col justify-between">
+                        <div>
+                          <h4 className="font-bold text-gray-800 line-clamp-1">
+                            {item.TenDV}
+                          </h4>
+                          <p className="text-xs text-gray-500 line-clamp-2 mt-1">
+                            {item.MoTa || "Không có mô tả"}
+                          </p>
+                        </div>
+                        <div className="flex justify-between items-end mt-2">
+                          <span className="font-bold text-primary text-sm">
+                            {fmtMoney(item.GiaDV)}
+                          </span>
+                          <button
+                            onClick={() => handleOrderService(item)}
+                            className="bg-black text-white px-3 py-1.5 rounded text-xs font-bold hover:bg-gray-800 active:scale-95 transition shadow-sm"
+                          >
+                            + Thêm
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* --- EDIT MODAL (Sửa Ngày) --- */}
+      {isEditing && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 animate-in fade-in">
+          <div className="bg-white p-6 rounded-lg w-full max-w-md shadow-xl">
+            <h3 className="font-bold text-xl mb-1">Cập nhật thời gian</h3>
+            <p className="text-sm text-gray-500 mb-6">
+              Thay đổi ngày nhận/trả phòng
+            </p>
+
+            <form onSubmit={handleUpdateSubmit} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-gray-700 uppercase mb-1">
+                  Ngày nhận phòng
+                </label>
+                <input
+                  type="date"
+                  className="w-full border p-2 rounded focus:border-primary outline-none"
+                  value={editingBooking.NgayNhanPhong}
+                  onChange={(e) =>
+                    handleDateChange("NgayNhanPhong", e.target.value)
+                  }
+                  required
+                />
               </div>
-            ) : (
-              <form onSubmit={handleUpdateSubmit} className="space-y-5">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-1">
-                      Check-in
-                    </label>
-                    <input
-                      type="date"
-                      className="w-full border p-2 rounded focus:ring-2 focus:ring-black outline-none"
-                      value={editingBooking.NgayNhanPhong}
-                      onChange={(e) =>
-                        handleDateChange("NgayNhanPhong", e.target.value)
-                      }
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1">
-                      Check-out
-                    </label>
-                    <input
-                      type="date"
-                      className="w-full border p-2 rounded focus:ring-2 focus:ring-black outline-none"
-                      value={editingBooking.NgayTraPhong}
-                      onChange={(e) =>
-                        handleDateChange("NgayTraPhong", e.target.value)
-                      }
-                      required
-                    />
-                  </div>
-                </div>
 
-                {/* HIỂN THỊ GIÁ MỚI */}
-                <div className="bg-blue-50 p-4 rounded border border-blue-100 flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-blue-800 font-medium">
-                    <Calculator size={18} />
-                    <span>Giá mới tạm tính:</span>
-                  </div>
-                  <div className="text-xl font-bold text-blue-700">
-                    {fmtMoney(editingBooking.TongTien)}
-                  </div>
-                </div>
-                <div className="text-xs text-gray-500 text-center px-4">
-                  *Giá đã được tính lại dựa trên đơn giá phòng:{" "}
-                  {fmtMoney(editRoomPrice)}/đêm.
-                </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-700 uppercase mb-1">
+                  Ngày trả phòng
+                </label>
+                <input
+                  type="date"
+                  className="w-full border p-2 rounded focus:border-primary outline-none"
+                  value={editingBooking.NgayTraPhong}
+                  onChange={(e) =>
+                    handleDateChange("NgayTraPhong", e.target.value)
+                  }
+                  required
+                />
+              </div>
 
-                <div className="flex gap-3 pt-2">
-                  <button
-                    type="button"
-                    onClick={() => setIsEditing(false)}
-                    className="flex-1 border p-3 rounded font-medium hover:bg-gray-50"
-                  >
-                    Hủy
-                  </button>
-                  <button
-                    type="submit"
-                    className="flex-1 bg-black text-white p-3 rounded font-bold hover:bg-gray-800 flex items-center justify-center gap-2"
-                  >
-                    <Save size={16} /> Xác nhận
-                  </button>
-                </div>
-              </form>
-            )}
+              <div className="bg-blue-50 p-3 rounded text-xs text-blue-800 border border-blue-100">
+                <p>
+                  ⚠️ Lưu ý: Giá tổng sẽ được tính lại dựa trên số đêm mới và các
+                  dịch vụ đã sử dụng.
+                </p>
+              </div>
+
+              <div className="flex gap-3 mt-6">
+                <button
+                  type="button"
+                  onClick={() => setIsEditing(false)}
+                  className="flex-1 border border-gray-300 p-2.5 rounded font-medium text-gray-700 hover:bg-gray-50"
+                >
+                  Hủy bỏ
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 bg-black text-white p-2.5 rounded font-bold hover:bg-gray-800"
+                >
+                  Lưu thay đổi
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

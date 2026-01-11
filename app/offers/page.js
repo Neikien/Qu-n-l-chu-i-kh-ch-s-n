@@ -1,131 +1,144 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Image from "next/image";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { Loader2 } from "lucide-react";
 
-// DỮ LIỆU GIẢ (Bạn nên tách cái này ra file riêng như lib/data.js để dùng chung, nhưng tôi để đây cho tiện copy)
-export const offers = [
-  {
-    id: 1,
-    title: "Advance Purchase",
-    category: "Room Offers",
-    image:
-      "https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?q=80&w=1200&auto=format&fit=crop",
-    desc: "Plan ahead and save. Book your stay at least 7 days in advance to enjoy up to 20% off our Best Flexible Rate. Valid at participating hotels and resorts worldwide.",
-  },
-  {
-    id: 2,
-    title: "Stay Longer, Pay Less",
-    category: "Long Stay",
-    image:
-      "https://images.unsplash.com/photo-1582719508461-905c673771fd?q=80&w=1200&auto=format&fit=crop",
-    desc: "Linger a little longer with more time to explore. Book a minimum of 3 nights and enjoy special savings. The perfect excuse to extend your getaway.",
-  },
-  {
-    id: 3,
-    title: "Club InterContinental Experience",
-    category: "Exclusive",
-    image:
-      "https://images.unsplash.com/photo-1559339352-11d035aa65de?q=80&w=1200&auto=format&fit=crop",
-    desc: "Elevate your stay with access to the Club InterContinental Lounge, including complimentary breakfast, evening cocktails, and personalized service throughout your stay.",
-  },
-  {
-    id: 4,
-    title: "Dinner, Bed & Breakfast",
-    category: "Dining Packages",
-    image:
-      "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?q=80&w=1200&auto=format&fit=crop",
-    desc: "Indulge in a complete escape. Package includes luxury accommodation, daily breakfast for two, and a three-course dinner at our signature restaurant.",
-  },
-  {
-    id: 5,
-    title: "Unforgettable Honeymoons",
-    category: "Romance",
-    image:
-      "https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?q=80&w=1200&auto=format&fit=crop",
-    desc: "Celebrate your love with champagne on arrival, a romantic turndown service, and a late checkout. Create memories that will last a lifetime.",
-  },
-  {
-    id: 6,
-    title: "IHG One Rewards Member Rate",
-    category: "Member Only",
-    image:
-      "https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?q=80&w=1200&auto=format&fit=crop",
-    desc: "Members always save more. Enjoy exclusive discounted rates when you book directly with us. Not a member yet? Join for free today.",
-  },
+// Kho ảnh Mock
+const LUXURY_SERVICE_IMAGES = [
+  "https://images.unsplash.com/photo-1544148103-0773bf10d330?q=80&w=1200", // Spa
+  "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=1200", // Dining
+  "https://images.unsplash.com/photo-1571902943202-507ec2618e8f?q=80&w=1200", // Gym
+  "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?q=80&w=1200", // Room Service
 ];
 
-export default function OffersPage() {
+const CATEGORIES = [
+  "Wellness",
+  "Dining",
+  "Fitness",
+  "Convenience",
+  "Exclusive",
+];
+
+export default function ServicesPage() {
+  const router = useRouter();
+  const [services, setServices] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchServices = async () => {
+      try {
+        const res = await fetch(
+          "https://khachsan-backend-production-9810.up.railway.app/services/?skip=0&limit=100"
+        );
+        if (!res.ok) throw new Error("Failed");
+        const data = await res.json();
+        const formattedData = data.map((item, index) => ({
+          id: item.MaDV,
+          title: item.TenDV,
+          category: CATEGORIES[index % CATEGORIES.length],
+          image: LUXURY_SERVICE_IMAGES[index % LUXURY_SERVICE_IMAGES.length],
+          desc: item.MoTa || "Trải nghiệm dịch vụ đẳng cấp 5 sao.",
+          price: item.GiaDV,
+        }));
+        setServices(formattedData);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchServices();
+  }, []);
+
+  // XỬ LÝ KHI BẤM NÚT BOOK NOW
+  const handleBookService = () => {
+    // Luồng đơn giản: Bắt buộc đặt phòng trước
+    if (
+      confirm(
+        "Vui lòng Đặt Phòng trước khi gọi dịch vụ.\n\n- Nếu bạn chưa có phòng: Bấm OK để tìm phòng.\n- Nếu bạn đã có phòng: Vào mục 'Đơn phòng của tôi' để gọi dịch vụ."
+      )
+    ) {
+      router.push("/"); // Chuyển về trang chủ để đặt phòng
+    }
+  };
+
   return (
     <main className="min-h-screen bg-white pb-20">
-      {/* 1. HERO BANNER */}
-      <div className="relative h-[60vh] w-full overflow-hidden bg-gray-900">
+      <div className="relative h-[60vh] bg-gray-900">
         <Image
-          src="https://images.unsplash.com/photo-1561501900-3701fa6a0864?q=80&w=1920&auto=format&fit=crop"
-          alt="Offers Hero"
+          src="https://images.unsplash.com/photo-1561501900-3701fa6a0864?q=80&w=1920"
+          alt="Hero"
           fill
-          priority
           className="object-cover opacity-80"
         />
-        <div className="absolute inset-0 bg-black/30"></div>
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center text-white px-5">
-          <p className="text-sm font-bold tracking-[4px] uppercase mb-6 animate-fade-in-up">
-            Exclusive Benefits
+          <p className="text-sm font-bold tracking-[4px] uppercase mb-6">
+            World Class Amenities
           </p>
-          <h1 className="font-serif text-6xl md:text-8xl mb-6 animate-fade-in-up delay-100">
-            Special Offers
-          </h1>
+          <h1 className="font-serif text-6xl">Our Services</h1>
         </div>
       </div>
 
-      {/* 2. MAIN CONTENT */}
       <div className="max-w-[90%] mx-auto py-20 px-5">
         <div className="mb-20 text-center max-w-3xl mx-auto">
-          <h2 className="font-serif text-4xl lg:text-5xl text-primary mb-6 leading-tight">
-            Curated Packages for Every Journey
+          <h2 className="font-serif text-4xl text-primary mb-6">
+            Trải nghiệm dịch vụ hoàn hảo
           </h2>
-          <p className="text-lg text-secondary font-light leading-relaxed">
-            Whether you are looking for a romantic getaway, a family vacation,
-            or a business trip, discover exclusive offers designed to enhance
-            your stay.
+          <p className="text-lg text-secondary font-light">
+            Khám phá các dịch vụ đẳng cấp. Vui lòng đặt phòng trước để sử dụng
+            các dịch vụ này.
           </p>
         </div>
 
-        {/* 3. OFFERS GRID */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-16 gap-y-24">
-          {offers.map((offer) => (
-            <div key={offer.id} className="group cursor-pointer flex flex-col">
-              <div className="relative h-[400px] w-full overflow-hidden mb-10 bg-gray-100 shadow-sm">
-                <Image
-                  src={offer.image}
-                  alt={offer.title}
-                  fill
-                  className="object-cover transition-transform duration-700 group-hover:scale-105"
-                />
-                <div className="absolute top-6 left-6 bg-white/90 backdrop-blur-sm px-4 py-2 text-[10px] font-bold tracking-widest uppercase text-primary">
-                  {offer.category}
+        {loading ? (
+          <div className="text-center">
+            <Loader2 className="animate-spin inline" />
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-16">
+            {services.map((service) => (
+              <div key={service.id} className="group cursor-pointer">
+                <div className="relative h-[400px] mb-10 bg-gray-100">
+                  <Image
+                    src={service.image}
+                    alt={service.title}
+                    fill
+                    className="object-cover transition-transform duration-700 group-hover:scale-105"
+                  />
+                  <div className="absolute top-6 left-6 bg-white/90 px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-primary">
+                    {service.category}
+                  </div>
+                </div>
+                <div className="text-left">
+                  <div className="flex justify-between items-baseline mb-6">
+                    <h3 className="font-serif text-3xl text-primary">
+                      {service.title}
+                    </h3>
+                    <span className="text-lg font-bold text-gray-500">
+                      {new Intl.NumberFormat("vi-VN", {
+                        style: "currency",
+                        currency: "VND",
+                      }).format(service.price)}
+                    </span>
+                  </div>
+                  <p className="text-lg text-secondary font-light mb-10 line-clamp-3">
+                    {service.desc}
+                  </p>
+
+                  {/* NÚT BẤM */}
+                  <button
+                    onClick={handleBookService}
+                    className="inline-block border border-primary px-10 py-4 text-sm font-bold tracking-[2px] uppercase text-primary hover:bg-primary hover:text-white transition-all"
+                  >
+                    Đặt Dịch Vụ Này
+                  </button>
                 </div>
               </div>
-
-              <div className="text-left">
-                <h3 className="font-serif text-3xl lg:text-4xl text-primary mb-6 leading-tight group-hover:text-accent transition-colors">
-                  {offer.title}
-                </h3>
-                <p className="text-lg text-secondary font-light leading-loose mb-10 line-clamp-3">
-                  {offer.desc}
-                </p>
-
-                {/* --- SỬA LINK Ở ĐÂY --- */}
-                <Link
-                  href={`/offers/${offer.id}`} // Link Dynamic
-                  className="inline-block border border-primary px-10 py-4 text-sm font-bold tracking-[2px] uppercase text-primary hover:bg-primary hover:text-white transition-all"
-                >
-                  View Offer
-                </Link>
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </main>
   );

@@ -6,8 +6,11 @@ import { useAuth } from "@/app/context/AuthContext";
 import { useBooking } from "@/app/context/BookingContext";
 import { format, differenceInDays, parseISO } from "date-fns";
 import Image from "next/image";
+import { Loader2 } from "lucide-react";
 
-// Hàm format tiền tệ
+// URL Backend
+const API_BASE_URL = "https://khachsan-backend-production-9810.up.railway.app";
+
 const formatCurrency = (val) =>
   new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(
     val
@@ -16,7 +19,6 @@ const formatCurrency = (val) =>
 function CheckoutContent() {
   const searchParams = useSearchParams();
   const roomId = searchParams.get("roomId");
-
   const { user } = useAuth();
   const { bookingParams } = useBooking();
   const router = useRouter();
@@ -25,27 +27,26 @@ function CheckoutContent() {
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
 
-  // Tính số đêm lưu trú
+  // Tính số đêm
   const checkIn = parseISO(bookingParams.checkInDate);
   const checkOut = parseISO(bookingParams.checkOutDate);
   const nights = differenceInDays(checkOut, checkIn) || 1;
 
   useEffect(() => {
-    // Nếu chưa đăng nhập -> đá về login
     if (!user) {
-      alert("Vui lòng đăng nhập để tiếp tục!");
+      alert("Vui lòng đăng nhập!");
       router.push("/login");
       return;
     }
 
-    // Fetch thông tin phòng
+    // Load thông tin phòng
     const fetchRoom = async () => {
       try {
-        const res = await fetch(
-          "https://khachsan-backend-production-9810.up.railway.app/rooms/?skip=0&limit=1000"
-        );
+        if (!roomId) throw new Error("Thiếu Room ID");
+        const res = await fetch(`${API_BASE_URL}/rooms/?skip=0&limit=1000`);
         const data = await res.json();
-        const found = data.find((r) => r.MaPhong.toString() === roomId);
+        // So sánh chuỗi cho chắc ăn
+        const found = data.find((r) => String(r.MaPhong) === String(roomId));
         if (found) setRoom(found);
       } catch (err) {
         console.error(err);
@@ -53,128 +54,108 @@ function CheckoutContent() {
         setLoading(false);
       }
     };
-
-    if (roomId) fetchRoom();
+    fetchRoom();
   }, [roomId, user, router]);
 
+  // Tính toán tiền (Chỉ tiền phòng)
+  const pricePerNight = room ? parseFloat(room.GiaPhong) : 0;
+  const grandTotal = pricePerNight * nights;
+
   const handleConfirmPayment = async () => {
+    if (!room) return;
     setProcessing(true);
     try {
-      // 1. Tính tổng tiền
-      const totalPrice = parseFloat(room.GiaPhong) * nights;
-
-      // 2. Chuẩn bị payload chuẩn
-      const payload = {
-        MaKH: user.MaKH || user.id || 1,
-        MaPhong: parseInt(roomId),
+      // Payload đơn giản, chỉ chứa thông tin phòng
+      const bookingPayload = {
+        MaKH: parseInt(user.MaKH || user.id),
+        MaPhong: parseInt(room.MaPhong),
         NgayDat: format(new Date(), "yyyy-MM-dd"),
         NgayNhanPhong: bookingParams.checkInDate,
         NgayTraPhong: bookingParams.checkOutDate,
-        TongTien: totalPrice.toString(),
-        // LƯU Ý: Vì chọn thanh toán tại khách sạn, trạng thái logic nên là "Chờ thanh toán"
-        // Tuy nhiên tôi giữ nguyên "Đã thanh toán" như logic cũ của bạn để tránh lỗi backend.
+        TongTien: String(grandTotal),
         TrangThai: "Đã thanh toán",
       };
 
-      console.log("📤 Gửi đơn:", payload);
+      console.log("📤 Đang đặt phòng:", bookingPayload);
 
-      // 3. Gọi API
-      const res = await fetch(
-        "https://khachsan-backend-production-9810.up.railway.app/bookings/",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        }
-      );
+      const res = await fetch(`${API_BASE_URL}/bookings/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(bookingPayload),
+      });
 
       if (!res.ok) {
         const err = await res.json();
-        throw new Error(err.detail || "Lỗi đặt phòng");
+        throw new Error(err.detail || "Lỗi khi tạo booking");
       }
 
       const result = await res.json();
+      const newCode = result.MaDatPhong || result.id;
 
-      // 4. Thành công -> Chuyển hướng
-      alert(`✅ ĐẶT PHÒNG THÀNH CÔNG!\nMã đơn: ${result.MaDatPhong}`);
+      alert(
+        `✅ Đặt phòng thành công!\nMã đơn: ${newCode}\nBây giờ bạn có thể gọi thêm dịch vụ trong phần 'Đơn phòng của tôi'.`
+      );
       router.push("/my-bookings");
     } catch (error) {
-      alert(`❌ Thất bại: ${error.message}`);
+      alert(`❌ Lỗi: ${error.message}`);
     } finally {
       setProcessing(false);
     }
   };
 
-  if (loading)
-    return <div className="text-center py-20">Đang tải thông tin...</div>;
+  if (loading) return <div className="text-center py-20">Đang tải...</div>;
   if (!room)
     return (
-      <div className="text-center py-20">Không tìm thấy thông tin phòng.</div>
+      <div className="text-center py-20 text-red-500">
+        Phòng không tồn tại hoặc đã bị xóa.
+      </div>
     );
-
-  const pricePerNight = parseFloat(room.GiaPhong);
-  const totalAmount = pricePerNight * nights;
 
   return (
     <div className="max-w-5xl mx-auto px-5 py-10 grid grid-cols-1 md:grid-cols-2 gap-10">
-      {/* CỘT TRÁI: THÔNG TIN KHÁCH HÀNG & THANH TOÁN */}
+      {/* CỘT TRÁI */}
       <div>
         <h2 className="text-2xl font-serif font-bold text-primary mb-6">
-          Xác Nhận & Thanh Toán
+          Xác Nhận Đặt Phòng
         </h2>
-
-        {/* Thông tin người đặt */}
-        <div className="bg-gray-50 p-6 rounded-lg mb-6 border border-gray-100">
+        <div className="bg-gray-50 p-6 rounded-lg mb-6 border">
           <h3 className="font-bold text-sm uppercase tracking-widest mb-4 border-b pb-2">
-            Thông tin khách hàng
+            Khách hàng
           </h3>
-          <p className="mb-1">
+          <p>
             <span className="font-bold">Họ tên:</span>{" "}
-            {user?.name || user?.userName}
+            {user?.name || user?.fullname || user?.username}
           </p>
-          <p className="mb-1">
-            <span className="font-bold">Email:</span>{" "}
-            {user?.email || "Chưa cập nhật"}
-          </p>
-          <p className="text-xs text-gray-500 mt-2">
-            *Vui lòng kiểm tra kỹ thông tin trước khi xác nhận.
+          <p>
+            <span className="font-bold">Email:</span> {user?.email}
           </p>
         </div>
-
-        {/* Phương thức thanh toán (ĐÃ SỬA: CHỈ CÒN OPTION KHÁCH SẠN) */}
-        <div className="bg-white border border-gray-200 p-6 rounded-lg mb-6">
-          <h3 className="font-bold text-sm uppercase tracking-widest mb-4">
-            Phương thức thanh toán
-          </h3>
-          <div className="space-y-3">
-            {/* Option duy nhất */}
-            <label className="flex items-center gap-3 p-4 border border-blue-500 bg-blue-50 rounded cursor-pointer">
-              <input
-                type="radio"
-                name="payment"
-                defaultChecked
-                readOnly
-                className="accent-primary w-5 h-5"
-              />
-              <div>
-                <span className="font-bold text-gray-900 block">
-                  Thanh toán tại khách sạn
-                </span>
-                <span className="text-sm text-gray-500">
-                  Thanh toán tiền mặt hoặc thẻ tại quầy lễ tân khi nhận phòng.
-                </span>
-              </div>
-            </label>
-          </div>
+        <div className="bg-white border p-6 rounded-lg">
+          <h3 className="font-bold text-sm uppercase mb-4">Thanh toán</h3>
+          <label className="flex items-center gap-3 p-4 border bg-blue-50 rounded">
+            <input
+              type="radio"
+              checked
+              readOnly
+              className="accent-primary w-5 h-5"
+            />
+            <div>
+              <span className="font-bold block text-gray-900">
+                Thanh toán tại khách sạn
+              </span>
+              <span className="text-sm text-gray-500">
+                Trả tiền mặt/thẻ khi nhận phòng.
+              </span>
+            </div>
+          </label>
         </div>
       </div>
 
-      {/* CỘT PHẢI: TÓM TẮT ĐƠN HÀNG */}
-      <div className="bg-white border border-gray-200 shadow-xl rounded-lg p-8 h-fit">
+      {/* CỘT PHẢI */}
+      <div className="bg-white border shadow-xl rounded-lg p-8 h-fit">
         <h3 className="font-serif text-xl font-bold mb-6 text-center">
-          Chi Tiết Đặt Phòng
+          Thông Tin Phòng
         </h3>
-
         <div className="relative h-48 w-full mb-6 rounded overflow-hidden">
           <Image
             src={
@@ -187,7 +168,7 @@ function CheckoutContent() {
           />
         </div>
 
-        <div className="space-y-4 border-b border-gray-100 pb-6 mb-6">
+        <div className="space-y-4 border-b pb-4 mb-4">
           <div>
             <p className="text-xs text-gray-400 uppercase font-bold">
               Loại phòng
@@ -196,47 +177,36 @@ function CheckoutContent() {
               {room.TenPhong || room.LoaiPhong}
             </p>
           </div>
-          <div className="flex justify-between">
+          <div className="flex justify-between text-sm">
             <div>
-              <p className="text-xs text-gray-400 uppercase font-bold">
-                Nhận phòng
-              </p>
-              <p className="font-medium">{format(checkIn, "dd/MM/yyyy")}</p>
+              <span className="text-gray-500 block">Check-in</span>{" "}
+              <b>{format(checkIn, "dd/MM/yyyy")}</b>
             </div>
             <div className="text-right">
-              <p className="text-xs text-gray-400 uppercase font-bold">
-                Trả phòng
-              </p>
-              <p className="font-medium">{format(checkOut, "dd/MM/yyyy")}</p>
+              <span className="text-gray-500 block">Check-out</span>{" "}
+              <b>{format(checkOut, "dd/MM/yyyy")}</b>
             </div>
-          </div>
-          <div className="flex justify-between items-center bg-gray-50 p-2 rounded">
-            <span className="text-sm">Số đêm nghỉ:</span>
-            <span className="font-bold">{nights} đêm</span>
           </div>
         </div>
 
         <div className="space-y-3 mb-8">
           <div className="flex justify-between text-gray-600">
-            <span>Giá phòng (x{nights})</span>
-            <span>{formatCurrency(totalAmount)}</span>
-          </div>
-          <div className="flex justify-between text-gray-600">
-            <span>Phí dịch vụ (5%)</span>
-            <span>{formatCurrency(totalAmount * 0.05)}</span>
+            <span>Giá phòng ({nights} đêm)</span>
+            <span>{formatCurrency(grandTotal)}</span>
           </div>
           <div className="flex justify-between font-bold text-xl text-primary pt-4 border-t">
-            <span>Tổng thanh toán</span>
-            <span>{formatCurrency(totalAmount * 1.05)}</span>
+            <span>Tổng cộng</span>
+            <span>{formatCurrency(grandTotal)}</span>
           </div>
         </div>
 
         <button
           onClick={handleConfirmPayment}
           disabled={processing}
-          className="w-full py-4 bg-primary text-white font-bold uppercase tracking-[2px] hover:bg-gray-800 transition-all rounded shadow-lg disabled:bg-gray-400"
+          className="w-full py-4 bg-primary text-white font-bold uppercase rounded shadow-lg flex justify-center gap-2 hover:bg-black transition-all disabled:bg-gray-400"
         >
-          {processing ? "Đang xử lý..." : "Hoàn Tất Đặt Phòng"}
+          {processing && <Loader2 className="animate-spin" />}
+          {processing ? "Đang xử lý..." : "Xác Nhận Booking"}
         </button>
       </div>
     </div>

@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 // 1. Tạo Context
 const AuthContext = createContext();
 
-// 2. Export Provider (Đây là cái mà layout.js đang tìm kiếm)
+// 2. Export Provider
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const router = useRouter();
@@ -28,46 +28,47 @@ export function AuthProvider({ children }) {
 
   const login = async (email, password) => {
     try {
-      // Gọi apiService.login (Hàm này đã có logic cứu nguy ở bước trước)
+      console.log("🔒 [AUTH] Đang gọi API Login chuẩn...");
+
+      // 1. Gọi API Login -> Nhận Token
       const data = await apiService.login({ email, password });
 
-      let userInfo = null;
-
-      // TRƯỜNG HỢP 1: LOGIN CỨU NGUY (Bypass)
-      if (data.user_bypass) {
-        const u = data.user_bypass;
-        userInfo = {
-          token: data.access_token,
-          email: u.Email || u.email || email,
-          name: u.HoTen || u.fullname || email,
-          // Lấy MaKH chính xác để đặt phòng
-          MaKH: u.MaKH || u.id || u.user_id,
-        };
-      }
-      // TRƯỜNG HỢP 2: LOGIN CHUẨN (Dự phòng)
-      else {
-        const userProfile = await apiService.getProfile(data.access_token);
-        const finalProfile = userProfile || { id: 1, fullname: "User" };
-
-        userInfo = {
-          token: data.access_token,
-          email: email,
-          name: finalProfile.fullname || finalProfile.HoTen || email,
-          MaKH:
-            finalProfile.user_id || finalProfile.id || finalProfile.MaKH || 1,
-        };
+      if (!data || !data.access_token) {
+        throw new Error("Không nhận được access_token từ server");
       }
 
-      console.log("✅ [AUTH] User Info set to Context:", userInfo);
+      console.log("🔑 [AUTH] Có Token, đang lấy Profile...");
 
+      // 2. Dùng Token để lấy thông tin chi tiết User (Profile)
+      // (Nếu apiService.getProfile bị lỗi 500/404, nó sẽ throw error tại đây để bạn debug)
+      const userProfile = await apiService.getProfile(data.access_token);
+
+      console.log("👤 [AUTH] Raw Profile từ Backend:", userProfile);
+
+      // 3. Map dữ liệu chuẩn hóa
+      const userInfo = {
+        token: data.access_token,
+        email: userProfile.email || userProfile.Email || email,
+        name:
+          userProfile.fullname ||
+          userProfile.HoTen ||
+          userProfile.TenKH ||
+          "User",
+        // Quan trọng: Map đúng ID để lưu vào booking
+        MaKH: userProfile.MaKH || userProfile.user_id || userProfile.id,
+      };
+
+      console.log("✅ [AUTH] User Info Final:", userInfo);
+
+      // 4. Lưu vào State & LocalStorage
       setUser(userInfo);
       localStorage.setItem("user", JSON.stringify(userInfo));
       localStorage.setItem("token", userInfo.token);
 
       return true;
     } catch (error) {
-      console.error("Login Failed:", error);
-      throw error;
+      console.error("❌ [AUTH] Login Failed:", error);
+      throw error; // Ném lỗi ra để UI hiển thị thông báo
     }
   };
 
@@ -85,7 +86,7 @@ export function AuthProvider({ children }) {
   );
 }
 
-// 3. Export Hook để dùng trong các trang khác
+// 3. Export Hook
 export function useAuth() {
   return useContext(AuthContext);
 }

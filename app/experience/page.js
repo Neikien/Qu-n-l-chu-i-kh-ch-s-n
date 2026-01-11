@@ -87,8 +87,9 @@ export default function ExperiencePage() {
                 A personalized, science-backed jet lag plan available to
                 optimize your travel experience.
               </p>
+              {/* UPDATED LINK */}
               <Link
-                href="/experience/timeshifter"
+                href="/offers"
                 className="text-xs font-bold uppercase tracking-widest text-accent border-b border-accent pb-1 hover:text-primary hover:border-primary transition-colors"
               >
                 Learn More &gt;
@@ -112,8 +113,9 @@ export default function ExperiencePage() {
                 Carefully curated spaces designed to enhance relaxation and
                 restoration during your stay.
               </p>
+              {/* UPDATED LINK */}
               <Link
-                href="/experience/design"
+                href="/offers"
                 className="text-xs font-bold uppercase tracking-widest text-accent border-b border-accent pb-1 hover:text-primary hover:border-primary transition-colors"
               >
                 Learn More &gt;
@@ -137,8 +139,9 @@ export default function ExperiencePage() {
                 Balanced and wholesome dishes available on-demand to suit your
                 schedule.
               </p>
+              {/* UPDATED LINK */}
               <Link
-                href="/experience/flexible-dining"
+                href="/offers"
                 className="text-xs font-bold uppercase tracking-widest text-accent border-b border-accent pb-1 hover:text-primary hover:border-primary transition-colors"
               >
                 Learn More &gt;
@@ -168,8 +171,9 @@ export default function ExperiencePage() {
               unique and personal to you, every milestone is crafted to be truly
               unforgettable.
             </p>
+            {/* UPDATED LINK */}
             <Link
-              href="/experience/occasions"
+              href="/offers"
               className="inline-block border border-primary px-10 py-4 text-sm font-bold tracking-[2px] uppercase hover:bg-primary hover:text-white transition-all w-fit"
             >
               Discover More
@@ -191,8 +195,9 @@ export default function ExperiencePage() {
               celebrate traditional local recipes with a global twist, crafting
               each bite from the freshest ingredients.
             </p>
+            {/* UPDATED LINK */}
             <Link
-              href="/experience/dining"
+              href="/offers"
               className="inline-block border border-primary px-10 py-4 text-sm font-bold tracking-[2px] uppercase hover:bg-primary hover:text-white transition-all w-fit"
             >
               Learn More
@@ -231,8 +236,9 @@ export default function ExperiencePage() {
               inspired treats such as afternoon tea, evening canapés, and
               signature serves.
             </p>
+            {/* UPDATED LINK */}
             <Link
-              href="/experience/club"
+              href="/offers"
               className="inline-block border border-primary px-10 py-4 text-sm font-bold tracking-[2px] uppercase hover:bg-primary hover:text-white transition-all w-fit"
             >
               Learn More

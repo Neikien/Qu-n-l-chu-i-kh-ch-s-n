@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
-// Dữ liệu giả (Phải khớp ID với trang danh sách)
+// 1. DỮ LIỆU GIẢ (Cần khớp ID với trang danh sách offers)
 const offersData = [
   {
     id: 1,
@@ -69,6 +69,7 @@ export default function OfferDetailPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // 2. Tìm Offer dựa trên ID từ URL
     if (params?.id) {
       const foundOffer = offersData.find(
         (item) => item.id === parseInt(params.id)
@@ -93,7 +94,7 @@ export default function OfferDetailPage() {
 
   return (
     <main className="min-h-screen bg-white pb-20">
-      {/* HERO IMAGE */}
+      {/* 3. HERO IMAGE */}
       <div className="relative h-[60vh] w-full">
         <Image
           src={offer.image}
@@ -111,7 +112,7 @@ export default function OfferDetailPage() {
         </div>
       </div>
 
-      {/* CONTENT */}
+      {/* 4. CONTENT */}
       <div className="max-w-4xl mx-auto -mt-20 relative z-10 bg-white p-10 shadow-lg border-t-4 border-primary mx-5 lg:mx-auto">
         <span className="text-xs font-bold text-accent tracking-[3px] uppercase block mb-2">
           {offer.category}
@@ -129,12 +130,12 @@ export default function OfferDetailPage() {
         </ul>
 
         <div className="text-center">
-          {/* ĐÃ SỬA: Link trỏ thẳng sang trang /booking */}
+          {/* 5. LOGIC NÚT BOOK NOW: ID=4 thì sang trang dịch vụ, còn lại sang trang booking */}
           <Link
-            href="/booking"
+            href={offer.id === 4 ? `/offer-booking/${offer.id}` : "/booking"}
             className="inline-block bg-primary text-white px-12 py-4 font-bold tracking-widest uppercase hover:bg-accent transition-colors duration-300"
           >
-            Book Now
+            {offer.id === 4 ? "View Package Services" : "Book Now"}
           </Link>
         </div>
       </div>
