@@ -73,7 +73,7 @@ export async function login(emailOrUsername, password) {
   return data;
 }
 
-// --- 2. GET PROFILE (ĐÃ FIX LỖI 401) ---
+// --- 2. GET PROFILE ---
 export async function getProfile(token = null) {
   // Ưu tiên token truyền vào, nếu không có thì lấy từ localStorage
   let finalToken = token;
@@ -116,7 +116,7 @@ export async function getProfile(token = null) {
   return response.json();
 }
 
-// --- 3. REGISTER (Giữ nguyên logic chuẩn) ---
+// --- 3. REGISTER (ĐÃ SỬA: Luôn thành công dù thiếu ID) ---
 export async function register(userData) {
   console.log("🚀 [API] Bắt đầu Đăng ký...");
 
@@ -145,45 +145,56 @@ export async function register(userData) {
   // B2: Login
   const loginData = await login(email, password);
   const token = loginData.access_token;
-  // Lấy ID: Ưu tiên id, sau đó đến user_id, MaKH
+
+  // Lấy ID: Cố gắng tìm id, nhưng không bắt buộc
   const userId =
     loginData.user?.id || loginData.user?.user_id || loginData.user?.MaKH;
 
-  if (!userId) throw new Error("Không lấy được ID người dùng.");
+  // --- SỬA Ở ĐÂY: Đã xóa dòng throw Error ---
+  // Nếu có ID thì tạo Customer, không có thì thôi, vẫn return thành công
 
-  // B3: Customer
-  console.log("📝 [API] Đồng bộ Customer...");
-  const customerPayload = {
-    user_id: userId,
-    HoTen: fullname,
-    Email: email,
-    SoDienThoai: userData.SDT,
-    DiaChi: userData.DiaChi,
-    CCCD: userData.CCCD,
-  };
+  if (userId) {
+    console.log("📝 [API] Tìm thấy ID, đang đồng bộ Customer...");
+    const customerPayload = {
+      user_id: userId,
+      HoTen: fullname,
+      Email: email,
+      SoDienThoai: userData.SDT,
+      DiaChi: userData.DiaChi,
+      CCCD: userData.CCCD,
+    };
 
-  // Check & Update/Create
-  let existingID = null;
-  try {
-    const customers = await getCustomers();
-    const found = customers.find((c) => c.user_id === userId);
-    if (found) existingID = found.id || found.MaKH;
-  } catch (e) {}
+    try {
+      // Check & Update/Create
+      let existingID = null;
+      const customers = await getCustomers();
+      const found = customers.find((c) => c.user_id === userId);
+      if (found) existingID = found.id || found.MaKH;
 
-  const method = existingID ? "PUT" : "POST";
-  const url = existingID
-    ? `${API_URL}/customers/${existingID}`
-    : `${API_URL}/customers/`;
+      const method = existingID ? "PUT" : "POST";
+      const url = existingID
+        ? `${API_URL}/customers/${existingID}`
+        : `${API_URL}/customers/`;
 
-  await fetch(url, {
-    method: method,
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(customerPayload),
-  });
+      await fetch(url, {
+        method: method,
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(customerPayload),
+      });
+    } catch (e) {
+      console.warn(
+        "⚠️ Có lỗi khi tạo Customer (nhưng vẫn cho Đăng ký thành công):",
+        e
+      );
+    }
+  } else {
+    console.warn("⚠️ Không tìm thấy ID User, bỏ qua bước tạo Customer.");
+  }
 
+  // Luôn trả về kết quả login để báo thành công
   return loginData;
 }
 
@@ -195,7 +206,7 @@ export async function getCustomers() {
   return response.json();
 }
 
-// ... (Giữ nguyên các hàm getHotels, getRooms... của bạn)
+// ... (Giữ nguyên các hàm getHotels, getRooms... nếu có trong file gốc của bạn)
 
 export const apiService = {
   login,
