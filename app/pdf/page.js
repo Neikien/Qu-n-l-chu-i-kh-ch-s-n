@@ -35,6 +35,16 @@ export default function HelloPage() {
     setImages(prev => prev.filter(img => img.id !== id));
   };
 
+  // Chuyen doi anh sang canvas de chuan hoa
+  const imageToDataURL = (img) => {
+    const canvas = document.createElement('canvas');
+    canvas.width = img.width;
+    canvas.height = img.height;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0);
+    return canvas.toDataURL('image/jpeg', 0.95);
+  };
+
   const createPDF = async () => {
     if (images.length === 0) {
       alert('Chua co anh nao de tao PDF!');
@@ -46,14 +56,13 @@ export default function HelloPage() {
     try {
       const { default: jsPDF } = await import('jspdf');
       
-      const FIXED_WIDTH = 210; // Chieu rong A4
+      const FIXED_WIDTH = 210;
       
       let pdf = null;
 
       for (let i = 0; i < images.length; i++) {
         const image = images[i];
         
-        // Load anh
         const img = new Image();
         img.src = image.url;
         
@@ -63,10 +72,11 @@ export default function HelloPage() {
           if (img.complete) resolve();
         });
 
-        // Tinh chieu cao theo ti le
+        // Chuan hoa anh sang JPEG qua canvas
+        const imageData = imageToDataURL(img);
+        
         const displayHeight = (img.height / img.width) * FIXED_WIDTH;
         
-        // Tao trang moi
         if (i === 0) {
           pdf = new jsPDF({
             orientation: 'p',
@@ -77,10 +87,9 @@ export default function HelloPage() {
           pdf.addPage([FIXED_WIDTH, displayHeight]);
         }
 
-        // Them anh truc tiep tu URL (jspdf tu xu ly dinh dang)
         pdf.addImage(
-          image.url,
-          'JPEG', // Ep ve JPEG
+          imageData,
+          'JPEG',
           0,
           0,
           FIXED_WIDTH,
