@@ -4,6 +4,7 @@ import { useState } from 'react';
 
 export default function HelloPage() {
   const [images, setImages] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Xử lý khi chọn file bằng click
   const handleFileSelect = (e) => {
@@ -43,6 +44,87 @@ export default function HelloPage() {
     setImages(prev => prev.filter(img => img.id !== id));
   };
 
+  // HÀM TẠO PDF
+  const createPDF = async () => {
+    if (images.length === 0) {
+      alert('Chưa có ảnh nào để tạo PDF!');
+      return;
+    }
+
+    setIsLoading(true);
+    
+    try {
+      // Import jspdf - dynamic import để tránh lỗi SSR
+      const { default: jsPDF } = await import('jspdf');
+      
+      // Tạo PDF với khổ A4
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pageWidth = pdf.internal.pageSize.getWidth();  // 210mm
+      const pageHeight = pdf.internal.pageSize.getHeight(); // 297mm
+      
+      console.log('Kích thước trang A4:', pageWidth, 'x', pageHeight);
+
+      // Duyệt qua từng ảnh
+      for (let i = 0; i < images.length; i++) {
+        const image = images[i];
+        
+        // Tạo đối tượng Image để lấy kích thước thật
+        const img = new Image();
+        img.src = image.url;
+        
+        // Chờ ảnh load xong
+        await new Promise((resolve, reject) => {
+          img.onload = resolve;
+          img.onerror = reject;
+          // Nếu ảnh đã load rồi thì vẫn resolve
+          if (img.complete) resolve();
+        });
+
+        const imgWidth = img.width;
+        const imgHeight = img.height;
+        
+        console.log(`Ảnh ${i+1}: ${imgWidth}x${imgHeight}`);
+
+        // TÍNH TOÁN KÍCH THƯỚC HIỂN THỊ
+        // Chiều rộng luôn bằng chiều rộng trang A4
+        const displayWidth = pageWidth;
+        // Chiều cao tính theo tỉ lệ của ảnh
+        const displayHeight = (imgHeight / imgWidth) * displayWidth;
+        
+        console.log(`Hiển thị: ${displayWidth.toFixed(2)}x${displayHeight.toFixed(2)}mm`);
+
+        // Thêm trang mới (trừ trang đầu tiên)
+        if (i > 0) {
+          pdf.addPage();
+        }
+
+        // Thêm ảnh vào PDF
+        // Căn giữa theo chiều ngang, nếu ảnh ngắn hơn trang thì căn giữa theo chiều dọc
+        const x = 0; // Căn lề trái
+        const y = (pageHeight - displayHeight) / 2; // Căn giữa theo chiều dọc
+        
+        pdf.addImage(
+          image.url,
+          'JPEG',
+          x,
+          y,
+          displayWidth,
+          displayHeight
+        );
+      }
+
+      // Lưu file PDF
+      pdf.save('merged-images.pdf');
+      console.log('✅ Tạo PDF thành công!');
+      
+    } catch (error) {
+      console.error('Lỗi tạo PDF:', error);
+      alert(`Có lỗi xảy ra: ${error.message}`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div style={{ 
       padding: '40px', 
@@ -57,7 +139,7 @@ export default function HelloPage() {
         Kéo thả ảnh vào để tạo file PDF
       </p>
 
-      {/* Layout 2 cột: bên trái là khung kéo thả, bên phải là danh sách ảnh */}
+      {/* Layout 2 cột */}
       <div style={{
         display: 'grid',
         gridTemplateColumns: '1fr 1fr',
@@ -123,7 +205,6 @@ export default function HelloPage() {
               Chọn ảnh từ máy tính
             </button>
 
-            {/* Hiển thị số ảnh đã chọn trong khung kéo thả */}
             {images.length > 0 && (
               <div style={{
                 marginTop: '20px',
@@ -137,40 +218,46 @@ export default function HelloPage() {
             )}
           </div>
 
-          {/* Nút Tạo PDF - đặt dưới khung kéo thả */}
+          {/* Nút Tạo PDF */}
           {images.length > 0 && (
             <div style={{ marginTop: '20px', textAlign: 'center' }}>
               <button
-                onClick={() => {
-                  console.log('Click tạo PDF với', images.length, 'ảnh');
-                  alert('Sẽ xử lý tạo PDF ở bước tiếp theo!');
-                }}
+                onClick={createPDF}
+                disabled={isLoading}
                 style={{
                   padding: '14px 40px',
-                  backgroundColor: '#22c55e',
+                  backgroundColor: isLoading ? '#94a3b8' : '#22c55e',
                   color: 'white',
                   border: 'none',
                   borderRadius: '8px',
                   fontSize: '20px',
-                  cursor: 'pointer',
+                  cursor: isLoading ? 'not-allowed' : 'pointer',
                   fontWeight: 'bold',
-                  boxShadow: '0 4px 6px rgba(34, 197, 94, 0.3)',
-                  transition: 'all 0.3s ease'
+                  boxShadow: isLoading ? 'none' : '0 4px 6px rgba(34, 197, 94, 0.3)',
+                  transition: 'all 0.3s ease',
+                  opacity: isLoading ? 0.7 : 1
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'scale(1.05)';
+                  if (!isLoading) {
+                    e.currentTarget.style.transform = 'scale(1.05)';
+                  }
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.transform = 'scale(1)';
                 }}
               >
-                ⬇️ Tạo PDF
+                {isLoading ? '⏳ Đang xử lý...' : '⬇️ Tạo PDF'}
               </button>
+              {isLoading && (
+                <p style={{ fontSize: '14px', color: '#666', marginTop: '10px' }}>
+                  Đang xử lý {images.length} ảnh...
+                </p>
+              )}
             </div>
           )}
         </div>
 
-        {/* Cột phải: Danh sách ảnh đã chọn */}
+        {/* Cột phải: Danh sách ảnh */}
         <div>
           <h3 style={{
             margin: '0 0 15px 0',
@@ -212,16 +299,7 @@ export default function HelloPage() {
                     border: '1px solid #e5e7eb',
                     transition: 'all 0.2s ease'
                   }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.borderColor = '#0070f3';
-                    e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,112,243,0.1)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.borderColor = '#e5e7eb';
-                    e.currentTarget.style.boxShadow = 'none';
-                  }}
                 >
-                  {/* Số thứ tự */}
                   <div style={{
                     minWidth: '30px',
                     textAlign: 'center',
@@ -231,7 +309,6 @@ export default function HelloPage() {
                     #{index + 1}
                   </div>
 
-                  {/* Ảnh thumbnail */}
                   <img
                     src={img.url}
                     alt={img.name}
@@ -244,7 +321,6 @@ export default function HelloPage() {
                     }}
                   />
 
-                  {/* Tên file */}
                   <div style={{
                     flex: 1,
                     textAlign: 'left',
@@ -263,9 +339,9 @@ export default function HelloPage() {
                     </p>
                   </div>
 
-                  {/* Nút xóa */}
                   <button
                     onClick={() => removeImage(img.id)}
+                    disabled={isLoading}
                     style={{
                       backgroundColor: '#fee2e2',
                       color: '#dc2626',
@@ -273,18 +349,13 @@ export default function HelloPage() {
                       borderRadius: '4px',
                       width: '30px',
                       height: '30px',
-                      cursor: 'pointer',
+                      cursor: isLoading ? 'not-allowed' : 'pointer',
                       fontSize: '16px',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      transition: 'all 0.2s ease'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = '#fecaca';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = '#fee2e2';
+                      transition: 'all 0.2s ease',
+                      opacity: isLoading ? 0.5 : 1
                     }}
                   >
                     ×
@@ -292,20 +363,21 @@ export default function HelloPage() {
                 </div>
               ))}
 
-              {/* Nút xóa tất cả */}
               {images.length > 1 && (
                 <button
                   onClick={() => setImages([])}
+                  disabled={isLoading}
                   style={{
                     padding: '8px 16px',
                     backgroundColor: '#ef4444',
                     color: 'white',
                     border: 'none',
                     borderRadius: '4px',
-                    cursor: 'pointer',
+                    cursor: isLoading ? 'not-allowed' : 'pointer',
                     fontSize: '14px',
                     marginTop: '10px',
-                    width: '100%'
+                    width: '100%',
+                    opacity: isLoading ? 0.5 : 1
                   }}
                 >
                   🗑️ Xóa tất cả ({images.length} ảnh)
