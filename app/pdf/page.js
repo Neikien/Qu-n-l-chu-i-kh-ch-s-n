@@ -36,25 +36,26 @@ export default function HelloPage() {
   };
 
   const resizeImage = (img) => {
-    const FIXED_WIDTH = 210;
-    const displayHeight = (img.height / img.width) * FIXED_WIDTH;
+    // Chieu rong A4 tinh bang pixel (210mm = 794px)
+    const FIXED_WIDTH_PX = 794;
+    const displayHeightPX = Math.round((img.height / img.width) * FIXED_WIDTH_PX);
     
     const canvas = document.createElement('canvas');
-    canvas.width = FIXED_WIDTH;
-    canvas.height = displayHeight;
+    canvas.width = FIXED_WIDTH_PX;
+    canvas.height = displayHeightPX;
     const ctx = canvas.getContext('2d');
     
-    // VE NEN TRANG TRUOC KHI VE ANH LEN
+    // Ve nen trang
     ctx.fillStyle = '#FFFFFF';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
-    // VE ANH LEN TREN NEN TRANG
-    ctx.drawImage(img, 0, 0, FIXED_WIDTH, displayHeight);
+    // Ve anh
+    ctx.drawImage(img, 0, 0, FIXED_WIDTH_PX, displayHeightPX);
     
     return {
       dataUrl: canvas.toDataURL('image/jpeg', 0.95),
-      width: FIXED_WIDTH,
-      height: displayHeight
+      width: FIXED_WIDTH_PX,
+      height: displayHeightPX
     };
   };
 
@@ -69,7 +70,7 @@ export default function HelloPage() {
     try {
       const { default: jsPDF } = await import('jspdf');
       
-      // Load anh dau tien de lay kich thuoc
+      // Xu ly anh dau tien
       const firstImage = images[0];
       const firstImg = new Image();
       firstImg.src = firstImage.url;
@@ -82,14 +83,12 @@ export default function HelloPage() {
 
       const firstResult = resizeImage(firstImg);
       
-      // Tao PDF VOI KICH THUOC CUA ANH DAU TIEN
+      // Tao PDF voi don vi pixel
       const pdf = new jsPDF({
-        orientation: 'p',
-        unit: 'mm',
+        unit: 'px',
         format: [firstResult.width, firstResult.height]
       });
 
-      // Them anh dau tien
       pdf.addImage(
         firstResult.dataUrl,
         'JPEG',
@@ -114,9 +113,7 @@ export default function HelloPage() {
 
         const result = resizeImage(img);
         
-        // Them trang moi VOI KICH THUOC CUA ANH HIEN TAI
         pdf.addPage([result.width, result.height]);
-
         pdf.addImage(
           result.dataUrl,
           'JPEG',
