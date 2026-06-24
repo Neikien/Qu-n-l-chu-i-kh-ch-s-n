@@ -35,6 +35,20 @@ export default function HelloPage() {
     setImages(prev => prev.filter(img => img.id !== id));
   };
 
+  // Ham chuyen doi anh sang canvas de chuan hoa dinh dang
+  const imageToCanvas = (img) => {
+    const canvas = document.createElement('canvas');
+    canvas.width = img.width;
+    canvas.height = img.height;
+    const ctx = canvas.getContext('2d');
+    
+    // Ve anh len canvas (chuyen doi sang RGBA)
+    ctx.drawImage(img, 0, 0);
+    
+    // Tra ve data URL dang JPEG (chuan hoa dinh dang)
+    return canvas.toDataURL('image/jpeg', 0.92);
+  };
+
   const createPDF = async () => {
     if (images.length === 0) {
       alert('Chua co anh nao de tao PDF!');
@@ -52,9 +66,12 @@ export default function HelloPage() {
 
       for (let i = 0; i < images.length; i++) {
         const image = images[i];
+        
+        // Load anh vao the Image
         const img = new Image();
         img.src = image.url;
         
+        // Cho anh load xong
         await new Promise((resolve, reject) => {
           img.onload = resolve;
           img.onerror = reject;
@@ -65,6 +82,9 @@ export default function HelloPage() {
         const imgWidth = img.width;
         const imgHeight = img.height;
         const displayHeight = (imgHeight / imgWidth) * FIXED_WIDTH;
+        
+        // Chuan hoa dinh dang anh sang JPEG
+        const imageData = imageToCanvas(img);
         
         // Tao trang moi voi kich thuoc da tinh
         if (i === 0) {
@@ -77,9 +97,9 @@ export default function HelloPage() {
           pdf.addPage([FIXED_WIDTH, displayHeight]);
         }
 
-        // Them anh phu kin trang
+        // Them anh da chuan hoa
         pdf.addImage(
-          image.url,
+          imageData,
           'JPEG',
           0,
           0,
