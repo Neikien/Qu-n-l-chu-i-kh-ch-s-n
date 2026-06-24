@@ -35,25 +35,22 @@ export default function HelloPage() {
     setImages(prev => prev.filter(img => img.id !== id));
   };
 
-  // Ham 1: Chuyen sang JPEG
-  // Ham 2: Resize voi chieu rong = 210mm (A4)
   const convertAndResize = (img) => {
-    const FIXED_WIDTH = 210; // mm
-    
-    // Tinh chieu cao theo ti le
+    const FIXED_WIDTH = 210;
     const displayHeight = (img.height / img.width) * FIXED_WIDTH;
     
-    // Tao canvas voi kich thuoc moi
     const canvas = document.createElement('canvas');
     canvas.width = FIXED_WIDTH;
     canvas.height = displayHeight;
     
     const ctx = canvas.getContext('2d');
-    // Ve anh len canvas voi kich thuoc moi (resize)
     ctx.drawImage(img, 0, 0, FIXED_WIDTH, displayHeight);
     
-    // Xuat ra JPEG
-    return canvas.toDataURL('image/jpeg', 0.95);
+    return {
+      dataUrl: canvas.toDataURL('image/jpeg', 0.95),
+      width: FIXED_WIDTH,
+      height: displayHeight
+    };
   };
 
   const createPDF = async () => {
@@ -67,8 +64,7 @@ export default function HelloPage() {
     try {
       const { default: jsPDF } = await import('jspdf');
       
-      const FIXED_WIDTH = 210; // mm
-      
+      const FIXED_WIDTH = 210;
       let pdf = null;
 
       for (let i = 0; i < images.length; i++) {
@@ -83,33 +79,30 @@ export default function HelloPage() {
           if (img.complete) resolve();
         });
 
-        // CHI LAM 2 VIEC:
-        // 1. Chuyen sang JPEG
-        // 2. Resize voi chieu rong = 210mm, chieu cao tu dong theo ti le
-        const imageData = convertAndResize(img);
+        // Chuyen sang JPEG va resize voi chieu rong = 210mm
+        const result = convertAndResize(img);
         
-        // Lay chieu cao sau khi resize
-        const displayHeight = (img.height / img.width) * FIXED_WIDTH;
-        
-        // Tao trang moi voi kich thuoc da resize
+        // TAO PDF TU DO: Moi trang co kich thuoc rieng
         if (i === 0) {
+          // Trang dau tien: tao voi kich thuoc cua anh dau tien
           pdf = new jsPDF({
             orientation: 'p',
             unit: 'mm',
-            format: [FIXED_WIDTH, displayHeight]
+            format: [result.width, result.height]
           });
         } else {
-          pdf.addPage([FIXED_WIDTH, displayHeight]);
+          // Cac trang tiep theo: them trang voi kich thuoc rieng
+          pdf.addPage([result.width, result.height]);
         }
 
-        // Them anh da duoc chuyen sang JPEG va resize
+        // Them anh vao trang
         pdf.addImage(
-          imageData,
+          result.dataUrl,
           'JPEG',
           0,
           0,
-          FIXED_WIDTH,
-          displayHeight
+          result.width,
+          result.height
         );
       }
 
