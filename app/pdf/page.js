@@ -42,8 +42,13 @@ export default function HelloPage() {
     const canvas = document.createElement('canvas');
     canvas.width = FIXED_WIDTH;
     canvas.height = displayHeight;
-    
     const ctx = canvas.getContext('2d');
+    
+    // VE NEN TRANG TRUOC KHI VE ANH LEN
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // VE ANH LEN TREN NEN TRANG
     ctx.drawImage(img, 0, 0, FIXED_WIDTH, displayHeight);
     
     return {
@@ -64,10 +69,38 @@ export default function HelloPage() {
     try {
       const { default: jsPDF } = await import('jspdf');
       
-      // Xu ly tung anh va tao PDF rieng
-      const pdfDocs = [];
+      // Load anh dau tien de lay kich thuoc
+      const firstImage = images[0];
+      const firstImg = new Image();
+      firstImg.src = firstImage.url;
       
-      for (let i = 0; i < images.length; i++) {
+      await new Promise((resolve, reject) => {
+        firstImg.onload = resolve;
+        firstImg.onerror = reject;
+        if (firstImg.complete) resolve();
+      });
+
+      const firstResult = resizeImage(firstImg);
+      
+      // Tao PDF VOI KICH THUOC CUA ANH DAU TIEN
+      const pdf = new jsPDF({
+        orientation: 'p',
+        unit: 'mm',
+        format: [firstResult.width, firstResult.height]
+      });
+
+      // Them anh dau tien
+      pdf.addImage(
+        firstResult.dataUrl,
+        'JPEG',
+        0,
+        0,
+        firstResult.width,
+        firstResult.height
+      );
+
+      // Xu ly cac anh con lai
+      for (let i = 1; i < images.length; i++) {
         const image = images[i];
         
         const img = new Image();
@@ -81,14 +114,10 @@ export default function HelloPage() {
 
         const result = resizeImage(img);
         
-        // Tao 1 PDF rieng cho tung anh
-        const singlePdf = new jsPDF({
-          orientation: 'p',
-          unit: 'mm',
-          format: [result.width, result.height]
-        });
-        
-        singlePdf.addImage(
+        // Them trang moi VOI KICH THUOC CUA ANH HIEN TAI
+        pdf.addPage([result.width, result.height]);
+
+        pdf.addImage(
           result.dataUrl,
           'JPEG',
           0,
@@ -96,33 +125,9 @@ export default function HelloPage() {
           result.width,
           result.height
         );
-        
-        // Luu du lieu PDF dang blob
-        pdfDocs.push(singlePdf.output('blob'));
       }
 
-      // Ghep cac PDF lai voi nhau
-      const { PDFDocument } = await import('pdf-lib');
-      const mergedPdf = await PDFDocument.create();
-      
-      for (const pdfBlob of pdfDocs) {
-        const pdfBytes = await pdfBlob.arrayBuffer();
-        const pdfDoc = await PDFDocument.load(pdfBytes);
-        const pages = await mergedPdf.copyPages(pdfDoc, pdfDoc.getPageIndices());
-        pages.forEach(page => mergedPdf.addPage(page));
-      }
-
-      const mergedPdfBytes = await mergedPdf.save();
-      const blob = new Blob([mergedPdfBytes], { type: 'application/pdf' });
-      const url = URL.createObjectURL(blob);
-      
-      // Tao link download
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = 'merged-images.pdf';
-      link.click();
-      URL.revokeObjectURL(url);
-      
+      pdf.save('merged-images.pdf');
     } catch (error) {
       console.error('Loi tao PDF:', error);
       alert('Co loi xay ra khi tao PDF: ' + error.message);
