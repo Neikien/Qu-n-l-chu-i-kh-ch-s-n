@@ -1,14 +1,17 @@
-'use client'; // Bắt buộc vì có sử dụng hooks và sự kiện trình duyệt
+'use client';
 
 import { useRef, useState } from 'react';
-import jsPDF from 'jspdf';
+// Import động để tránh lỗi khi build
+import dynamic from 'next/dynamic';
+
+// Import jsPDF một cách động để chỉ chạy ở client
+const jsPDF = dynamic(() => import('jspdf'), { ssr: false });
 
 export default function PdfMergerPage() {
   const [images, setImages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const fileInputRef = useRef(null);
 
-  // Hàm xử lý khi chọn file
   const handleFileChange = (event) => {
     const files = Array.from(event.target.files);
     const imagePromises = files.map((file) => {
@@ -30,8 +33,7 @@ export default function PdfMergerPage() {
     });
   };
 
-  // Hàm ghép ảnh thành PDF
-  const mergeToPDF = () => {
+  const mergeToPDF = async () => {
     if (images.length === 0) {
       alert('Vui lòng chọn ít nhất một ảnh!');
       return;
@@ -39,19 +41,26 @@ export default function PdfMergerPage() {
 
     setIsLoading(true);
     try {
+      // Import jsPDF một cách động khi cần
+      const { default: jsPDF } = await import('jspdf');
       const pdf = new jsPDF('p', 'mm', 'a4');
       const pageWidth = pdf.internal.pageSize.getWidth();
       const pageHeight = pdf.internal.pageSize.getHeight();
 
-      images.forEach((image, index) => {
+      for (const [index, image] of images.entries()) {
         if (index > 0) {
           pdf.addPage();
         }
 
-        // Tính toán tỷ lệ để ảnh vừa với trang
-        const imgProps = pdf.getImageProperties(image.src);
-        const imgWidth = imgProps.width;
-        const imgHeight = imgProps.height;
+        // Tạo ảnh từ base64
+        const img = new Image();
+        img.src = image.src;
+        await new Promise((resolve) => {
+          img.onload = resolve;
+        });
+
+        const imgWidth = img.width;
+        const imgHeight = img.height;
         const ratio = Math.min(pageWidth / imgWidth, pageHeight / imgHeight);
         const width = imgWidth * ratio;
         const height = imgHeight * ratio;
@@ -59,23 +68,21 @@ export default function PdfMergerPage() {
         const y = (pageHeight - height) / 2;
 
         pdf.addImage(image.src, 'JPEG', x, y, width, height);
-      });
+      }
 
       pdf.save('merged-images.pdf');
     } catch (error) {
       console.error('Lỗi tạo PDF:', error);
-      alert('Có lỗi xảy ra khi tạo PDF!');
+      alert('Có lỗi xảy ra khi tạo PDF: ' + error.message);
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Hàm xóa ảnh
   const removeImage = (id) => {
     setImages((prev) => prev.filter((img) => img.id !== id));
   };
 
-  // Kéo thả file
   const handleDrop = (e) => {
     e.preventDefault();
     const files = e.dataTransfer.files;
@@ -94,7 +101,6 @@ export default function PdfMergerPage() {
       <h1>📄 Ghép ảnh thành PDF</h1>
       <p>Tải lên các ảnh và sắp xếp thứ tự trước khi xuất PDF.</p>
 
-      {/* Khu vực tải lên */}
       <div
         onDrop={handleDrop}
         onDragOver={handleDragOver}
@@ -109,7 +115,7 @@ export default function PdfMergerPage() {
       >
         <p>📁 Kéo thả ảnh vào đây hoặc</p>
         <button
-          onClick={() => fileInputRef.current.click()}
+          onClick={() => fileInputRef.current?.click()}
           style={{
             padding: '10px 20px',
             fontSize: '16px',
@@ -132,12 +138,11 @@ export default function PdfMergerPage() {
         />
       </div>
 
-      {/* Danh sách ảnh đã tải lên */}
       {images.length > 0 && (
         <div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap' }}>
             <h3>Đã tải lên: {images.length} ảnh</h3>
-            <div>
+            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
               <button
                 onClick={mergeToPDF}
                 disabled={isLoading}
@@ -148,8 +153,7 @@ export default function PdfMergerPage() {
                   backgroundColor: '#22c55e',
                   color: 'white',
                   border: 'none',
-                  borderRadius: '4px',
-                  marginRight: '10px'
+                  borderRadius: '4px'
                 }}
               >
                 {isLoading ? 'Đang xử lý...' : '⬇️ Tạo PDF'}
