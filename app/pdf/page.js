@@ -35,14 +35,22 @@ export default function HelloPage() {
     setImages(prev => prev.filter(img => img.id !== id));
   };
 
-  // Chuyen doi anh sang canvas de chuan hoa
-  const imageToDataURL = (img) => {
+  const convertAndResize = (img) => {
+    const FIXED_WIDTH = 210;
+    const displayHeight = (img.height / img.width) * FIXED_WIDTH;
+    
     const canvas = document.createElement('canvas');
-    canvas.width = img.width;
-    canvas.height = img.height;
+    canvas.width = FIXED_WIDTH;
+    canvas.height = displayHeight;
+    
     const ctx = canvas.getContext('2d');
-    ctx.drawImage(img, 0, 0);
-    return canvas.toDataURL('image/jpeg', 0.95);
+    ctx.drawImage(img, 0, 0, FIXED_WIDTH, displayHeight);
+    
+    return {
+      dataUrl: canvas.toDataURL('image/jpeg', 0.95),
+      width: FIXED_WIDTH,
+      height: displayHeight
+    };
   };
 
   const createPDF = async () => {
@@ -56,9 +64,12 @@ export default function HelloPage() {
     try {
       const { default: jsPDF } = await import('jspdf');
       
-      const FIXED_WIDTH = 210;
-      
-      let pdf = null;
+      // Tao PDF rong, khong co trang nao
+      const pdf = new jsPDF({
+        orientation: 'p',
+        unit: 'mm',
+        format: [210, 1] // Tao tam thoi, se bi ghi de
+      });
 
       for (let i = 0; i < images.length; i++) {
         const image = images[i];
@@ -72,28 +83,25 @@ export default function HelloPage() {
           if (img.complete) resolve();
         });
 
-        // Chuan hoa anh sang JPEG qua canvas
-        const imageData = imageToDataURL(img);
+        const result = convertAndResize(img);
         
-        const displayHeight = (img.height / img.width) * FIXED_WIDTH;
-        
+        // Them trang moi VOI KICH THUOC CUA ANH
         if (i === 0) {
-          pdf = new jsPDF({
-            orientation: 'p',
-            unit: 'mm',
-            format: [FIXED_WIDTH, displayHeight]
-          });
+          // Trang dau tien: thay doi kich thuoc cua trang hien tai
+          pdf.internal.pageSize.setWidth(result.width);
+          pdf.internal.pageSize.setHeight(result.height);
         } else {
-          pdf.addPage([FIXED_WIDTH, displayHeight]);
+          // Cac trang tiep theo: them trang moi
+          pdf.addPage([result.width, result.height]);
         }
 
         pdf.addImage(
-          imageData,
+          result.dataUrl,
           'JPEG',
           0,
           0,
-          FIXED_WIDTH,
-          displayHeight
+          result.width,
+          result.height
         );
       }
 
