@@ -35,7 +35,7 @@ export default function HelloPage() {
     setImages(prev => prev.filter(img => img.id !== id));
   };
 
-  const convertAndResize = (img) => {
+  const resizeImage = (img) => {
     const FIXED_WIDTH = 210;
     const displayHeight = (img.height / img.width) * FIXED_WIDTH;
     
@@ -64,13 +64,9 @@ export default function HelloPage() {
     try {
       const { default: jsPDF } = await import('jspdf');
       
-      // Tao PDF rong, khong co trang nao
-      const pdf = new jsPDF({
-        orientation: 'p',
-        unit: 'mm',
-        format: [210, 1] // Tao tam thoi, se bi ghi de
-      });
-
+      // Xu ly tung anh va tao PDF rieng
+      const pdfDocs = [];
+      
       for (let i = 0; i < images.length; i++) {
         const image = images[i];
         
@@ -83,19 +79,16 @@ export default function HelloPage() {
           if (img.complete) resolve();
         });
 
-        const result = convertAndResize(img);
+        const result = resizeImage(img);
         
-        // Them trang moi VOI KICH THUOC CUA ANH
-        if (i === 0) {
-          // Trang dau tien: thay doi kich thuoc cua trang hien tai
-          pdf.internal.pageSize.setWidth(result.width);
-          pdf.internal.pageSize.setHeight(result.height);
-        } else {
-          // Cac trang tiep theo: them trang moi
-          pdf.addPage([result.width, result.height]);
-        }
-
-        pdf.addImage(
+        // Tao 1 PDF rieng cho tung anh
+        const singlePdf = new jsPDF({
+          orientation: 'p',
+          unit: 'mm',
+          format: [result.width, result.height]
+        });
+        
+        singlePdf.addImage(
           result.dataUrl,
           'JPEG',
           0,
@@ -103,9 +96,33 @@ export default function HelloPage() {
           result.width,
           result.height
         );
+        
+        // Luu du lieu PDF dang blob
+        pdfDocs.push(singlePdf.output('blob'));
       }
 
-      pdf.save('merged-images.pdf');
+      // Ghep cac PDF lai voi nhau
+      const { PDFDocument } = await import('pdf-lib');
+      const mergedPdf = await PDFDocument.create();
+      
+      for (const pdfBlob of pdfDocs) {
+        const pdfBytes = await pdfBlob.arrayBuffer();
+        const pdfDoc = await PDFDocument.load(pdfBytes);
+        const pages = await mergedPdf.copyPages(pdfDoc, pdfDoc.getPageIndices());
+        pages.forEach(page => mergedPdf.addPage(page));
+      }
+
+      const mergedPdfBytes = await mergedPdf.save();
+      const blob = new Blob([mergedPdfBytes], { type: 'application/pdf' });
+      const url = URL.createObjectURL(blob);
+      
+      // Tao link download
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'merged-images.pdf';
+      link.click();
+      URL.revokeObjectURL(url);
+      
     } catch (error) {
       console.error('Loi tao PDF:', error);
       alert('Co loi xay ra khi tao PDF: ' + error.message);
