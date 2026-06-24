@@ -45,8 +45,13 @@ export default function HelloPage() {
     
     try {
       const { default: jsPDF } = await import('jspdf');
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const pageWidth = pdf.internal.pageSize.getWidth();
+      
+      // Tao PDF rong, chua co trang nao
+      const pdf = new jsPDF({
+        orientation: 'p',
+        unit: 'mm',
+        format: [210, 1] // Tao tam thoi voi chieu cao 1mm
+      });
 
       for (let i = 0; i < images.length; i++) {
         const image = images[i];
@@ -61,11 +66,17 @@ export default function HelloPage() {
 
         const imgWidth = img.width;
         const imgHeight = img.height;
-        const displayWidth = pageWidth;
+        const displayWidth = 210; // Luon luon bang 210mm (A4)
         const displayHeight = (imgHeight / imgWidth) * displayWidth;
         
-        if (i > 0) {
-          pdf.addPage();
+        // Tao trang moi voi kich thuoc chinh xac
+        if (i === 0) {
+          // Trang dau tien: thay doi kich thuoc
+          pdf.internal.pageSize.setWidth(displayWidth);
+          pdf.internal.pageSize.setHeight(displayHeight);
+        } else {
+          // Cac trang tiep theo: them trang moi
+          pdf.addPage([displayWidth, displayHeight]);
         }
 
         pdf.addImage(
