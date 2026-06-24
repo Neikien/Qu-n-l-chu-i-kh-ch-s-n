@@ -46,12 +46,9 @@ export default function HelloPage() {
     try {
       const { default: jsPDF } = await import('jspdf');
       
-      // Tao PDF rong, chua co trang nao
-      const pdf = new jsPDF({
-        orientation: 'p',
-        unit: 'mm',
-        format: [210, 1] // Tao tam thoi voi chieu cao 1mm
-      });
+      const FIXED_WIDTH = 210; // Chieu rong A4 (mm)
+      
+      let pdf = null;
 
       for (let i = 0; i < images.length; i++) {
         const image = images[i];
@@ -64,27 +61,29 @@ export default function HelloPage() {
           if (img.complete) resolve();
         });
 
+        // Tinh chieu cao theo ti le
         const imgWidth = img.width;
         const imgHeight = img.height;
-        const displayWidth = 210; // Luon luon bang 210mm (A4)
-        const displayHeight = (imgHeight / imgWidth) * displayWidth;
+        const displayHeight = (imgHeight / imgWidth) * FIXED_WIDTH;
         
-        // Tao trang moi voi kich thuoc chinh xac
+        // Tao trang moi voi kich thuoc da tinh
         if (i === 0) {
-          // Trang dau tien: thay doi kich thuoc
-          pdf.internal.pageSize.setWidth(displayWidth);
-          pdf.internal.pageSize.setHeight(displayHeight);
+          pdf = new jsPDF({
+            orientation: 'p',
+            unit: 'mm',
+            format: [FIXED_WIDTH, displayHeight]
+          });
         } else {
-          // Cac trang tiep theo: them trang moi
-          pdf.addPage([displayWidth, displayHeight]);
+          pdf.addPage([FIXED_WIDTH, displayHeight]);
         }
 
+        // Them anh phu kin trang
         pdf.addImage(
           image.url,
           'JPEG',
           0,
           0,
-          displayWidth,
+          FIXED_WIDTH,
           displayHeight
         );
       }
