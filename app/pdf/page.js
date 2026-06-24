@@ -6,21 +6,16 @@ export default function HelloPage() {
   const [images, setImages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Xử lý khi chọn file bằng click
   const handleFileSelect = (e) => {
     const files = Array.from(e.target.files);
-    console.log('Đã chọn file:', files);
-    
     const imageUrls = files.map(file => ({
       id: Math.random().toString(36).substr(2, 9),
       url: URL.createObjectURL(file),
       name: file.name
     }));
-    
     setImages(prev => [...prev, ...imageUrls]);
   };
 
-  // Xử lý kéo thả
   const handleDragOver = (e) => {
     e.preventDefault();
   };
@@ -28,98 +23,65 @@ export default function HelloPage() {
   const handleDrop = (e) => {
     e.preventDefault();
     const files = Array.from(e.dataTransfer.files);
-    console.log('Đã thả file:', files);
-    
     const imageUrls = files.map(file => ({
       id: Math.random().toString(36).substr(2, 9),
       url: URL.createObjectURL(file),
       name: file.name
     }));
-    
     setImages(prev => [...prev, ...imageUrls]);
   };
 
-  // Xóa ảnh
   const removeImage = (id) => {
     setImages(prev => prev.filter(img => img.id !== id));
   };
 
-  // HÀM TẠO PDF
   const createPDF = async () => {
     if (images.length === 0) {
-      alert('Chưa có ảnh nào để tạo PDF!');
+      alert('Chua co anh nao de tao PDF!');
       return;
     }
 
     setIsLoading(true);
     
     try {
-      // Import jspdf - dynamic import để tránh lỗi SSR
       const { default: jsPDF } = await import('jspdf');
-      
-      // Tạo PDF với khổ A4
       const pdf = new jsPDF('p', 'mm', 'a4');
-      const pageWidth = pdf.internal.pageSize.getWidth();  // 210mm
-      const pageHeight = pdf.internal.pageSize.getHeight(); // 297mm
-      
-      console.log('Kích thước trang A4:', pageWidth, 'x', pageHeight);
+      const pageWidth = pdf.internal.pageSize.getWidth();
 
-      // Duyệt qua từng ảnh
       for (let i = 0; i < images.length; i++) {
         const image = images[i];
-        
-        // Tạo đối tượng Image để lấy kích thước thật
         const img = new Image();
         img.src = image.url;
         
-        // Chờ ảnh load xong
         await new Promise((resolve, reject) => {
           img.onload = resolve;
           img.onerror = reject;
-          // Nếu ảnh đã load rồi thì vẫn resolve
           if (img.complete) resolve();
         });
 
         const imgWidth = img.width;
         const imgHeight = img.height;
-        
-        console.log(`Ảnh ${i+1}: ${imgWidth}x${imgHeight}`);
-
-        // TÍNH TOÁN KÍCH THƯỚC HIỂN THỊ
-        // Chiều rộng luôn bằng chiều rộng trang A4
         const displayWidth = pageWidth;
-        // Chiều cao tính theo tỉ lệ của ảnh
         const displayHeight = (imgHeight / imgWidth) * displayWidth;
         
-        console.log(`Hiển thị: ${displayWidth.toFixed(2)}x${displayHeight.toFixed(2)}mm`);
-
-        // Thêm trang mới (trừ trang đầu tiên)
         if (i > 0) {
           pdf.addPage();
         }
 
-        // Thêm ảnh vào PDF
-        // Căn giữa theo chiều ngang, nếu ảnh ngắn hơn trang thì căn giữa theo chiều dọc
-        const x = 0; // Căn lề trái
-        const y = (pageHeight - displayHeight) / 2; // Căn giữa theo chiều dọc
-        
         pdf.addImage(
           image.url,
           'JPEG',
-          x,
-          y,
+          0,
+          0,
           displayWidth,
           displayHeight
         );
       }
 
-      // Lưu file PDF
       pdf.save('merged-images.pdf');
-      console.log('✅ Tạo PDF thành công!');
-      
     } catch (error) {
-      console.error('Lỗi tạo PDF:', error);
-      alert(`Có lỗi xảy ra: ${error.message}`);
+      console.error('Loi tao PDF:', error);
+      alert('Co loi xay ra khi tao PDF: ' + error.message);
     } finally {
       setIsLoading(false);
     }
@@ -133,20 +95,18 @@ export default function HelloPage() {
       margin: '0 auto'
     }}>
       <h1 style={{ fontSize: '36px', color: '#0070f3', textAlign: 'center' }}>
-        📄 Ghép ảnh thành PDF
+        Ghep anh thanh PDF
       </h1>
       <p style={{ fontSize: '18px', color: '#666', textAlign: 'center', marginBottom: '30px' }}>
-        Kéo thả ảnh vào để tạo file PDF
+        Keo tha anh vao de tao file PDF
       </p>
 
-      {/* Layout 2 cột */}
       <div style={{
         display: 'grid',
         gridTemplateColumns: '1fr 1fr',
         gap: '30px',
         alignItems: 'start'
       }}>
-        {/* Cột trái: Khung kéo thả */}
         <div>
           <div
             onDragOver={handleDragOver}
@@ -173,11 +133,11 @@ export default function HelloPage() {
               e.currentTarget.style.backgroundColor = '#f9f9f9';
             }}
           >
-            <p style={{ fontSize: '48px', margin: '10px 0' }}>📁</p>
+            <p style={{ fontSize: '48px', margin: '10px 0' }}>+</p>
             <p style={{ fontSize: '20px', color: '#333', fontWeight: 'bold' }}>
-              Kéo thả ảnh vào đây
+              Keo tha anh vao day
             </p>
-            <p style={{ fontSize: '14px', color: '#999' }}>hoặc</p>
+            <p style={{ fontSize: '14px', color: '#999' }}>hoac</p>
             
             <input
               type="file"
@@ -202,7 +162,7 @@ export default function HelloPage() {
                 marginTop: '10px'
               }}
             >
-              Chọn ảnh từ máy tính
+              Chon anh tu may tinh
             </button>
 
             {images.length > 0 && (
@@ -213,12 +173,11 @@ export default function HelloPage() {
                 borderRadius: '20px',
                 color: '#2e7d32'
               }}>
-                ✅ Đã chọn {images.length} ảnh
+                Da chon {images.length} anh
               </div>
             )}
           </div>
 
-          {/* Nút Tạo PDF */}
           {images.length > 0 && (
             <div style={{ marginTop: '20px', textAlign: 'center' }}>
               <button
@@ -246,18 +205,17 @@ export default function HelloPage() {
                   e.currentTarget.style.transform = 'scale(1)';
                 }}
               >
-                {isLoading ? '⏳ Đang xử lý...' : '⬇️ Tạo PDF'}
+                {isLoading ? 'Dang xu ly...' : 'Tao PDF'}
               </button>
               {isLoading && (
                 <p style={{ fontSize: '14px', color: '#666', marginTop: '10px' }}>
-                  Đang xử lý {images.length} ảnh...
+                  Dang xu ly {images.length} anh...
                 </p>
               )}
             </div>
           )}
         </div>
 
-        {/* Cột phải: Danh sách ảnh */}
         <div>
           <h3 style={{
             margin: '0 0 15px 0',
@@ -265,7 +223,7 @@ export default function HelloPage() {
             borderBottom: '2px solid #e5e7eb',
             paddingBottom: '10px'
           }}>
-            📸 Danh sách ảnh ({images.length})
+            Danh sach anh ({images.length})
           </h3>
           
           {images.length === 0 ? (
@@ -276,8 +234,8 @@ export default function HelloPage() {
               borderRadius: '8px',
               color: '#999'
             }}>
-              <p style={{ fontSize: '16px' }}>Chưa có ảnh nào được chọn</p>
-              <p style={{ fontSize: '14px' }}>Hãy kéo thả ảnh vào khung bên trái</p>
+              <p style={{ fontSize: '16px' }}>Chua co anh nao duoc chon</p>
+              <p style={{ fontSize: '14px' }}>Hay keo tha anh vao khung ben trai</p>
             </div>
           ) : (
             <div style={{
@@ -358,7 +316,7 @@ export default function HelloPage() {
                       opacity: isLoading ? 0.5 : 1
                     }}
                   >
-                    ×
+                    X
                   </button>
                 </div>
               ))}
@@ -380,7 +338,7 @@ export default function HelloPage() {
                     opacity: isLoading ? 0.5 : 1
                   }}
                 >
-                  🗑️ Xóa tất cả ({images.length} ảnh)
+                  Xoa tat ca ({images.length} anh)
                 </button>
               )}
             </div>
