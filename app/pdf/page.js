@@ -35,30 +35,6 @@ export default function HelloPage() {
     setImages(prev => prev.filter(img => img.id !== id));
   };
 
-  const resizeImage = (img) => {
-    // Chieu rong A4 tinh bang pixel (210mm = 794px)
-    const FIXED_WIDTH_PX = 794;
-    const displayHeightPX = Math.round((img.height / img.width) * FIXED_WIDTH_PX);
-    
-    const canvas = document.createElement('canvas');
-    canvas.width = FIXED_WIDTH_PX;
-    canvas.height = displayHeightPX;
-    const ctx = canvas.getContext('2d');
-    
-    // Ve nen trang
-    ctx.fillStyle = '#FFFFFF';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    
-    // Ve anh
-    ctx.drawImage(img, 0, 0, FIXED_WIDTH_PX, displayHeightPX);
-    
-    return {
-      dataUrl: canvas.toDataURL('image/jpeg', 0.95),
-      width: FIXED_WIDTH_PX,
-      height: displayHeightPX
-    };
-  };
-
   const createPDF = async () => {
     if (images.length === 0) {
       alert('Chua co anh nao de tao PDF!');
@@ -81,21 +57,23 @@ export default function HelloPage() {
         if (firstImg.complete) resolve();
       });
 
-      const firstResult = resizeImage(firstImg);
+      // GIU NGUYEN KICH THUOC ANH GOC
+      const firstWidth = firstImg.width;
+      const firstHeight = firstImg.height;
       
-      // Tao PDF voi don vi pixel
+      // Tao PDF voi don vi pixel va kich thuoc anh goc
       const pdf = new jsPDF({
         unit: 'px',
-        format: [firstResult.width, firstResult.height]
+        format: [firstWidth, firstHeight]
       });
 
       pdf.addImage(
-        firstResult.dataUrl,
+        firstImage.url,
         'JPEG',
         0,
         0,
-        firstResult.width,
-        firstResult.height
+        firstWidth,
+        firstHeight
       );
 
       // Xu ly cac anh con lai
@@ -111,16 +89,18 @@ export default function HelloPage() {
           if (img.complete) resolve();
         });
 
-        const result = resizeImage(img);
+        // GIU NGUYEN KICH THUOC ANH GOC
+        const width = img.width;
+        const height = img.height;
         
-        pdf.addPage([result.width, result.height]);
+        pdf.addPage([width, height]);
         pdf.addImage(
-          result.dataUrl,
+          image.url,
           'JPEG',
           0,
           0,
-          result.width,
-          result.height
+          width,
+          height
         );
       }
 
@@ -144,7 +124,7 @@ export default function HelloPage() {
         Ghep anh thanh PDF
       </h1>
       <p style={{ fontSize: '18px', color: '#666', textAlign: 'center', marginBottom: '30px' }}>
-        Keo tha anh vao de tao file PDF
+        Keo tha anh vao de tao file PDF - Giu nguyen kich thuoc anh
       </p>
 
       <div style={{
