@@ -35,6 +35,41 @@ export default function HelloPage() {
     setImages(prev => prev.filter(img => img.id !== id));
   };
 
+  // Ham lay kich thuoc anh
+  const getImageDimensions = (url) => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve({ width: img.width, height: img.height });
+      img.onerror = reject;
+      img.src = url;
+    });
+  };
+
+  // Ham resize anh ve chieu rong target
+  const resizeImageToWidth = (img, targetWidth) => {
+    const newHeight = (img.height / img.width) * targetWidth;
+    
+    const canvas = document.createElement('canvas');
+    canvas.width = targetWidth;
+    canvas.height = newHeight;
+    const ctx = canvas.getContext('2d');
+    
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+    
+    // Ve nen trang tranh loi PNG
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    ctx.drawImage(img, 0, 0, targetWidth, newHeight);
+    
+    return {
+      dataUrl: canvas.toDataURL('image/jpeg', 0.92),
+      width: targetWidth,
+      height: newHeight
+    };
+  };
+
   const createPDF = async () => {
     if (images.length === 0) {
       alert('Chua co anh nao de tao PDF!');
@@ -44,10 +79,19 @@ export default function HelloPage() {
     setIsLoading(true);
     
     try {
-      // Import pdf-lib
-      const { PDFDocument } = await import('pdf-lib');
+      // 1. Lay kich thuoc cua tat ca anh
+      const imageSizes = await Promise.all(
+        images.map(img => getImageDimensions(img.url))
+      );
       
-      // Tao PDF moi
+      // 2. Tim chieu rong nho nhat
+      const minWidth = Math.min(...imageSizes.map(size => size.width));
+      
+      // 3. Dat chuan: neu minWidth < 600 thi lay 600, con khong thi lay minWidth
+      const STANDARD_WIDTH = Math.max(600, minWidth);
+      console.log('Chuan hoa ve chieu rong:', STANDARD_WIDTH);
+      
+      const { PDFDocument } = await import('pdf-lib');
       const pdfDoc = await PDFDocument.create();
 
       for (let i = 0; i < images.length; i++) {
@@ -56,22 +100,20 @@ export default function HelloPage() {
         // Load anh
         const img = new Image();
         img.src = image.url;
-        
         await new Promise((resolve, reject) => {
           img.onload = resolve;
           img.onerror = reject;
           if (img.complete) resolve();
         });
 
-        // Lay kich thuoc anh goc
-        const width = img.width;
-        const height = img.height;
+        // Resize ve chieu rong chuan
+        const result = resizeImageToWidth(img, STANDARD_WIDTH);
         
-        // Chuyen anh sang arrayBuffer
-        const response = await fetch(image.url);
+        // Chuyen sang arrayBuffer
+        const response = await fetch(result.dataUrl);
         const imageBytes = await response.arrayBuffer();
         
-        // Embed anh vao PDF (tu dong nhan dang JPG/PNG)
+        // Embed anh vao PDF
         let pdfImage;
         try {
           pdfImage = await pdfDoc.embedJpg(imageBytes);
@@ -79,31 +121,28 @@ export default function HelloPage() {
           try {
             pdfImage = await pdfDoc.embedPng(imageBytes);
           } catch (e2) {
-            // Neu loi, chuyen qua canvas
+            // Fallback: ve lai canvas
             const canvas = document.createElement('canvas');
-            canvas.width = width;
-            canvas.height = height;
+            canvas.width = result.width;
+            canvas.height = result.height;
             const ctx = canvas.getContext('2d');
             ctx.fillStyle = '#FFFFFF';
-            ctx.fillRect(0, 0, width, height);
-            ctx.drawImage(img, 0, 0);
-            
-            const jpegData = canvas.toDataURL('image/jpeg', 0.95);
-            const jpegResponse = await fetch(jpegData);
-            const jpegBytes = await jpegResponse.arrayBuffer();
-            pdfImage = await pdfDoc.embedJpg(jpegBytes);
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(img, 0, 0, result.width, result.height);
+            const fallbackData = canvas.toDataURL('image/jpeg', 0.92);
+            const fallbackResponse = await fetch(fallbackData);
+            const fallbackBytes = await fallbackResponse.arrayBuffer();
+            pdfImage = await pdfDoc.embedJpg(fallbackBytes);
           }
         }
         
-        // Tao trang voi kich thuoc ANH GOC
-        const page = pdfDoc.addPage([width, height]);
-        
-        // Ve anh len trang
+        // Tao trang voi kich thuoc da resize
+        const page = pdfDoc.addPage([result.width, result.height]);
         page.drawImage(pdfImage, {
           x: 0,
           y: 0,
-          width: width,
-          height: height,
+          width: result.width,
+          height: result.height,
         });
       }
 
@@ -137,7 +176,7 @@ export default function HelloPage() {
         Ghep anh thanh PDF
       </h1>
       <p style={{ fontSize: '18px', color: '#666', textAlign: 'center', marginBottom: '30px' }}>
-        Keo tha anh vao de tao file PDF - Giu nguyen kich thuoc anh
+        Keo tha anh vao de tao file PDF - Tu dong chuan hoa chieu rong
       </p>
 
       <div style={{
